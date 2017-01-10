@@ -37,6 +37,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp")
 
+# Platform
+if(CORE_SYSTEM_NAME STREQUAL linux)
+  set(_DEFAULT_PLATFORM X11)
+else()
+  string(TOLOWER ${CORE_SYSTEM_NAME} _DEFAULT_PLATFORM)
+endif()
+set(CORE_PLATFORM_NAME ${_DEFAULT_PLATFORM} CACHE STRING "Platform port to build")
+unset(_DEFAULT_PLATFORM)
+message(STATUS "Platform: ${CORE_PLATFORM_NAME}")
+include(${CMAKE_SOURCE_DIR}/cmake/scripts/${CORE_SYSTEM_NAME}/platform/${CORE_PLATFORM_NAME}.cmake)
+
 # general
 option(VERBOSE            "Enable verbose output?" OFF)
 option(ENABLE_DVDCSS      "Enable libdvdcss support?" ON)
@@ -50,12 +61,6 @@ if(UNIX)
   option(FFMPEG_PATH        "Path to external ffmpeg?" "")
   option(ENABLE_INTERNAL_CROSSGUID "Enable internal crossguid?" ON)
   option(ENABLE_OPENSSL     "Enable OpenSSL?" ON)
-  option(ENABLE_MIR         "Enable MIR?" OFF)
-  if(CORE_SYSTEM_NAME STREQUAL linux OR CORE_SYSTEM_NAME STREQUAL freebsd)
-    option(ENABLE_X11         "Enable X11 support?" ON)
-    option(ENABLE_AML         "Enable AML?" OFF)
-    option(ENABLE_IMX         "Enable IMX?" OFF)
-  endif()
 endif()
 # System options
 if(NOT WIN32)
@@ -139,8 +144,6 @@ set(optional_deps Alsa
                   SmbClient
                   SSH
                   UDEV
-                  VAAPI
-                  VDPAU
                   XSLT)
 
 # Required, dyloaded deps. Keep in alphabetical order please
@@ -207,46 +210,6 @@ if(ENABLE_AIRTUNES)
   if(SHAIRPLAY_FOUND)
     core_require_dyload_dep(Shairplay)
   endif()
-endif()
-
-if(CORE_SYSTEM_NAME STREQUAL osx)
-  core_require_dep(Sdl)
-endif()
-
-if(NOT WIN32)
-  core_optional_dep(OpenGl)
-  if(OPENGL_FOUND AND NOT APPLE)
-    if(ENABLE_MIR)
-      core_require_dep(Mir ENABLE_MIR)
-      core_optional_dep(LibDRM ENABLE_MIR)
-    else()
-      core_optional_dep(X ENABLE_X11)
-      core_optional_dep(XRandR ENABLE_X11)
-      core_optional_dep(LibDRM ENABLE_X11)
-    endif()
-  else()
-    core_optional_dep(OpenGLES)
-    if(OPENGLES_FOUND)
-      if(ENABLE_MIR)
-        core_require_dep(Mir ENABLE_MIR)
-        core_optional_dep(LibDRM ENABLE_MIR)
-      else()
-        core_optional_dep(X ENABLE_X11)
-        core_optional_dep(XRandR ENABLE_X11)
-        core_optional_dep(LibDRM ENABLE_X11)
-      endif()
-    endif()
-  endif()
-  if(NOT APPLE)
-    core_require_dep(EGL)
-  endif()
-endif()
-
-if(CORE_SYSTEM_NAME STREQUAL android OR CORE_SYSTEM_NAME STREQUAL linux)
-  core_optional_dep(AML)
-  core_optional_dep(IMX)
-elseif(CORE_SYSTEM_NAME STREQUAL rbpi)
-  core_require_dep(MMAL)
 endif()
 
 # find all folders containing addon.xml.in
