@@ -95,9 +95,9 @@ list(APPEND DEPLIBS ${CMAKE_THREAD_LIBS_INIT})
 
 # Platform
 if(CORE_SYSTEM_NAME STREQUAL linux)
-  set(_DEFAULT_PLATFORM X11)
-  set(CORE_PLATFORM_NAME ${_DEFAULT_PLATFORM} CACHE STRING "Platform port to build")
-  unset(_DEFAULT_PLATFORM)
+  # Set default CORE_PLATFORM_NAME to X11
+  # This is overridden by user setting -DCORE_PLATFORM_NAME=<platform>
+  set(CORE_PLATFORM_NAME X11 CACHE STRING "Platform port to build")
   message(STATUS "Platform: ${CORE_PLATFORM_NAME}")
   include(${CMAKE_SOURCE_DIR}/cmake/scripts/${CORE_SYSTEM_NAME}/platform/${CORE_PLATFORM_NAME}.cmake)
 endif()
