@@ -1,0 +1,5 @@
+core_require_dep(OpenGLES)
+core_require_dep(EGL)
+core_require_dep(GBM)
+core_require_dep(LibDRM)
+core_optional_dep(VAAPI)
