@@ -37,17 +37,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp")
 
-# Platform
-if(CORE_SYSTEM_NAME STREQUAL linux)
-  set(_DEFAULT_PLATFORM X11)
-else()
-  string(TOLOWER ${CORE_SYSTEM_NAME} _DEFAULT_PLATFORM)
-endif()
-set(CORE_PLATFORM_NAME ${_DEFAULT_PLATFORM} CACHE STRING "Platform port to build")
-unset(_DEFAULT_PLATFORM)
-message(STATUS "Platform: ${CORE_PLATFORM_NAME}")
-include(${CMAKE_SOURCE_DIR}/cmake/scripts/${CORE_SYSTEM_NAME}/platform/${CORE_PLATFORM_NAME}.cmake)
-
 # general
 option(VERBOSE            "Enable verbose output?" OFF)
 option(ENABLE_DVDCSS      "Enable libdvdcss support?" ON)
@@ -103,6 +92,15 @@ endif()
 
 find_package(Threads REQUIRED QUIET)
 list(APPEND DEPLIBS ${CMAKE_THREAD_LIBS_INIT})
+
+# Platform
+if(CORE_SYSTEM_NAME STREQUAL linux)
+  set(_DEFAULT_PLATFORM X11)
+  set(CORE_PLATFORM_NAME ${_DEFAULT_PLATFORM} CACHE STRING "Platform port to build")
+  unset(_DEFAULT_PLATFORM)
+  message(STATUS "Platform: ${CORE_PLATFORM_NAME}")
+  include(${CMAKE_SOURCE_DIR}/cmake/scripts/${CORE_SYSTEM_NAME}/platform/${CORE_PLATFORM_NAME}.cmake)
+endif()
 
 # Required dependencies. Keep in alphabetical order please
 set(required_deps Cdio
