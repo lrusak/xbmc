@@ -1,3 +1,6 @@
 core_require_dep(OpenGl)
+core_require_dep(EGL)
 core_require_dep(Mir)
+core_require_dep(LibDRM)
 core_optional_dep(VAAPI)
+core_optional_dep(OpenGLES)
