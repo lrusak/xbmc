@@ -98,7 +98,7 @@ if(CORE_SYSTEM_NAME STREQUAL linux)
   # Set default CORE_PLATFORM_NAME to X11
   # This is overridden by user setting -DCORE_PLATFORM_NAME=<platform>
   set(CORE_PLATFORM_NAME X11 CACHE STRING "Platform port to build")
-  message(STATUS "Platform: ${CORE_PLATFORM_NAME}")
+  list(APPEND final_message "Platform: ${CORE_PLATFORM_NAME}")
   include(${CMAKE_SOURCE_DIR}/cmake/scripts/${CORE_SYSTEM_NAME}/platform/${CORE_PLATFORM_NAME}.cmake)
 endif()
 
@@ -116,7 +116,8 @@ set(required_deps Cdio
                   RapidJSON
                   Sqlite3
                   TagLib
-                  TinyXML)
+                  TinyXML
+                  ${PLATFORM_REQUIRED_DEPS})
 if(NOT WIN32)
   list(APPEND required_deps ZLIB)
 else()
@@ -142,7 +143,8 @@ set(optional_deps Alsa
                   SmbClient
                   SSH
                   UDEV
-                  XSLT)
+                  XSLT
+                  ${PLATFORM_OPTIONAL_DEPS})
 
 # Required, dyloaded deps. Keep in alphabetical order please
 set(required_dyload ASS
@@ -154,36 +156,18 @@ set(dyload_optional Bluray
                     NFS
                     Plist)
 
-# Required by shared objects we link
-set(required_dep_libs EXPAT)
-
 # Required tools
 find_package(TexturePacker REQUIRED)
 find_package(JsonSchemaBuilder REQUIRED)
 
-foreach(dep ${required_dep_libs})
-  find_package(${dep} REQUIRED)
-endforeach()
-
-foreach(dep ${required_deps})
-  core_require_dep(${dep})
-endforeach()
-
-foreach(dep ${optional_deps})
-  core_optional_dep(${dep})
-endforeach()
+core_require_dep(${required_deps})
+core_optional_dep(${optional_deps})
+core_require_dyload_dep(${required_dyload})
+core_optional_dyload_dep(${dyload_optional})
 
 if(NOT UDEV_FOUND)
   core_optional_dep(LibUSB)
 endif()
-
-foreach(dep ${required_dyload})
-  core_require_dyload_dep(${dep})
-endforeach()
-
-foreach(dep ${dyload_optional})
-  core_optional_dyload_dep(${dep})
-endforeach()
 
 if(ENABLE_OPENSSL)
   core_require_dep(OpenSSL)
