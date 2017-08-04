@@ -391,16 +391,15 @@ bool CVaapiTexture::TestInteropHevc(VADisplay vaDpy, EGLDisplay eglDisplay)
   VAImage image;
   VABufferInfo bufferInfo;
 
-  VASurfaceAttrib attribs[1], *attrib;
-  attrib = attribs;
-  attrib->flags = VA_SURFACE_ATTRIB_SETTABLE;
-  attrib->type = VASurfaceAttribPixelFormat;
-  attrib->value.type = VAGenericValueTypeInteger;
-  attrib->value.value.i = VA_FOURCC_P010;
+  VASurfaceAttrib attribs = { };
+  attrib.flags = VA_SURFACE_ATTRIB_SETTABLE;
+  attrib.type = VASurfaceAttribPixelFormat;
+  attrib.value.type = VAGenericValueTypeInteger;
+  attrib.value.value.i = VA_FOURCC_P010;
 
   if (vaCreateSurfaces(vaDpy,  VA_RT_FORMAT_YUV420_10BPP,
                        width, height,
-                       &surface, 1, attribs, 1) != VA_STATUS_SUCCESS)
+                       &surface, 1, &attrib, 1) != VA_STATUS_SUCCESS)
   {
     return ret;
   }
