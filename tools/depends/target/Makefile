@@ -12,7 +12,7 @@ DEPENDS = \
 	libxml2 rapidjson libmicrohttpd mysql libffi \
 	python27 libshairplay libfmt \
 	libplist libcec libbluray tinyxml \
-	libssh taglib libusb libnfs \
+	libssh taglib libusb \
 	pythonmodule-pil pythonmodule-pycryptodome pythonmodule-setuptools \
 	libxslt ffmpeg platform crossguid \
         libdvdread libdvdnav libdvdcss p8-platform

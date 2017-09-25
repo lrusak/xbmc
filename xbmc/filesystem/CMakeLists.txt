@@ -33,8 +33,6 @@ set(SOURCES AddonsDirectory.cpp
             MusicDatabaseFile.cpp
             MusicFileDirectory.cpp
             MusicSearchDirectory.cpp
-            NFSDirectory.cpp
-            NFSFile.cpp
             OverrideDirectory.cpp
             OverrideFile.cpp
             PipeFile.cpp
@@ -82,7 +80,6 @@ set(HEADERS AddonsDirectory.h
             DirectoryFactory.h
             DirectoryHistory.h
             DllLibCurl.h
-            DllLibNfs.h
             EventsDirectory.h
             FTPDirectory.h
             FTPParse.h
@@ -107,8 +104,6 @@ set(HEADERS AddonsDirectory.h
             MusicDatabaseFile.h
             MusicFileDirectory.h
             MusicSearchDirectory.h
-            NFSDirectory.h
-            NFSFile.h
             OverrideDirectory.h
             OverrideFile.h
             PVRDirectory.h

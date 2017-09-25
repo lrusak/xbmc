@@ -78,9 +78,6 @@
 #ifdef HAS_FILESYSTEM_SFTP
 #include "SFTPDirectory.h"
 #endif
-#ifdef HAS_FILESYSTEM_NFS
-#include "NFSDirectory.h"
-#endif
 #ifdef HAVE_LIBBLURAY
 #include "BlurayDirectory.h"
 #endif
@@ -176,9 +173,6 @@ IDirectory* CDirectoryFactory::Create(const CURL& url)
     if (url.IsProtocol("pvr")) return new CPVRDirectory();
 #ifdef HAS_ZEROCONF
     if (url.IsProtocol("zeroconf")) return new CZeroconfDirectory();
-#endif
-#ifdef HAS_FILESYSTEM_NFS
-    if (url.IsProtocol("nfs")) return new CNFSDirectory();
 #endif
 #ifdef TARGET_WINDOWS_STORE
     if (CWinLibraryDirectory::IsValid(url)) return new CWinLibraryDirectory();

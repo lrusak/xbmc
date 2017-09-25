@@ -162,7 +162,6 @@ set(required_dyload ASS
 # Optional, dyloaded deps. Keep in alphabetical order please
 set(dyload_optional Bluray
                     CEC
-                    NFS
                     Plist)
 
 # Required tools

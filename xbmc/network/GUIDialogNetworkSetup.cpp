@@ -219,9 +219,6 @@ void CGUIDialogNetworkSetup::InitializeSettings()
          { true,  true,  true,  true, false,  80,   "rss", 20304}};
 
  m_protocols.insert(m_protocols.end(), defaults.begin(), defaults.end());
-#ifdef HAS_FILESYSTEM_NFS
-  m_protocols.emplace_back(Protocol{true, false, false, false, true, 0, "nfs", 20259});
-#endif
 #ifdef HAS_FILESYSTEM_SFTP
   m_protocols.emplace_back(Protocol{true, true, true, true, false, 22, "sftp", 20260});
 #endif

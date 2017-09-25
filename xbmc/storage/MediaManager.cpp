@@ -214,11 +214,9 @@ void CMediaManager::GetNetworkLocations(VECSOURCES &locations, bool autolocation
     locations.push_back(share);
 #endif
 
-#ifdef HAS_FILESYSTEM_NFS
     share.strPath = "nfs://";
     share.strName = g_localizeStrings.Get(20259);
     locations.push_back(share);
-#endif// HAS_FILESYSTEM_NFS
 
 #ifdef HAS_UPNP
     if (CServiceBroker::GetSettings().GetBool(CSettings::SETTING_SERVICES_UPNP))
@@ -446,7 +444,7 @@ CCdInfo* CMediaManager::GetCdInfo(const std::string& devicePath)
 #ifdef TARGET_WINDOWS
   if(!m_bhasoptical)
     return NULL;
-  
+
   std::string strDevice = TranslateDevicePath(devicePath, false);
   std::map<std::string,CCdInfo*>::iterator it;
   {
@@ -546,7 +544,7 @@ std::string CMediaManager::GetDiskUniqueId(const std::string& devicePath)
     URIUtils::AddSlashAtEnd(mediaPath);
   }
 #endif
-  
+
   DiscInfo info = GetDiscInfo(mediaPath);
   if (info.empty())
   {
@@ -669,7 +667,7 @@ void CMediaManager::ProcessEvents()
     // else TranslateDevicePath wouldn't give the correct device
     m_strFirstAvailDrive = m_platformStorage->GetFirstOpticalDeviceFileName();
 #endif
-    
+
     CGUIMessage msg(GUI_MSG_NOTIFY_ALL,0,0,GUI_MSG_UPDATE_SOURCES);
     g_windowManager.SendThreadMessage(msg);
   }
@@ -711,12 +709,12 @@ CMediaManager::DiscInfo CMediaManager::GetDiscInfo(const std::string& mediaPath)
   if (mediaPath.empty())
     return info;
 
-  // Try finding VIDEO_TS/VIDEO_TS.IFO - this indicates a DVD disc is inserted 
+  // Try finding VIDEO_TS/VIDEO_TS.IFO - this indicates a DVD disc is inserted
   std::string pathVideoTS = URIUtils::AddFileToFolder(mediaPath, "VIDEO_TS");
   if (CFile::Exists(URIUtils::AddFileToFolder(pathVideoTS, "VIDEO_TS.IFO")))
   {
     info.type = "DVD";
-    // correct the filename if needed 
+    // correct the filename if needed
     if (StringUtils::StartsWith(pathVideoTS, "dvd://") ||
       StringUtils::StartsWith(pathVideoTS, "iso9660://"))
       pathVideoTS = g_mediaManager.TranslateDevicePath("");

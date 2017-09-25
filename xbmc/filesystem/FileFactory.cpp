@@ -48,9 +48,6 @@
 #ifdef HAS_FILESYSTEM_SFTP
 #include "SFTPFile.h"
 #endif
-#ifdef HAS_FILESYSTEM_NFS
-#include "NFSFile.h"
-#endif
 #if defined(TARGET_ANDROID)
 #include "AndroidAppFile.h"
 #endif
@@ -130,7 +127,7 @@ IFile* CFileFactory::CreateLoader(const CURL& url)
 #endif
     return new CWin32File();
   }
-#endif // TARGET_WINDOWS 
+#endif // TARGET_WINDOWS
 #if defined(HAS_FILESYSTEM_CDDA) && defined(HAS_DVD_DRIVE)
   else if (url.IsProtocol("cdda")) return new CFileCDDA();
 #endif
@@ -151,7 +148,7 @@ IFile* CFileFactory::CreateLoader(const CURL& url)
     if (url.IsProtocol("ftp")
     ||  url.IsProtocol("ftps")
     ||  url.IsProtocol("rss")
-    ||  url.IsProtocol("http") 
+    ||  url.IsProtocol("http")
     ||  url.IsProtocol("https")) return new CCurlFile();
     else if (url.IsProtocol("dav") || url.IsProtocol("davs")) return new CDAVFile();
 #ifdef HAS_FILESYSTEM_SFTP
@@ -164,9 +161,6 @@ IFile* CFileFactory::CreateLoader(const CURL& url)
 #else
     else if (url.IsProtocol("smb")) return new CSMBFile();
 #endif
-#endif
-#ifdef HAS_FILESYSTEM_NFS
-    else if (url.IsProtocol("nfs")) return new CNFSFile();
 #endif
 #ifdef HAS_UPNP
     else if (url.IsProtocol("upnp")) return new CUPnPFile();
