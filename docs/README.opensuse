@@ -53,7 +53,7 @@ libmysqlclient-devel libass-devel libmpeg2-devel libmad-devel libjpeg-devel libs
 libvorbis-devel libmodplug-devel libcurl-devel flac-devel libbz2-devel libtiff-devel lzo-devel libyajl-devel
 fribidi-devel sqlite3-devel libpng12-devel pcre-devel libcdio-devel libjasper-devel
 libmicrohttpd-devel libsmbclient-devel python-devel gperf nasm tinyxml-devel libtag-devel libbluray-devel
-libnfs-devel shairplay-devel swig libvdpau-devel libavahi-devel libcec-devel libdvdread-devel libva-devel libplist-devel
+shairplay-devel swig libvdpau-devel libavahi-devel libcec-devel libdvdread-devel libva-devel libplist-devel
 libxst-devel alsa-devel libpulse-devel libXrandr-devel libXrender-devel randrproto-devel renderproto-devel libssh-devel
 libudev-devel libpcap-devel libgudev-1_0-devel libcap-ng-devel libcap-devel ccache doxygen capi4linux-devel liblcms2-devel
 libunistring-devel
@@ -67,7 +67,7 @@ Build-Depends: autoconf, automake, autopoint, autotools-dev, cmake, curl,
   libcwiid-dev, libdbus-1-dev, libegl1-mesa-dev, libfontconfig-dev, libfreetype6-dev,
   libfribidi-dev, libgif-dev (>= 4.1.6), libgl1-mesa-dev | libgl-dev, libglu1-mesa-dev | libglu-dev,
   libiso9660-dev, libjpeg-dev, libltdl-dev, liblzo2-dev, libmicrohttpd-dev,
-  libmpcdec-dev, libmysqlclient-dev, libnfs-dev,
+  libmpcdec-dev, libmysqlclient-dev,
   libpcre3-dev, libplist-dev, libpng12-dev | libpng-dev, libpulse-dev,
   libshairplay-dev, libsmbclient-dev, libsqlite3-dev, libssh-dev, libssl-dev, libswscale-dev,
   libtag1-dev (>= 1.8), libtinyxml-dev (>= 2.6.2), libtool, libudev-dev,
