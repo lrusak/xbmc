@@ -262,7 +262,6 @@ lib/cpluff/stamp-h1
 /system/libeay32.dll
 /system/ssh.dll
 /system/sqlite3.dll
-/system/libnfs.dll
 /system/dnssd.dll
 /system/cec.dll
 /system/libxslt.dll
