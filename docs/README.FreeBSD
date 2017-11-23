@@ -52,7 +52,7 @@ gmake pkgconf rapidjson mesa-libs doxygen glproto dri2proto dri3proto libass \
 flac libcdio libcrossguid curl dbus libdcadec fontconfig freetype2 fribidi \
 libgcrypt gmp libgpg-error gnutls libidn libinotify lzo2 libmodplug libmpeg2 \
 libogg sqlite3 tiff tinyxml e2fsprogs-libuuid git libvorbis libxslt libplist \
-shairplay avahi-app libcec libbluray samba46 libnfs librtmp libva libvdpau \
+shairplay avahi-app libcec libbluray samba46 librtmp libva libvdpau \
 jpeg-turbo glew sdl_image  xrandr libedit  inputproto giflib m4 encodings \
 font-util mysql57-client xf86vidmodeproto cups python2 p8-platform libbdplus \
 libaacs sdl libudev-devd sndio ccache xorg-server gcc6 binutils libmicrohttpd
