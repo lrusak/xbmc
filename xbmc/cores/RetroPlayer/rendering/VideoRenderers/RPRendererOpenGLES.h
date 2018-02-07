@@ -63,6 +63,11 @@ namespace RETRO
     const unsigned int m_width;
     const unsigned int m_height;
 
+    GLuint m_pixeltype;
+    GLuint m_internalformat;
+    GLuint m_pixelformat;
+    GLuint m_bpp;
+
     const GLenum m_textureTarget = GL_TEXTURE_2D; //! @todo
     GLuint m_textureId = 0;
 

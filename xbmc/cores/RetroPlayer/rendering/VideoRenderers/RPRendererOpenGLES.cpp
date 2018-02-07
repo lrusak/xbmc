@@ -50,6 +50,51 @@ CRenderBufferOpenGLES::CRenderBufferOpenGLES(CRenderContext &context, AVPixelFor
   m_width(width),
   m_height(height)
 {
+  switch (m_format)
+  {
+    case AV_PIX_FMT_0RGB32:
+    {
+      m_pixeltype = GL_UNSIGNED_BYTE;
+      if (m_context.IsExtSupported("GL_EXT_texture_format_BGRA8888") ||
+          m_context.IsExtSupported("GL_IMG_texture_format_BGRA8888"))
+      {
+        m_internalformat = GL_BGRA_EXT;
+        m_pixelformat = GL_BGRA_EXT;
+      }
+      else if (m_context.IsExtSupported("GL_APPLE_texture_format_BGRA8888"))
+      {
+        // Apple's implementation does not conform to spec. Instead, they require
+        // differing format/internalformat, more like GL.
+        m_internalformat = GL_RGBA;
+        m_pixelformat = GL_BGRA_EXT;
+      }
+      else
+      {
+        m_internalformat = GL_RGBA;
+        m_pixelformat = GL_RGBA;
+      }
+      m_bpp = sizeof(uint32_t);
+      break;
+    }
+    case AV_PIX_FMT_RGB555:
+    {
+      m_pixeltype = GL_UNSIGNED_SHORT_5_5_5_1;
+      m_internalformat = GL_RGB;
+      m_pixelformat = GL_RGB;
+      m_bpp = sizeof(uint16_t);
+      break;
+    }
+    case AV_PIX_FMT_RGB565:
+    {
+      m_pixeltype = GL_UNSIGNED_SHORT_5_6_5;
+      m_internalformat = GL_RGB;
+      m_pixelformat = GL_RGB;
+      m_bpp = sizeof(uint16_t);
+      break;
+    }
+    default:
+      break; // we shouldn't even get this far if we are given an unsupported pixel format
+  }
 }
 
 CRenderBufferOpenGLES::~CRenderBufferOpenGLES()
@@ -63,7 +108,7 @@ void CRenderBufferOpenGLES::CreateTexture()
 
   glBindTexture(m_textureTarget, m_textureId);
 
-  glTexImage2D(m_textureTarget, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
+  glTexImage2D(m_textureTarget, 0, m_internalformat, m_width, m_height, 0, m_pixelformat, m_pixeltype, NULL);
 
   glTexParameteri(m_textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(m_textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -79,10 +124,35 @@ bool CRenderBufferOpenGLES::UploadTexture()
   glBindTexture(m_textureTarget, m_textureId);
 
   const int stride = GetFrameSize() / m_height;
-  const uint8_t* src = m_data.data();
 
-  for (unsigned int y = 0; y < m_height; ++y, src += stride)
-    glTexSubImage2D(m_textureTarget, 0, 0, y, m_width, 1, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, src);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, m_bpp);
+
+  if (m_bpp == 4 && m_pixelformat == GL_RGBA)
+  {
+    // XOR Swap RGBA -> BGRA
+    // GLES 2.0 doesn't support strided textures (unless GL_UNPACK_ROW_LENGTH_EXT is supported)
+    uint8_t* pixels = const_cast<uint8_t*>(m_data.data());
+    for (unsigned int y = 0; y < m_height; ++y, pixels += stride)
+    {
+      for (int x = 0; x < stride; x += 4)
+        std::swap(pixels[x], pixels[x + 2]);
+      glTexSubImage2D(m_textureTarget, 0, 0, y, m_width, 1, m_pixelformat, m_pixeltype, pixels);
+    }
+  }
+#ifdef GL_UNPACK_ROW_LENGTH_EXT
+  else if (m_context.IsExtSupported("GL_EXT_unpack_subimage"))
+  {
+    glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, stride / m_bpp);
+    glTexSubImage2D(m_textureTarget, 0, 0, 0, m_width, m_height, m_pixelformat, m_pixeltype, m_data.data());
+    glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, 0);
+  }
+#endif
+  else
+  {
+    uint8_t* pixels = const_cast<uint8_t*>(m_data.data());
+    for (unsigned int y = 0; y < m_height; ++y, pixels += stride)
+      glTexSubImage2D(m_textureTarget, 0, 0, y, m_width, 1, m_pixelformat, m_pixeltype, pixels);
+  }
 
   return true;
 }
@@ -139,9 +209,7 @@ CRPRendererOpenGLES::~CRPRendererOpenGLES()
 
 bool CRPRendererOpenGLES::ConfigureInternal()
 {
-  AVPixelFormat targetFormat = AV_PIX_FMT_RGB565LE;
-
-  static_cast<CRenderBufferPoolOpenGLES*>(m_bufferPool.get())->SetTargetFormat(targetFormat);
+  static_cast<CRenderBufferPoolOpenGLES*>(m_bufferPool.get())->SetTargetFormat(m_format);
 
   return true;
 }
