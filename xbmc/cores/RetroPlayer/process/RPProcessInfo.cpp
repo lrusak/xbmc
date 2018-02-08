@@ -51,7 +51,7 @@ CRPProcessInfo::CRPProcessInfo() :
 {
   for (auto &rendererFactory : m_rendererFactories)
   {
-    RenderBufferPoolVector bufferPools = rendererFactory->CreateBufferPools();
+    RenderBufferPoolVector bufferPools = rendererFactory->CreateBufferPools(*m_renderContext);
     m_renderBufferManager->RegisterPools(rendererFactory.get(), std::move(bufferPools));
   }
 

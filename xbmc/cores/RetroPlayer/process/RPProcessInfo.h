@@ -50,7 +50,7 @@ namespace RETRO
     virtual ~IRendererFactory() = default;
 
     virtual CRPBaseRenderer *CreateRenderer(const CRenderSettings &settings, CRenderContext &context, std::shared_ptr<IRenderBufferPool> bufferPool) = 0;
-    virtual RenderBufferPoolVector CreateBufferPools() = 0;
+    virtual RenderBufferPoolVector CreateBufferPools(CRenderContext &context) = 0;
   };
 
   class CRPProcessInfo

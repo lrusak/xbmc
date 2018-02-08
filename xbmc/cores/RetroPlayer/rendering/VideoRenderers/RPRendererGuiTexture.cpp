@@ -41,7 +41,7 @@ CRPBaseRenderer *CRendererFactoryGuiTexture::CreateRenderer(const CRenderSetting
   return new CRPRendererGuiTexture(settings, context, std::move(bufferPool));
 }
 
-RenderBufferPoolVector CRendererFactoryGuiTexture::CreateBufferPools()
+RenderBufferPoolVector CRendererFactoryGuiTexture::CreateBufferPools(CRenderContext &context)
 {
   return {
 #if !defined(HAS_DX)
