@@ -42,6 +42,53 @@ RenderBufferPoolVector CRendererFactoryOpenGL::CreateBufferPools(CRenderContext 
 CRenderBufferOpenGL::CRenderBufferOpenGL(CRenderContext &context, AVPixelFormat format, AVPixelFormat targetFormat, unsigned int width, unsigned int height) :
   CRenderBufferOpenGLES(context, format, targetFormat, width, height)
 {
+  switch (m_format)
+  {
+    case AV_PIX_FMT_0RGB32:
+    {
+      m_pixeltype = GL_UNSIGNED_BYTE;
+      m_internalformat = GL_RGBA;
+      m_pixelformat = GL_BGRA;
+      m_bpp = sizeof(uint32_t);
+      break;
+    }
+    case AV_PIX_FMT_RGB555:
+    {
+      m_pixeltype = GL_UNSIGNED_SHORT_5_5_5_1;
+      m_internalformat = GL_RGB;
+      m_pixelformat = GL_RGB;
+      m_bpp = sizeof(uint16_t);
+      break;
+    }
+    case AV_PIX_FMT_RGB565:
+    {
+      m_pixeltype = GL_UNSIGNED_SHORT_5_6_5;
+      m_internalformat = GL_RGB;
+      m_pixelformat = GL_RGB;
+      m_bpp = sizeof(uint16_t);
+      break;
+    }
+    default:
+      break; // we shouldn't even get this far if we are given an unsupported pixel format
+  }
+}
+
+bool CRenderBufferOpenGL::UploadTexture()
+{
+  if (!glIsTexture(m_textureId))
+    CreateTexture();
+
+  glBindTexture(m_textureTarget, m_textureId);
+
+  const int stride = GetFrameSize() / m_height;
+
+  glPixelStorei(GL_UNPACK_ALIGNMENT, m_bpp);
+
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, stride / m_bpp);
+  glTexSubImage2D(m_textureTarget, 0, 0, 0, m_width, m_height, m_pixelformat, m_pixeltype, m_data.data());
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+
+  return true;
 }
 
 // --- CRenderBufferPoolOpenGL -------------------------------------------------

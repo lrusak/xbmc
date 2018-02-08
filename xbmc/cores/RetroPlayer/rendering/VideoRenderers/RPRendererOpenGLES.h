@@ -71,8 +71,9 @@ namespace RETRO
     const GLenum m_textureTarget = GL_TEXTURE_2D; //! @todo
     GLuint m_textureId = 0;
 
-  private:
     void CreateTexture();
+
+  private:
     void DeleteTexture();
   };
 

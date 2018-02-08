@@ -45,6 +45,9 @@ namespace RETRO
   public:
     CRenderBufferOpenGL(CRenderContext &context, AVPixelFormat format, AVPixelFormat targetFormat, unsigned int width, unsigned int height);
     ~CRenderBufferOpenGL() override = default;
+
+    // implementation of IRenderBuffer via CRenderBufferOpenGLES
+    bool UploadTexture() override;
   };
 
   class CRenderBufferPoolOpenGL : public CRenderBufferPoolOpenGLES
