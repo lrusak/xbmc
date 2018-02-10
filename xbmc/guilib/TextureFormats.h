@@ -21,7 +21,6 @@
 #pragma once
 
 #define XB_FMT_MASK   0xffff ///< mask for format info - other flags are outside this
-#define XB_FMT_DXT_MASK   15
 #define XB_FMT_UNKNOWN     0
 #define XB_FMT_DXT1        1
 #define XB_FMT_DXT3        2

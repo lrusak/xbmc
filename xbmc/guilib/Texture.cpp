@@ -68,21 +68,12 @@ void CBaseTexture::Allocate(unsigned int width, unsigned int height, unsigned in
   m_textureWidth = m_imageWidth;
   m_textureHeight = m_imageHeight;
 
-  if (m_format & XB_FMT_DXT_MASK)
-    while (GetPitch() < CServiceBroker::GetRenderSystem().GetMinDXTPitch())
-      m_textureWidth += GetBlockSize();
-
-  if (!CServiceBroker::GetRenderSystem().SupportsNPOT((m_format & XB_FMT_DXT_MASK) != 0))
+  if (!CServiceBroker::GetRenderSystem().SupportsNPOT())
   {
     m_textureWidth = PadPow2(m_textureWidth);
     m_textureHeight = PadPow2(m_textureHeight);
   }
-  if (m_format & XB_FMT_DXT_MASK)
-  { // DXT textures must be a multiple of 4 in width and height
-    m_textureWidth = ((m_textureWidth + 3) / 4) * 4;
-    m_textureHeight = ((m_textureHeight + 3) / 4) * 4;
-  }
-  else
+
   {
     // align all textures so that they have an even width
     // in some circumstances when we downsize a thumbnail
@@ -121,9 +112,6 @@ void CBaseTexture::Allocate(unsigned int width, unsigned int height, unsigned in
 void CBaseTexture::Update(unsigned int width, unsigned int height, unsigned int pitch, unsigned int format, const unsigned char *pixels, bool loadToGPU)
 {
   if (pixels == NULL)
-    return;
-
-  if (format & XB_FMT_DXT_MASK)
     return;
 
   Allocate(width, height, format);
