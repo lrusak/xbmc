@@ -59,35 +59,6 @@ CRenderBufferOpenGL::CRenderBufferOpenGL(CRenderContext &context,
                         width,
                         height)
 {
-  switch (m_format)
-  {
-    case AV_PIX_FMT_0RGB32:
-    {
-      m_pixeltype = GL_UNSIGNED_BYTE;
-      m_internalformat = GL_RGBA;
-      m_pixelformat = GL_BGRA;
-      m_bpp = sizeof(uint32_t);
-      break;
-    }
-    case AV_PIX_FMT_RGB555:
-    {
-      m_pixeltype = GL_UNSIGNED_SHORT_5_5_5_1;
-      m_internalformat = GL_RGB;
-      m_pixelformat = GL_RGB;
-      m_bpp = sizeof(uint16_t);
-      break;
-    }
-    case AV_PIX_FMT_RGB565:
-    {
-      m_pixeltype = GL_UNSIGNED_SHORT_5_6_5;
-      m_internalformat = GL_RGB;
-      m_pixelformat = GL_RGB;
-      m_bpp = sizeof(uint16_t);
-      break;
-    }
-    default:
-      break; // we shouldn't even get this far if we are given an unsupported pixel format
-  }
 }
 
 bool CRenderBufferOpenGL::UploadTexture()
