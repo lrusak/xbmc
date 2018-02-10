@@ -43,7 +43,13 @@ namespace RETRO
   class CRenderBufferOpenGL : public CRenderBufferOpenGLES
   {
   public:
-    CRenderBufferOpenGL(CRenderContext &context, AVPixelFormat format, AVPixelFormat targetFormat, unsigned int width, unsigned int height);
+    CRenderBufferOpenGL(CRenderContext &context,
+                        GLuint pixeltype,
+                        GLuint internalformat,
+                        GLuint pixelformat,
+                        GLuint bpp,
+                        unsigned int width,
+                        unsigned int height);
     ~CRenderBufferOpenGL() override = default;
 
     // implementation of IRenderBuffer via CRenderBufferOpenGLES
@@ -56,8 +62,10 @@ namespace RETRO
     CRenderBufferPoolOpenGL(CRenderContext &context);
     ~CRenderBufferPoolOpenGL() override = default;
 
+  protected:
     // implementation of CBaseRenderBufferPool via CRenderBufferPoolOpenGLES
     IRenderBuffer *CreateRenderBuffer(void *header = nullptr) override;
+    bool ConfigureInternal();
   };
 
   class CRPRendererOpenGL : public CRPRendererOpenGLES

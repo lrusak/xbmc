@@ -43,58 +43,21 @@ RenderBufferPoolVector CRendererFactoryOpenGLES::CreateBufferPools(CRenderContex
 
 // --- CRenderBufferOpenGLES ---------------------------------------------------
 
-CRenderBufferOpenGLES::CRenderBufferOpenGLES(CRenderContext &context, AVPixelFormat format, AVPixelFormat targetFormat, unsigned int width, unsigned int height) :
+CRenderBufferOpenGLES::CRenderBufferOpenGLES(CRenderContext &context,
+                                             GLuint pixeltype,
+                                             GLuint internalformat,
+                                             GLuint pixelformat,
+                                             GLuint bpp,
+                                             unsigned int width,
+                                             unsigned int height) :
   m_context(context),
-  m_format(format),
-  m_targetFormat(targetFormat),
+  m_pixeltype(pixeltype),
+  m_internalformat(internalformat),
+  m_pixelformat(pixelformat),
+  m_bpp(bpp),
   m_width(width),
   m_height(height)
 {
-  switch (m_format)
-  {
-    case AV_PIX_FMT_0RGB32:
-    {
-      m_pixeltype = GL_UNSIGNED_BYTE;
-      if (m_context.IsExtSupported("GL_EXT_texture_format_BGRA8888") ||
-          m_context.IsExtSupported("GL_IMG_texture_format_BGRA8888"))
-      {
-        m_internalformat = GL_BGRA_EXT;
-        m_pixelformat = GL_BGRA_EXT;
-      }
-      else if (m_context.IsExtSupported("GL_APPLE_texture_format_BGRA8888"))
-      {
-        // Apple's implementation does not conform to spec. Instead, they require
-        // differing format/internalformat, more like GL.
-        m_internalformat = GL_RGBA;
-        m_pixelformat = GL_BGRA_EXT;
-      }
-      else
-      {
-        m_internalformat = GL_RGBA;
-        m_pixelformat = GL_RGBA;
-      }
-      m_bpp = sizeof(uint32_t);
-      break;
-    }
-    case AV_PIX_FMT_RGB555:
-    {
-      m_pixeltype = GL_UNSIGNED_SHORT_5_5_5_1;
-      m_internalformat = GL_RGB;
-      m_pixelformat = GL_RGB;
-      m_bpp = sizeof(uint16_t);
-      break;
-    }
-    case AV_PIX_FMT_RGB565:
-    {
-      m_pixeltype = GL_UNSIGNED_SHORT_5_6_5;
-      m_internalformat = GL_RGB;
-      m_pixelformat = GL_RGB;
-      m_bpp = sizeof(uint16_t);
-      break;
-    }
-    default:
-      break; // we shouldn't even get this far if we are given an unsupported pixel format
-  }
 }
 
 CRenderBufferOpenGLES::~CRenderBufferOpenGLES()
@@ -182,17 +145,64 @@ bool CRenderBufferPoolOpenGLES::IsCompatible(const CRenderVideoSettings &renderS
 
 IRenderBuffer *CRenderBufferPoolOpenGLES::CreateRenderBuffer(void *header /* = nullptr */)
 {
-  return new CRenderBufferOpenGLES(m_context, m_format, m_targetFormat, m_width, m_height);
+  return new CRenderBufferOpenGLES(m_context,
+                                   m_pixeltype,
+                                   m_internalformat,
+                                   m_pixelformat,
+                                   m_bpp,
+                                   m_width,
+                                   m_height);
 }
 
-bool CRenderBufferPoolOpenGLES::SetTargetFormat(AVPixelFormat targetFormat)
+bool CRenderBufferPoolOpenGLES::ConfigureInternal()
 {
-  if (m_targetFormat != AV_PIX_FMT_NONE)
-    return false; // Already configured
+  switch (m_format)
+  {
+  case AV_PIX_FMT_0RGB32:
+  {
+    m_pixeltype = GL_UNSIGNED_BYTE;
+    if (m_context.IsExtSupported("GL_EXT_texture_format_BGRA8888") ||
+        m_context.IsExtSupported("GL_IMG_texture_format_BGRA8888"))
+    {
+      m_internalformat = GL_BGRA_EXT;
+      m_pixelformat = GL_BGRA_EXT;
+    }
+    else if (m_context.IsExtSupported("GL_APPLE_texture_format_BGRA8888"))
+    {
+      // Apple's implementation does not conform to spec. Instead, they require
+      // differing format/internalformat, more like GL.
+      m_internalformat = GL_RGBA;
+      m_pixelformat = GL_BGRA_EXT;
+    }
+    else
+    {
+      m_internalformat = GL_RGBA;
+      m_pixelformat = GL_RGBA;
+    }
+    m_bpp = sizeof(uint32_t);
+    return true;
+  }
+  case AV_PIX_FMT_RGB555:
+  {
+    m_pixeltype = GL_UNSIGNED_SHORT_5_5_5_1;
+    m_internalformat = GL_RGB;
+    m_pixelformat = GL_RGB;
+    m_bpp = sizeof(uint16_t);
+    return true;
+  }
+  case AV_PIX_FMT_RGB565:
+  {
+    m_pixeltype = GL_UNSIGNED_SHORT_5_6_5;
+    m_internalformat = GL_RGB;
+    m_pixelformat = GL_RGB;
+    m_bpp = sizeof(uint16_t);
+    return true;
+  }
+  default:
+    break;
+  }
 
-  m_targetFormat = targetFormat;
-
-  return true;
+  return false;
 }
 
 // --- CRPRendererOpenGLES -----------------------------------------------------
@@ -205,13 +215,6 @@ CRPRendererOpenGLES::CRPRendererOpenGLES(const CRenderSettings &renderSettings, 
 CRPRendererOpenGLES::~CRPRendererOpenGLES()
 {
   Deinitialize();
-}
-
-bool CRPRendererOpenGLES::ConfigureInternal()
-{
-  static_cast<CRenderBufferPoolOpenGLES*>(m_bufferPool.get())->SetTargetFormat(m_format);
-
-  return true;
 }
 
 void CRPRendererOpenGLES::RenderInternal(bool clear, uint8_t alpha)

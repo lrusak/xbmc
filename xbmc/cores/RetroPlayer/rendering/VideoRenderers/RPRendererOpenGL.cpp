@@ -39,38 +39,21 @@ RenderBufferPoolVector CRendererFactoryOpenGL::CreateBufferPools(CRenderContext 
 
 // --- CRenderBufferOpenGL -----------------------------------------------------
 
-CRenderBufferOpenGL::CRenderBufferOpenGL(CRenderContext &context, AVPixelFormat format, AVPixelFormat targetFormat, unsigned int width, unsigned int height) :
-  CRenderBufferOpenGLES(context, format, targetFormat, width, height)
+CRenderBufferOpenGL::CRenderBufferOpenGL(CRenderContext &context,
+                                         GLuint pixeltype,
+                                         GLuint internalformat,
+                                         GLuint pixelformat,
+                                         GLuint bpp,
+                                         unsigned int width,
+                                         unsigned int height) :
+  CRenderBufferOpenGLES(context,
+                        pixeltype,
+                        internalformat,
+                        pixelformat,
+                        bpp,
+                        width,
+                        height)
 {
-  switch (m_format)
-  {
-    case AV_PIX_FMT_0RGB32:
-    {
-      m_pixeltype = GL_UNSIGNED_BYTE;
-      m_internalformat = GL_RGBA;
-      m_pixelformat = GL_BGRA;
-      m_bpp = sizeof(uint32_t);
-      break;
-    }
-    case AV_PIX_FMT_RGB555:
-    {
-      m_pixeltype = GL_UNSIGNED_SHORT_5_5_5_1;
-      m_internalformat = GL_RGB;
-      m_pixelformat = GL_RGB;
-      m_bpp = sizeof(uint16_t);
-      break;
-    }
-    case AV_PIX_FMT_RGB565:
-    {
-      m_pixeltype = GL_UNSIGNED_SHORT_5_6_5;
-      m_internalformat = GL_RGB;
-      m_pixelformat = GL_RGB;
-      m_bpp = sizeof(uint16_t);
-      break;
-    }
-    default:
-      break; // we shouldn't even get this far if we are given an unsupported pixel format
-  }
 }
 
 bool CRenderBufferOpenGL::UploadTexture()
@@ -100,7 +83,49 @@ CRenderBufferPoolOpenGL::CRenderBufferPoolOpenGL(CRenderContext &context)
 
 IRenderBuffer *CRenderBufferPoolOpenGL::CreateRenderBuffer(void *header /* = nullptr */)
 {
-  return new CRenderBufferOpenGL(m_context, m_format, m_targetFormat, m_width, m_height);
+  return new CRenderBufferOpenGL(m_context,
+                                 m_pixeltype,
+                                 m_internalformat,
+                                 m_pixelformat,
+                                 m_bpp,
+                                 m_width,
+                                 m_height);
+}
+
+bool CRenderBufferPoolOpenGL::ConfigureInternal()
+{
+  // Configure CRenderBufferPoolOpenGLES
+  switch (m_format)
+  {
+  case AV_PIX_FMT_0RGB32:
+  {
+    m_pixeltype = GL_UNSIGNED_BYTE;
+    m_internalformat = GL_RGBA;
+    m_pixelformat = GL_BGRA;
+    m_bpp = sizeof(uint32_t);
+    return true;
+  }
+  case AV_PIX_FMT_RGB555:
+  {
+    m_pixeltype = GL_UNSIGNED_SHORT_5_5_5_1;
+    m_internalformat = GL_RGB;
+    m_pixelformat = GL_RGB;
+    m_bpp = sizeof(uint16_t);
+    return true;
+  }
+  case AV_PIX_FMT_RGB565:
+  {
+    m_pixeltype = GL_UNSIGNED_SHORT_5_6_5;
+    m_internalformat = GL_RGB;
+    m_pixelformat = GL_RGB;
+    m_bpp = sizeof(uint16_t);
+    return true;
+  }
+  default:
+    break;
+  }
+
+  return false;
 }
 
 // --- CRPRendererOpenGL -------------------------------------------------------
