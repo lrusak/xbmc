@@ -29,6 +29,8 @@
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
+
 using namespace KODI;
 using namespace RETRO;
 
