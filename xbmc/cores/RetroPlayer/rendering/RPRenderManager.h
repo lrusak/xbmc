@@ -89,6 +89,8 @@ public:
                 unsigned int orientationDegCW);
   void Flush();
 
+  uintptr_t GetCurrentFramebuffer();
+
   // Functions called from the player
   void SetSpeed(double speed);
 

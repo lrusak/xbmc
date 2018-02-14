@@ -11,6 +11,8 @@
 #include "GameClientSubsystem.h"
 #include "addons/binary-addons/AddonDll.h"
 #include "addons/kodi-dev-kit/include/kodi/addon-instance/Game.h"
+#include "games/addons/streams/GameClientStreamHwFramebuffer.h"
+#include "games/GameTypes.h"
 #include "threads/CriticalSection.h"
 
 #include <atomic>
@@ -40,8 +42,7 @@ class IGameInputCallback;
  * \ingroup games
  * \brief Helper class to have "C" struct created before other parts becomes his pointer.
  */
-class CGameClientStruct
-{
+class CGameClient : public IHwFramebufferCallback
 public:
   CGameClientStruct()
   {
@@ -142,6 +143,9 @@ public:
   size_t SerializeSize() const { return m_serializeSize; }
   bool Serialize(uint8_t* data, size_t size);
   bool Deserialize(const uint8_t* data, size_t size);
+
+  // Implementation of IHwFramebufferCallback
+  void HardwareContextReset() override;
 
   /*!
    * @brief To get the interface table used between addon and kodi
