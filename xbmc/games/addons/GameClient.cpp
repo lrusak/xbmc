@@ -229,6 +229,11 @@ bool CGameClient::OpenFile(const CFileItem& file,
 
   GAME_ERROR error = GAME_ERROR_FAILED;
 
+  if (!InitializeGameplay(file.GetPath(), streamManager, input))
+  {
+    return false;
+  }
+
   try
   {
     LogError(error = m_struct.toAddon->LoadGame(&m_struct, path.c_str()), "LoadGame()");
@@ -244,10 +249,10 @@ bool CGameClient::OpenFile(const CFileItem& file,
     return false;
   }
 
-  if (!InitializeGameplay(file.GetPath(), streamManager, input))
-  {
-    return false;
-  }
+  // if (!InitializeGameplay(file.GetPath(), streamManager, input))
+  // {
+  //   return false;
+  // }
 
   return true;
 }
@@ -580,6 +585,14 @@ void CGameClient::LogException(const char* strFunctionName) const
   CLog::Log(LOGERROR, "Please contact the developer of this add-on: {}", Author());
 }
 
+void CGameClient::HardwareContextReset()
+{
+  try
+  {
+    LogError(m_struct.toAddon->HwContextReset(&m_struct), "HwContextReset()");
+  }
+  catch (...) { LogException("HwContextReset()"); }
+}
 
 void CGameClient::cb_close_game(KODI_HANDLE kodiInstance)
 {
@@ -665,8 +678,7 @@ game_proc_address_t CGameClient::cb_hw_get_proc_address(KODI_HANDLE kodiInstance
   if (!gameClient)
     return nullptr;
 
-  //! @todo
-  return nullptr;
+  return gameClient->Streams().GetHwProcedureAddress(sym);
 }
 
 bool CGameClient::cb_input_event(KODI_HANDLE kodiInstance, const game_input_event* event)
