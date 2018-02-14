@@ -105,6 +105,14 @@ public:
   bool Serialize(uint8_t* data, size_t size);
   bool Deserialize(const uint8_t* data, size_t size);
 
+  // OpenGL HW Rendering
+  void EnableHardwareRendering(const game_hw_info *hw_info);
+  uintptr_t HwGetCurrentFramebuffer();
+  game_proc_address_t HwGetProcAddress(const char *sym);
+  void RenderFrame();
+  void HwContextReset();
+  void CreateHwRenderContext();
+
   /*!
     * @brief To get the interface table used between addon and kodi
     * @todo This function becomes removed after old callback library system

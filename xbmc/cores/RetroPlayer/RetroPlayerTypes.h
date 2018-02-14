@@ -30,4 +30,9 @@ namespace RETRO
   using RenderBufferPoolPtr = std::shared_ptr<IRenderBufferPool>;
   using RenderBufferPoolVector = std::vector<RenderBufferPoolPtr>;
 }
+
+namespace GAME
+{
+  typedef void (*RetroGLProcAddress)(void);
+}
 }

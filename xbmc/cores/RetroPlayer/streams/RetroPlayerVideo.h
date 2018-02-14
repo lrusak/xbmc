@@ -20,10 +20,13 @@
 #pragma once
 
 #include "IRetroPlayerStream.h"
+#include "games/addons/GameClientCallbacks.h" //! @todo
 
 extern "C" {
 #include "libavutil/pixfmt.h"
 }
+
+#include <memory> //! @todo
 
 namespace KODI
 {
@@ -75,6 +78,9 @@ namespace RETRO
 
     // Stream properties
     bool m_bOpen = false;
+
+    // Hardware rendering properties
+    std::shared_ptr<GAME::IGameRenderingCallback> m_hardwareRendering; //! @todo
   };
 }
 }

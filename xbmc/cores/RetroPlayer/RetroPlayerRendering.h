@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2018 Team Kodi
+ *      Copyright (C) 2012-2017 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -19,37 +19,39 @@
  */
 #pragma once
 
-#include "IStreamManager.h"
+#include "games/addons/GameClientCallbacks.h"
+
+#include "system_gl.h"
+
+#include <EGL/egl.h>
 
 namespace KODI
 {
 namespace RETRO
 {
-  class CRetroPlayerAudio;
   class CRPProcessInfo;
   class CRPRenderManager;
 
-  class CRPStreamManager : public IStreamManager
+  class CRetroPlayerRendering : public GAME::IGameRenderingCallback
   {
   public:
-    CRPStreamManager(CRPRenderManager& renderManager, CRPProcessInfo& processInfo);
-    ~CRPStreamManager() override = default;
+    CRetroPlayerRendering(CRPRenderManager& m_renderManager, CRPProcessInfo& m_processInfo);
 
-    void EnableAudio(bool bEnable);
+    ~CRetroPlayerRendering() override = default;
 
-    // Implementation of IStreamManager
-    StreamPtr CreateStream(StreamType streamType) override;
-    void CloseStream(StreamPtr stream) override;
-
-    GAME::IGameRenderingCallback* HardwareRendering();
+    // implementation of IGameRenderingCallback
+    bool Create() override;
+    void Destroy() override;
+    uintptr_t GetCurrentFramebuffer() override;
+    GAME::RetroGLProcAddress GetProcAddress(const char *sym) override { return eglGetProcAddress(sym); }
+    void RenderFrame() override;
 
   private:
     // Construction parameters
     CRPRenderManager& m_renderManager;
-    CRPProcessInfo& m_processInfo;
-
-    // Stream parameters
-    CRetroPlayerAudio* m_audioStream = nullptr;
+    CRPProcessInfo&   m_processInfo;
+    unsigned int m_width;
+    unsigned int m_height;
   };
 }
 }

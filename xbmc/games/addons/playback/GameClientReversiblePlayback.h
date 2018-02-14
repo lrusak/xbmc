@@ -39,6 +39,7 @@ namespace GAME
 
   class CGameClientReversiblePlayback : public IGameClientPlayback,
                                         public IGameLoopCallback,
+                                        public IHardwareRendering,
                                         public Observer
   {
   public:
@@ -62,6 +63,10 @@ namespace GAME
     // implementation of IGameLoopCallback
     virtual void FrameEvent() override;
     virtual void RewindEvent() override;
+
+    // implementation of IHardwareRendering
+    virtual void HwContextReset() override;
+    virtual void CreateHwRenderContext() override;
 
     // implementation of Observer
     virtual void Notify(const Observable &obs, const ObservableMessage msg) override;

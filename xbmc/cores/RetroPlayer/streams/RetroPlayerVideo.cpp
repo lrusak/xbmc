@@ -18,6 +18,7 @@
  *
  */
 
+#include "RetroPlayerRendering.h"
 #include "RetroPlayerVideo.h"
 #include "cores/RetroPlayer/process/RPProcessInfo.h"
 #include "cores/RetroPlayer/rendering/RenderTranslator.h"
@@ -116,4 +117,12 @@ void CRetroPlayerVideo::CloseStream()
     m_renderManager.Flush();
     m_bOpen = false;
   }
+}
+
+GAME::IGameRenderingCallback* CRetroPlayerVideo::HardwareRendering()
+{
+  if (!m_hardwareRendering)
+    m_hardwareRendering.reset(new CRetroPlayerRendering(m_renderManager, m_processInfo));
+
+  return m_hardwareRendering.get();
 }

@@ -43,10 +43,19 @@ namespace GAME
     virtual void RewindEvent() = 0;
   };
 
+  class IHardwareRendering
+  {
+  public:
+    virtual ~IHardwareRendering() = default;
+
+    virtual void HwContextReset() = 0;
+    virtual void CreateHwRenderContext() = 0;
+  };
+
   class CGameLoop : protected CThread
   {
   public:
-    CGameLoop(IGameLoopCallback* callback, double fps);
+    CGameLoop(IGameLoopCallback* callback, IHardwareRendering* hwRenderCallback, double fps);
 
     virtual ~CGameLoop();
 
@@ -69,6 +78,7 @@ namespace GAME
     double NowMs() const;
 
     IGameLoopCallback* const m_callback;
+    IHardwareRendering* const m_hwRenderCallback;
     const double             m_fps;
     double                   m_speedFactor;
     bool                     m_bPauseAsync = false;

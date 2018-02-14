@@ -42,7 +42,7 @@ using namespace GAME;
 
 CGameClientReversiblePlayback::CGameClientReversiblePlayback(CGameClient* gameClient, double fps, size_t serializeSize) :
   m_gameClient(gameClient),
-  m_gameLoop(this, fps),
+  m_gameLoop(this, this, fps),
   m_savestateWriter(new CSavestateWriter),
   m_savestateReader(new CSavestateReader),
   m_totalFrameCount(0),
@@ -283,6 +283,16 @@ void CGameClientReversiblePlayback::UpdatePlaybackStats()
   m_playTimeMs = MathUtils::round_int(1000.0 * played / m_gameLoop.FPS());
   m_totalTimeMs = MathUtils::round_int(1000.0 * total / m_gameLoop.FPS());
   m_cacheTimeMs = MathUtils::round_int(1000.0 * cached / m_gameLoop.FPS());
+}
+
+void CGameClientReversiblePlayback::HwContextReset()
+{
+  m_gameClient->HwContextReset();
+}
+
+void CGameClientReversiblePlayback::CreateHwRenderContext()
+{
+  m_gameClient->CreateHwRenderContext();
 }
 
 void CGameClientReversiblePlayback::Notify(const Observable &obs, const ObservableMessage msg)
