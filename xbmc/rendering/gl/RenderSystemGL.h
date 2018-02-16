@@ -71,7 +71,7 @@ public:
   void RestoreHardwareTransform() override;
   void SetStereoMode(RENDER_STEREO_MODE mode, RENDER_STEREO_VIEW view) override;
   bool SupportsStereo(RENDER_STEREO_MODE mode) const override;
-  bool SupportsNPOT() const override;
+  bool SupportsNPOT(bool dxt) const override;
 
   bool TestRender() override;
 

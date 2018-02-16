@@ -86,7 +86,7 @@ public:
   const std::string& GetRenderVendor() const { return m_RenderVendor; }
   const std::string& GetRenderRenderer() const { return m_RenderRenderer; }
   const std::string& GetRenderVersionString() const { return m_RenderVersion; }
-  virtual bool SupportsNPOT() const;
+  virtual bool SupportsNPOT(bool dxt) const;
   virtual bool SupportsStereo(RENDER_STEREO_MODE mode) const;
   unsigned int GetMaxTextureSize() const { return m_maxTextureSize; }
   unsigned int GetMinDXTPitch() const { return m_minDXTPitch; }
