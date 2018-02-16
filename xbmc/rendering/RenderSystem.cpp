@@ -45,8 +45,11 @@ void CRenderSystemBase::GetRenderVersion(unsigned int& major, unsigned int& mino
   minor = m_RenderVersionMinor;
 }
 
-bool CRenderSystemBase::SupportsNPOT() const
+bool CRenderSystemBase::SupportsNPOT(bool dxt) const
 {
+  if (dxt)
+    return false;
+
   return true;
 }
 

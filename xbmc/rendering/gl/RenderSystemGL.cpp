@@ -271,7 +271,7 @@ bool CRenderSystemGL::IsExtSupported(const char* extension) const
   return m_RenderExtensions.find(name) != std::string::npos;
 }
 
-bool CRenderSystemGL::SupportsNPOT() const
+bool CRenderSystemGL::SupportsNPOT(bool dxt) const
 {
   return m_supportsNPOT;
 }

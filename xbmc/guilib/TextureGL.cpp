@@ -140,9 +140,18 @@ void CGLTexture::LoadToGPU()
     break;
   }
 
-  glTexImage2D(GL_TEXTURE_2D, 0, numcomponents,
-               m_textureWidth, m_textureHeight, 0,
-               format, GL_UNSIGNED_BYTE, m_pixels);
+  if ((m_format & XB_FMT_DXT_MASK) == 0)
+  {
+    glTexImage2D(GL_TEXTURE_2D, 0, numcomponents,
+                 m_textureWidth, m_textureHeight, 0,
+                 format, GL_UNSIGNED_BYTE, m_pixels);
+  }
+  else
+  {
+    glCompressedTexImage2D(GL_TEXTURE_2D, 0, format,
+                           m_textureWidth, m_textureHeight, 0,
+                           GetPitch() * GetRows(), m_pixels);
+  }
 
   if (IsMipmapped() && m_isOglVersion3orNewer)
   {
