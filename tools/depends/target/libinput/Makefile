@@ -6,6 +6,7 @@ LIBNAME=libinput
 VERSION=1.10.3
 SOURCE=$(LIBNAME)-$(VERSION)
 ARCHIVE=$(SOURCE).tar.xz
+BASE_URL=https://www.freedesktop.org/software/$(LIBNAME)
 
 export PKG_CONFIG_LIBDIR=$(PREFIX)/lib/pkgconfig
 export CC CFLAGS CXXFLAGS

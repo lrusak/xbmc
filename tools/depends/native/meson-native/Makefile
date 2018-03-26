@@ -7,6 +7,7 @@ LIBNAME=meson
 VERSION=0.45.1
 SOURCE=$(LIBNAME)-$(VERSION)
 ARCHIVE=$(SOURCE).tar.gz
+BASE_URL=https://github.com/mesonbuild/meson/releases/download/$(VERSION)
 
 LIBDYLIB=$(PLATFORM)/build
 

@@ -7,6 +7,7 @@ LIBNAME=ninja
 VERSION=1.8.2
 SOURCE=$(LIBNAME)-$(VERSION)
 ARCHIVE=$(SOURCE).tar.gz
+BASE_URL=https://github.com/ninja-build/ninja/archive/v1.8.2.tar.gz?
 
 LIBDYLIB=$(PLATFORM)/ninja
 
