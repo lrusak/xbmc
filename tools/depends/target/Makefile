@@ -74,7 +74,7 @@ ifeq ($(OS),linux)
   ALSA_LIB = alsa-lib
   CROSSGUID_DEPS = libuuid
   ifeq ($(TARGET_PLATFORM),$(filter $(TARGET_PLATFORM),raspberry-pi aml gbm))
-    DEPENDS += libevdev libinput libudev mtdev
+    DEPENDS += libevdev libinput libudev libxkbcommon mtdev
   endif
 endif
 
