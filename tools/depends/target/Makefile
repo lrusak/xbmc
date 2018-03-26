@@ -74,7 +74,7 @@ ifeq ($(OS),linux)
   ALSA_LIB = alsa-lib
   CROSSGUID_DEPS = libuuid
   ifeq ($(TARGET_PLATFORM),$(filter $(TARGET_PLATFORM),raspberry-pi aml gbm))
-    DEPENDS += libudev
+    DEPENDS += libevdev libudev
   endif
 endif
 
@@ -97,6 +97,7 @@ libmicrohttpd: gnutls libgcrypt libgpg-error
 python27: expat gettext libxml2 sqlite3 openssl libffi
 libcdio: $(ICONV)
 libcdio-gplv3: $(ICONV)
+libevdev: libudev
 libplist: $(ZLIB)
 libbluray: $(ICONV) libxml2
 libssh: libgcrypt openssl $(ZLIB)
