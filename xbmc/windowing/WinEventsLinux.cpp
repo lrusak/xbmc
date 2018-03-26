@@ -19,63 +19,41 @@
  */
 
 #include "WinEventsLinux.h"
-#include "WinEvents.h"
-#include "XBMC_events.h"
-#include "input/XBMC_keysym.h"
+
 #include "Application.h"
-#include "input/mouse/MouseStat.h"
 #include "utils/log.h"
-#include "powermanagement/PowerManager.h"
-#include "peripherals/Peripherals.h"
-#include "ServiceBroker.h"
-
-
-bool CWinEventsLinux::m_initialized = false;
-CLinuxInputDevices CWinEventsLinux::m_devices;
 
 CWinEventsLinux::CWinEventsLinux()
+  : m_libinput(new CLibInputHandler(this))
 {
-}
-
-void CWinEventsLinux::RefreshDevices()
-{
-  m_devices.InitAvailable();
-}
-
-bool CWinEventsLinux::IsRemoteLowBattery()
-{
-  return m_devices.IsRemoteLowBattery();
 }
 
 bool CWinEventsLinux::MessagePump()
 {
-  if (!m_initialized)
+  m_libinput->OnReadyRead();
+
+  while (GetQueueSize())
   {
-    CServiceBroker::GetPeripherals().RegisterObserver(this);
-    m_devices.InitAvailable();
-    m_checkHotplug = std::unique_ptr<CLinuxInputDevicesCheckHotplugged>(new CLinuxInputDevicesCheckHotplugged(m_devices));
-    m_initialized = true;
+    XBMC_Event e;
+    {
+      std::lock_guard<decltype(m_mutex)> event_lock(m_mutex);
+      e = m_events.front();
+      m_events.pop();
+    }
+    g_application.OnEvent(e);
   }
 
-  bool ret = false;
-  XBMC_Event event = {0};
-  while (1)
-  {
-    event = m_devices.ReadEvent();
-    if (event.type != XBMC_NOEVENT)
-    {
-      ret |= g_application.OnEvent(event);
-    }
-    else
-    {
-      break;
-    }
-  }
-
-  return ret;
+  return true;
 }
 
-void CWinEventsLinux::MessagePush(XBMC_Event *ev)
+size_t CWinEventsLinux::GetQueueSize()
 {
-  g_application.OnEvent(*ev);
+  std::lock_guard<decltype(m_mutex)> event_lock(m_mutex);
+  return m_events.size();
+}
+
+void CWinEventsLinux::MessagePush(XBMC_Event* ev)
+{
+  std::lock_guard<decltype(m_mutex)> event_lock(m_mutex);
+  m_events.push(*ev);
 }
