@@ -1,0 +1,11 @@
+--- a/meson.build
++++ b/meson.build
+@@ -209,7 +209,7 @@
+ 
+ mapfile = join_paths(meson.source_root(), 'src', 'libinput.sym')
+ version_flag = '-Wl,--version-script,@0@'.format(mapfile)
+-lib_libinput = shared_library('input',
++lib_libinput = library('input',
+ 		src_libinput,
+ 		include_directories : [include_directories('.'), includes_include],
+ 		dependencies : deps_libinput,
