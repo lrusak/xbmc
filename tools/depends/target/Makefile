@@ -73,6 +73,9 @@ ifeq ($(OS),linux)
   DEPENDS += alsa-lib
   ALSA_LIB = alsa-lib
   CROSSGUID_DEPS = libuuid
+  ifeq ($(TARGET_PLATFORM),$(filter $(TARGET_PLATFORM),raspberry-pi aml gbm))
+    DEPENDS += libudev
+  endif
 endif
 
 ifeq ($(TARGET_PLATFORM),wayland)
