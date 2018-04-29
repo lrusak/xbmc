@@ -179,6 +179,10 @@ static const AVCodecHWConfig* FindHWConfig(const AVCodec* codec)
     if (config->pix_fmt != AV_PIX_FMT_DRM_PRIME)
       continue;
 
+    if ((config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) &&
+        config->device_type == AV_HWDEVICE_TYPE_DRM)
+      return config;
+
     if ((config->methods & AV_CODEC_HW_CONFIG_METHOD_INTERNAL))
       return config;
   }
@@ -220,6 +224,21 @@ bool CDVDVideoCodecDRMPRIME::Open(CDVDStreamInfo& hints, CDVDCodecOptions& optio
   m_pCodecContext = avcodec_alloc_context3(pCodec);
   if (!m_pCodecContext)
     return false;
+
+  const AVCodecHWConfig* pConfig = FindHWConfig(pCodec);
+  if (pConfig &&
+      (pConfig->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) &&
+      pConfig->device_type == AV_HWDEVICE_TYPE_DRM)
+  {
+    // TODO: get drm device path from gbm windowing
+    const char* device = nullptr;
+    if (av_hwdevice_ctx_create(&m_pCodecContext->hw_device_ctx, AV_HWDEVICE_TYPE_DRM, device, nullptr, 0) < 0)
+    {
+      CLog::Log(LOGNOTICE, "CDVDVideoCodecDRMPRIME::%s - unable to create hwdevice context", __FUNCTION__);
+      avcodec_free_context(&m_pCodecContext);
+      return false;
+    }
+  }
 
   m_pCodecContext->pix_fmt = AV_PIX_FMT_DRM_PRIME;
   m_pCodecContext->codec_tag = hints.codec_tag;
