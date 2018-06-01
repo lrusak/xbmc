@@ -40,8 +40,7 @@ namespace RETRO
     // Implementation of IStreamManager
     StreamPtr CreateStream(StreamType streamType) override;
     void CloseStream(StreamPtr stream) override;
-
-    GAME::IGameRenderingCallback* HardwareRendering();
+    HwProcedureAddress GetHwProcedureAddress(const char* symbol) override;
 
   private:
     // Construction parameters

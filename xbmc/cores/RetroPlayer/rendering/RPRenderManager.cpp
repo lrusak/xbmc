@@ -207,7 +207,7 @@ bool CRPRenderManager::Create()
   if (!renderer)
     return false;
 
-  renderer->Configure(m_format, m_width, m_height, m_orientation);
+  renderer->Configure(m_format, m_width, m_height);
 
   std::vector<IRenderBuffer*> renderBuffers;
   for (IRenderBufferPool *bufferPool : m_processInfo.GetBufferManager().GetBufferPools())

@@ -19,11 +19,10 @@
  */
 #pragma once
 
-#include "games/addons/GameClientCallbacks.h"
+#include "IRetroPlayerStream.h"
+#include "RetroPlayerStreamTypes.h"
 
-#include "system_gl.h"
-
-#include <EGL/egl.h>
+#include <stdint.h>
 
 namespace KODI
 {
@@ -32,24 +31,35 @@ namespace RETRO
   class CRPProcessInfo;
   class CRPRenderManager;
 
-  class CRetroPlayerRendering : public GAME::IGameRenderingCallback
+  struct HwFramebufferBuffer
+  {
+    uintptr_t framebuffer;
+  };
+
+  struct HwFramebufferPacket
+  {
+    uintptr_t framebuffer;
+  };
+
+  class CRetroPlayerRendering : public IRetroPlayerStream
   {
   public:
     CRetroPlayerRendering(CRPRenderManager& m_renderManager, CRPProcessInfo& m_processInfo);
 
     ~CRetroPlayerRendering() override = default;
 
-    // implementation of IGameRenderingCallback
-    bool Create() override;
-    void Destroy() override;
-    uintptr_t GetCurrentFramebuffer() override;
-    GAME::RetroGLProcAddress GetProcAddress(const char *sym) override { return eglGetProcAddress(sym); }
-    void RenderFrame() override;
+    // implementation of IRetroPlayerStream
+    bool OpenStream(const StreamProperties& properties) override;
+    bool GetStreamBuffer(unsigned int width, unsigned int height, StreamBuffer& buffer) override;
+    void AddStreamData(const StreamPacket &packet) override;
+    void CloseStream() override;
 
   private:
     // Construction parameters
     CRPRenderManager& m_renderManager;
-    CRPProcessInfo&   m_processInfo;
+    CRPProcessInfo& m_processInfo;
+
+    // Rendering properties
     unsigned int m_width;
     unsigned int m_height;
   };

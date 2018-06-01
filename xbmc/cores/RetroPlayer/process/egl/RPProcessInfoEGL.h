@@ -19,19 +19,19 @@
  */
 #pragma once
 
-#include "cores/RetroPlayer/process/egl/RPProcessInfoEGL.h"
+#include "cores/RetroPlayer/process/RPProcessInfo.h"
 
 namespace KODI
 {
 namespace RETRO
 {
-  class CRPProcessInfoX11 : public CRPProcessInfoEGL
+  class CRPProcessInfoEGL : public CRPProcessInfo
   {
   public:
-    CRPProcessInfoX11();
+    CRPProcessInfoEGL(std::string platformName);
 
-    static CRPProcessInfo* Create();
-    static void Register();
+    // Implementation of CRPProcessInfo
+    HwProcedureAddress GetHwProcedureAddress(const char* symbol) override;
   };
 }
 }

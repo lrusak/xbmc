@@ -19,26 +19,10 @@
  */
 #pragma once
 
-#include "cores/RetroPlayer/streams/RetroPlayerStreamTypes.h"
-
 namespace KODI
 {
 namespace GAME
 {
-  class IGameRenderingCallback;
-
-  class IGameRenderingCallback
-  {
-  public:
-    virtual ~IGameRenderingCallback() = default;
-
-    virtual bool Create() = 0;
-    virtual void Destroy() = 0;
-    virtual uintptr_t GetCurrentFramebuffer() = 0;
-    virtual RETRO::ProcedureAddress GetProcAddress(const char *sym) = 0;
-    virtual void RenderFrame() = 0;
-  };
-
   class IGameInputCallback
   {
   public:

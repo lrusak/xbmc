@@ -31,7 +31,7 @@ CRenderBufferFBO::CRenderBufferFBO(CRenderContext &context) :
 {
 }
 
-bool CRenderBufferFBO::Allocate(AVPixelFormat format, unsigned int width, unsigned int height, unsigned int size)
+bool CRenderBufferFBO::Allocate(AVPixelFormat format, unsigned int width, unsigned int height, size_t size)
 {
   // Initialize IRenderBuffer
   m_format = format;

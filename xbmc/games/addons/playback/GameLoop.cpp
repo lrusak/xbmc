@@ -30,10 +30,9 @@ using namespace GAME;
 #define DEFAULT_FPS  60  // In case fps is 0 (shouldn't happen)
 #define FOREVER_MS   (7 * 24 * 60 * 60 * 1000) // 1 week is large enough
 
-CGameLoop::CGameLoop(IGameLoopCallback* callback, IHardwareRendering* hwRenderCallback, double fps) :
+CGameLoop::CGameLoop(IGameLoopCallback* callback, double fps) :
   CThread("GameLoop"),
   m_callback(callback),
-  m_hwRenderCallback(hwRenderCallback),
   m_fps(fps ? fps : DEFAULT_FPS),
   m_speedFactor(0.0),
   m_lastFrameMs(0.0)
@@ -83,12 +82,6 @@ void CGameLoop::Process(void)
   double nextFrameMs = NowMs();
 
   CSingleLock lock(m_mutex);
-
-  if (m_hwRenderCallback)
-  {
-    m_hwRenderCallback->CreateHwRenderContext();
-    m_hwRenderCallback->HwContextReset();
-  }
 
   while (!m_bStop)
   {

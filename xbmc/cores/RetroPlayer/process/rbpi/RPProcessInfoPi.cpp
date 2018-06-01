@@ -24,7 +24,7 @@ using namespace KODI;
 using namespace RETRO;
 
 CRPProcessInfoPi::CRPProcessInfoPi() :
-  CRPProcessInfo("RPi")
+  CRPProcessInfoEGL("RPi")
 {
 }
 

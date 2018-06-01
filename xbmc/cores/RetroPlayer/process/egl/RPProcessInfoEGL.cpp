@@ -17,21 +17,20 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
-#pragma once
 
-#include "cores/RetroPlayer/process/egl/RPProcessInfoEGL.h"
+#include "RPProcessInfoEGL.h"
 
-namespace KODI
+#include <EGL/egl.h>
+
+using namespace KODI;
+using namespace RETRO;
+
+CRPProcessInfoEGL::CRPProcessInfoEGL(std::string platformName) :
+  CRPProcessInfo(std::move(platformName))
 {
-namespace RETRO
-{
-  class CRPProcessInfoX11 : public CRPProcessInfoEGL
-  {
-  public:
-    CRPProcessInfoX11();
-
-    static CRPProcessInfo* Create();
-    static void Register();
-  };
 }
+
+HwProcedureAddress CRPProcessInfoEGL::GetHwProcedureAddress(const char* symbol)
+{
+  return static_cast<HwProcedureAddress>(eglGetProcAddress(symbol));
 }
