@@ -31,7 +31,20 @@ class IStreamManager
 public:
   virtual ~IStreamManager() = default;
 
+  /*!
+   * \brief Create a stream for gameplay data
+   *
+   * \param streamType The stream typw
+   *
+   * \return A stream handle, or NULL on failure
+   */
   virtual StreamPtr CreateStream(StreamType streamType) = 0;
+
+  /*!
+   * \brief Free the specified stream
+   *
+   * \param stream The stream to close
+   */
   virtual void CloseStream(StreamPtr stream) = 0;
 };
 
