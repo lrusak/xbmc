@@ -52,7 +52,7 @@ IRenderBuffer *CRenderBufferPoolFBO::CreateRenderBuffer(void *header /* = nullpt
 
 bool CRenderBufferPoolFBO::CreateContext()
 {
-  CWinSystemGbmGLESContext *winSystem = dynamic_cast<CWinSystemGbmGLESContext*>(CServiceBroker::GetWinSystem());
+  CWinSystemGbmEGLContext *winSystem = dynamic_cast<CWinSystemGbmEGLContext*>(CServiceBroker::GetWinSystem());
 
   m_eglDisplay = winSystem->GetEGLDisplay();
 
