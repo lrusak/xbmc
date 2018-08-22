@@ -226,7 +226,7 @@ void CRPRenderManager::RenderFrame(uintptr_t framebuffer)
     if (!bufferPool->HasVisibleRenderer())
       continue;
 
-    IRenderBuffer *renderBuffer = bufferPool->GetBuffer(0, 0);
+    IRenderBuffer *renderBuffer = bufferPool->GetBuffer(m_maxWidth, m_maxHeight);
     if (renderBuffer != nullptr)
     {
       renderBuffers.emplace_back(renderBuffer);
@@ -251,9 +251,10 @@ uintptr_t CRPRenderManager::GetCurrentFramebuffer()
     if (!bufferPool->HasVisibleRenderer())
       continue;
 
-    IRenderBuffer *renderBuffer = bufferPool->GetBuffer(0, 0);
+    IRenderBuffer *renderBuffer = bufferPool->GetBuffer(m_maxWidth, m_maxHeight);
     if (renderBuffer != nullptr)
     {
+      CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: Libretro called GetCurrentFramebuffer");
       return renderBuffer->GetCurrentFramebuffer();
     }
   }
@@ -267,7 +268,7 @@ bool CRPRenderManager::Create()
   if (!renderer)
     return false;
 
-  renderer->Configure(m_format, m_width, m_height);
+  renderer->Configure(m_format);
 
   std::vector<IRenderBuffer*> renderBuffers;
   for (IRenderBufferPool *bufferPool : m_processInfo.GetBufferManager().GetBufferPools())
@@ -275,7 +276,7 @@ bool CRPRenderManager::Create()
     if (!bufferPool->HasVisibleRenderer())
       continue;
 
-    IRenderBuffer *renderBuffer = bufferPool->GetBuffer(0, 0);
+    IRenderBuffer *renderBuffer = bufferPool->GetBuffer(m_maxWidth, m_maxHeight);
     if (renderBuffer != nullptr)
       return true;
   }
