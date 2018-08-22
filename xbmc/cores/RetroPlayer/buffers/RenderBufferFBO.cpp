@@ -31,7 +31,7 @@ CRenderBufferFBO::CRenderBufferFBO(CRenderContext &context) :
 {
 }
 
-bool CRenderBufferFBO::Allocate(AVPixelFormat format, unsigned int width, unsigned int height, size_t size)
+bool CRenderBufferFBO::Allocate(AVPixelFormat format, unsigned int width, unsigned int height)
 {
   // Initialize IRenderBuffer
   m_format = format;
@@ -113,7 +113,10 @@ bool CRenderBufferFBO::CheckFrameBufferStatus()
 {
   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   if(status != GL_FRAMEBUFFER_COMPLETE)
+  {
+    CLog::Log(LOGERROR, "RetroPlayer[RENDER]: Unable to create FBO - status: %d", status);
     return false;
+  }
 
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);

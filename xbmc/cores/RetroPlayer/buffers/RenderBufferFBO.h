@@ -46,7 +46,7 @@ namespace RETRO
     bool UploadTexture() override;
 
     // implementation of IRenderBuffer
-    bool Allocate(AVPixelFormat format, unsigned int width, unsigned int height, size_t size) override;
+    bool Allocate(AVPixelFormat format, unsigned int width, unsigned int height) override;
     size_t GetFrameSize() const override { return 0; }
     uint8_t *GetMemory() override { return nullptr; }
 
