@@ -9,6 +9,7 @@
 #include "WinSystemGbmEGLContext.h"
 
 #include "OptionalsReg.h"
+#include "VNCServer.h"
 #include "cores/VideoPlayer/DVDCodecs/DVDFactoryCodec.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderFactory.h"
 #include "utils/log.h"
@@ -101,6 +102,8 @@ bool CWinSystemGbmEGLContext::CreateNewWindow(const std::string& name,
   m_nWidth = res.iWidth;
   m_nHeight = res.iHeight;
   m_fRefreshRate = res.fRefreshRate;
+
+  m_vnc = std::make_unique<CVNCServer>(res.iWidth, res.iHeight);
 
   CLog::Log(LOGDEBUG, "CWinSystemGbmEGLContext::{} - initialized GBM", __FUNCTION__);
   return true;

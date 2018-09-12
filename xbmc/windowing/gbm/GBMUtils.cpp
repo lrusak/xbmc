@@ -102,6 +102,32 @@ CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurfaceBuffer::CGBMSurfaceBuffer(gbm_sur
 
 CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurfaceBuffer::~CGBMSurfaceBuffer()
 {
+  ReleaseMemory();
+
   if (m_surface && m_buffer)
     gbm_surface_release_buffer(m_surface, m_buffer);
+}
+
+uint8_t* CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurfaceBuffer::GetMemory()
+{
+  if (m_buffer)
+  {
+    m_map = static_cast<uint8_t*>(gbm_bo_map(m_buffer, 0, 0, gbm_bo_get_width(m_buffer),
+                                             gbm_bo_get_height(m_buffer), GBM_BO_TRANSFER_READ,
+                                             &m_stride, &m_map_data));
+    if (m_map)
+      return m_map;
+  }
+
+  return nullptr;
+}
+
+void CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurfaceBuffer::ReleaseMemory()
+{
+  if (m_buffer && m_map)
+  {
+    gbm_bo_unmap(m_buffer, m_map_data);
+    m_map_data = nullptr;
+    m_map = nullptr;
+  }
 }

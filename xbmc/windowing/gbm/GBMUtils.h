@@ -115,9 +115,16 @@ public:
          */
         gbm_bo* Get() const { return m_buffer; }
 
+        uint8_t* GetMemory();
+        void ReleaseMemory();
+
       private:
         gbm_surface* m_surface{nullptr};
         gbm_bo* m_buffer{nullptr};
+
+        uint32_t m_stride = 0;
+        uint8_t* m_map = nullptr;
+        void* m_map_data = nullptr;
       };
 
       /**

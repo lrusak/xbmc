@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "VNCServer.h"
 #include "VideoLayerBridge.h"
 #include "drm/DRMUtils.h"
 #include "threads/CriticalSection.h"
@@ -81,6 +82,8 @@ protected:
   bool m_dispReset = false;
   XbmcThreads::EndTime m_dispResetTimer;
   std::unique_ptr<CLibInputHandler> m_libinput;
+
+  std::unique_ptr<CVNCServer> m_vnc;
 };
 
 }

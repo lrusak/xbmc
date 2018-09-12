@@ -161,6 +161,7 @@ set(optional_deps Alsa
                   IncludeWhatYouUse
                   Iso9660pp
                   LCMS2
+                  LibVncServer
                   LircClient
                   MDNS
                   MicroHttpd
