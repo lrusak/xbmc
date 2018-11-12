@@ -51,6 +51,7 @@ public:
 private:
   EGLDisplay m_display{nullptr};
   EGLImageKHR m_image{nullptr};
+  bool m_hasPlaneModifiers{false};
 
   PFNEGLCREATEIMAGEKHRPROC m_eglCreateImageKHR{nullptr};
   PFNEGLDESTROYIMAGEKHRPROC m_eglDestroyImageKHR{nullptr};

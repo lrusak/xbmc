@@ -57,6 +57,7 @@ CEGLImage::CEGLImage(EGLDisplay display) :
   m_eglCreateImageKHR = CEGLUtils::GetRequiredProcAddress<PFNEGLCREATEIMAGEKHRPROC>("eglCreateImageKHR");
   m_eglDestroyImageKHR = CEGLUtils::GetRequiredProcAddress<PFNEGLDESTROYIMAGEKHRPROC>("eglDestroyImageKHR");
   m_glEGLImageTargetTexture2DOES = CEGLUtils::GetRequiredProcAddress<PFNGLEGLIMAGETARGETTEXTURE2DOESPROC>("glEGLImageTargetTexture2DOES");
+  m_hasPlaneModifiers = CEGLUtils::HasExtension(display, "EGL_EXT_image_dma_buf_import_modifiers");
 }
 
 bool CEGLImage::CreateImage(EglAttrs imageAttrs)
@@ -83,9 +84,12 @@ bool CEGLImage::CreateImage(EglAttrs imageAttrs)
                    {eglDmabufPlanePitchAttr[i], imageAttrs.planes[i].pitch}});
 
 #if defined(EGL_EXT_image_dma_buf_import_modifiers)
-      if (imageAttrs.planes[i].modifier != DRM_FORMAT_MOD_INVALID)
+      if (m_hasPlaneModifiers &&
+          imageAttrs.planes[i].modifier != DRM_FORMAT_MOD_INVALID)
+      {
         attribs.Add({{eglDmabufPlaneModifierLoAttr[i], static_cast<EGLint>(imageAttrs.planes[i].modifier & 0xFFFFFFFF)},
                      {eglDmabufPlaneModifierHiAttr[i], static_cast<EGLint>(imageAttrs.planes[i].modifier >> 32)}});
+      }
 #endif
     }
   }
