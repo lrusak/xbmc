@@ -439,7 +439,6 @@ void CVaapi2Texture::Init(EGLDisplay eglDisplay)
 {
   m_y.eglImage.reset(new CEGLImage(eglDisplay));
   m_vu.eglImage.reset(new CEGLImage(eglDisplay));
-  m_hasPlaneModifiers = CEGLUtils::HasExtension(eglDisplay, "EGL_EXT_image_dma_buf_import_modifiers");
 }
 
 bool CVaapi2Texture::Map(CVaapiRenderPicture* pic)
@@ -542,11 +541,8 @@ bool CVaapi2Texture::Map(CVaapiRenderPicture* pic)
     planes[0].fd = object.fd;
     planes[0].offset = layer.offset[plane];
     planes[0].pitch = layer.pitch[plane];
+    planes[0].modifier = object.drm_format_modifier;
 
-    if (m_hasPlaneModifiers)
-    {
-      planes[0].modifier = object.drm_format_modifier;
-    }
 
     CEGLImage::EglAttrs attribs;
 

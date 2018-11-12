@@ -114,7 +114,6 @@ private:
 
   GLenum m_textureTarget{GL_TEXTURE_2D};
   CVaapiRenderPicture* m_vaapiPic{};
-  bool m_hasPlaneModifiers{false};
   std::array<KODI::UTILS::POSIX::CFileHandle, 4> m_drmFDs;
   int m_bits{0};
   MappedTexture m_y, m_vu;
