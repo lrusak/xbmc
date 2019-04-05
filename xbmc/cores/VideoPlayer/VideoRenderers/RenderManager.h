@@ -31,7 +31,7 @@ class CWinRenderer;
 class CMMALRenderer;
 class CLinuxRenderer;
 class CLinuxRendererGL;
-class CLinuxRendererGLES;
+class CLinuxRendererGLES2;
 class CRenderManager;
 
 class IRenderMsg

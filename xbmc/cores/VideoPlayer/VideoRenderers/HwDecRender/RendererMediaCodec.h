@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "cores/VideoPlayer/VideoRenderers/LinuxRendererGLES.h"
+#include "cores/VideoPlayer/VideoRenderers/LinuxRendererGLES2.h"
 
-class CRendererMediaCodec : public CLinuxRendererGLES
+class CRendererMediaCodec : public CLinuxRendererGLES2
 {
 public:
   CRendererMediaCodec();

@@ -15,7 +15,7 @@
 #include "cores/RetroPlayer/process/amlogic/RPProcessInfoAmlogic.h"
 #include "cores/RetroPlayer/rendering/VideoRenderers/RPRendererOpenGLES.h"
 #include "cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.h"
-#include "cores/VideoPlayer/VideoRenderers/LinuxRendererGLES.h"
+#include "cores/VideoPlayer/VideoRenderers/LinuxRendererGLES2.h"
 #include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererAML.h"
 // AESink Factory
 #include "cores/AudioEngine/AESinkFactory.h"
@@ -85,7 +85,7 @@ bool CWinSystemAmlogic::InitWindowSystem()
   m_nativeDisplay = EGL_DEFAULT_DISPLAY;
 
   CDVDVideoCodecAmlogic::Register();
-  CLinuxRendererGLES::Register();
+  CLinuxRendererGLES2::Register();
   RETRO::CRPProcessInfoAmlogic::Register();
   RETRO::CRPProcessInfoAmlogic::RegisterRendererFactory(new RETRO::CRendererFactoryOpenGLES);
   CRendererAML::Register();

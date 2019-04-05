@@ -14,7 +14,7 @@
 #include "cores/RetroPlayer/process/RPProcessInfo.h"
 #include "cores/RetroPlayer/rendering/VideoRenderers/RPRendererOpenGLES.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderFactory.h"
-#include "cores/VideoPlayer/VideoRenderers/LinuxRendererGLES.h"
+#include "cores/VideoPlayer/VideoRenderers/LinuxRendererGLES2.h"
 #include "utils/log.h"
 
 using namespace KODI::WINDOWING::WAYLAND;
@@ -32,7 +32,7 @@ bool CWinSystemWaylandEGLContextGLES::InitWindowSystem()
     return false;
   }
 
-  CLinuxRendererGLES::Register();
+  CLinuxRendererGLES2::Register();
   RETRO::CRPProcessInfo::RegisterRendererFactory(new RETRO::CRendererFactoryOpenGLES);
 
   bool general, deepColor;

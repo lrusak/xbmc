@@ -77,7 +77,7 @@ bool CWinSystemAndroid::InitWindowSystem()
   CDVDVideoCodecAndroidMediaCodec::Register();
   CDVDAudioCodecAndroidMediaCodec::Register();
 
-  CLinuxRendererGLES::Register();
+  CLinuxRendererGLES2::Register();
   RETRO::CRPProcessInfoAndroid::Register();
   RETRO::CRPProcessInfoAndroid::RegisterRendererFactory(new RETRO::CRendererFactoryOpenGLES);
   CRendererMediaCodec::Register();
