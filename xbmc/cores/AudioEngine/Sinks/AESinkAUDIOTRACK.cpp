@@ -461,6 +461,7 @@ bool CAESinkAUDIOTRACK::Initialize(AEAudioFormat &format, std::string &device)
     else
     {
       m_min_buffer_size *= 2;
+
       m_format.m_frameSize = m_format.m_channelLayout.Count() * (CAEUtil::DataFormatToBits(m_format.m_dataFormat) / 8);
       m_sink_frameSize = m_format.m_frameSize;
       m_format.m_frames = (int)(m_min_buffer_size / m_format.m_frameSize) / 2;
@@ -949,18 +950,15 @@ void CAESinkAUDIOTRACK::UpdateAvailablePCMCapabilities()
     CLog::Log(LOGNOTICE, "Multi channel Float is supported");
   }
 
-  if (CJNIAudioManager::GetSDKVersion() >= 23)
-  {
-    int test_sample[] = { 32000, 44100, 48000, 88200, 96000, 176400, 192000 };
-    int test_sample_sz = sizeof(test_sample) / sizeof(int);
+  int test_sample[] = { 32000, 44100, 48000, 88200, 96000, 176400, 192000 };
+  int test_sample_sz = sizeof(test_sample) / sizeof(int);
 
-    for (int i = 0; i < test_sample_sz; ++i)
+  for (int i = 0; i < test_sample_sz; ++i)
+  {
+    if (IsSupported(test_sample[i], CJNIAudioFormat::CHANNEL_OUT_STEREO, encoding))
     {
-      if (IsSupported(test_sample[i], CJNIAudioFormat::CHANNEL_OUT_STEREO, encoding))
-      {
-        m_sink_sampleRates.insert(test_sample[i]);
-        CLog::Log(LOGDEBUG, "AESinkAUDIOTRACK - %d supported", test_sample[i]);
-      }
+      m_sink_sampleRates.insert(test_sample[i]);
+      CLog::Log(LOGDEBUG, "AESinkAUDIOTRACK - %d supported", test_sample[i]);
     }
   }
   std::copy(m_sink_sampleRates.begin(), m_sink_sampleRates.end(), std::back_inserter(m_info.m_sampleRates));
