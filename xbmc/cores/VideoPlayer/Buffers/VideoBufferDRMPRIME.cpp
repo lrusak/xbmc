@@ -19,6 +19,30 @@ extern "C"
 namespace DRMPRIME
 {
 
+int GetColorimetry(const VideoPicture& picture)
+{
+  switch (picture.color_space)
+  {
+    case AVCOL_SPC_BT2020_CL:
+    case AVCOL_SPC_BT2020_NCL:
+      return DRM_MODE_COLORIMETRY_BT2020_RGB;
+    case AVCOL_SPC_SMPTE170M:
+    case AVCOL_SPC_BT470BG:
+    case AVCOL_SPC_FCC:
+      return DRM_MODE_COLORIMETRY_XVYCC_601;
+    case AVCOL_SPC_BT709:
+      return DRM_MODE_COLORIMETRY_XVYCC_709;
+    case AVCOL_SPC_RESERVED:
+    case AVCOL_SPC_UNSPECIFIED:
+    default:
+      if (picture.iWidth > 1024 || picture.iHeight >= 600)
+        return DRM_MODE_COLORIMETRY_XVYCC_709;
+      else
+        return DRM_MODE_COLORIMETRY_XVYCC_601;
+  }
+}
+
+
 int GetColorEncoding(const VideoPicture& picture)
 {
   switch (picture.color_space)

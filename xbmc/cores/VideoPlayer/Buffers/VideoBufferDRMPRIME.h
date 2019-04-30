@@ -21,6 +21,17 @@ extern "C"
 namespace DRMPRIME
 {
 
+// colorimetry definitions are copied from linux include/drm/drm_connector.h (not part of uapi yet)
+/* CEA 861 Extended Colorimetry Options */
+constexpr int DRM_MODE_COLORIMETRY_XVYCC_601{3};
+constexpr int DRM_MODE_COLORIMETRY_XVYCC_709{4};
+constexpr int DRM_MODE_COLORIMETRY_SYCC_601{5};
+constexpr int DRM_MODE_COLORIMETRY_OPYCC_601{6};
+constexpr int DRM_MODE_COLORIMETRY_OPRGB{7};
+constexpr int DRM_MODE_COLORIMETRY_BT2020_CYCC{8};
+constexpr int DRM_MODE_COLORIMETRY_BT2020_RGB{9};
+constexpr int DRM_MODE_COLORIMETRY_BT2020_YCC{10};
+
 // Color enums is copied from linux include/drm/drm_color_mgmt.h (strangely not part of uapi)
 enum drm_color_encoding
 {
@@ -47,6 +58,7 @@ enum hdmi_eotf
   HDMI_EOTF_BT_2100_HLG,
 };
 
+int GetColorimetry(const VideoPicture& picture);
 int GetColorEncoding(const VideoPicture& picture);
 int GetColorRange(const VideoPicture& picture);
 uint8_t GetEOTF(const VideoPicture& picture);

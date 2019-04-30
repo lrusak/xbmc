@@ -33,8 +33,15 @@ void CVideoLayerBridgeDRMPRIME::Disable()
   m_DRM->AddProperty(plane, "FB_ID", 0);
   m_DRM->AddProperty(plane, "CRTC_ID", 0);
 
-  // disable HDR metadata
   struct connector* connector = m_DRM->GetConnector();
+
+  if (m_DRM->SupportsProperty(connector, "Colorspace"))
+  {
+    CLog::Log(LOGDEBUG, "CVideoLayerBridgeDRMPRIME::{} - Colorspace={}", __FUNCTION__, 0);
+    m_DRM->AddProperty(connector, "Colorspace", 0);
+  }
+
+  // disable HDR metadata
   if (m_DRM->SupportsProperty(connector, "HDR_OUTPUT_METADATA"))
   {
     m_DRM->AddProperty(connector, "HDR_OUTPUT_METADATA", 0);
@@ -181,6 +188,18 @@ void CVideoLayerBridgeDRMPRIME::Configure(CVideoBufferDRMPRIME* buffer)
   KODI::UTILS::CEDIDUtils edid{m_DRM->GetEDID()};
 
   struct connector* connector = m_DRM->GetConnector();
+
+  if (m_DRM->SupportsPropertyAndValue(connector, "Colorspace", GetColorimetry(picture)))
+  {
+    if (edid.SupportsColorimetry(GetColorimetry(picture)))
+    {
+      CLog::Log(LOGDEBUG, "CVideoLayerBridgeDRMPRIME::{} - Colorspace={}", __FUNCTION__,
+                GetColorimetry(picture));
+      m_DRM->AddProperty(connector, "Colorspace", GetColorimetry(picture));
+      m_DRM->SetActive(true);
+    }
+  }
+
   if (m_DRM->SupportsProperty(connector, "HDR_OUTPUT_METADATA"))
   {
     m_hdr_metadata.metadata_type = HDMI_STATIC_METADATA_TYPE1;
