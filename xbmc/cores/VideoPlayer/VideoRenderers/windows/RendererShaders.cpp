@@ -373,7 +373,7 @@ bool CRendererShaders::CRenderBufferImpl::UploadFromGPU()
 
   void* (*copy_func)(void* d, const void* s, size_t size) =
 #if defined(HAVE_SSE2)
-    ((g_cpuInfo.GetCPUFeatures() & CPU_FEATURE_SSE4) != 0) ? gpu_memcpy :
+    ((CServiceBroker::GetCPUInfo()->GetCPUFeatures() & CPU_FEATURE_SSE4) != 0) ? gpu_memcpy :
 #endif
     memcpy;
 

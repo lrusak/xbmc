@@ -1,7 +1,9 @@
-set(SOURCES ../linux/OptionalsReg.cpp
+set(SOURCES CPUInfoFreebsd.cpp
+            ../linux/OptionalsReg.cpp
             ../linux/TimeUtils.cpp)
 
-set(HEADERS ../linux/OptionalsReg.h
+set(HEADERS CPUInfoFreebsd.h
+            ../linux/OptionalsReg.h
             ../linux/PlatformConstants.h
             ../linux/TimeUtils.h)
 

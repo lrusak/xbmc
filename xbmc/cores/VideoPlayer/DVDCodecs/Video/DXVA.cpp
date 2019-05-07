@@ -1167,10 +1167,10 @@ bool CDecoder::Open(AVCodecContext* avctx, AVCodecContext* mainctx, enum AVPixel
     {
       m_surface_alignment = 128;
       // a driver may use multi-thread decoding internally
-      m_refs += CSysInfo::GetCPUCount();
+      m_refs += CServiceBroker::GetCPUInfo()->GetCPUCount();
     }
     else
-      m_refs += CSysInfo::GetCPUCount() / 2;
+      m_refs += CServiceBroker::GetCPUInfo()->GetCPUCount() / 2;
     // by specification hevc decoder can hold up to 8 unique refs
     m_refs += avctx->refs ? avctx->refs : 8;
     break;

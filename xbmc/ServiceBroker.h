@@ -53,6 +53,7 @@ class CGUIComponent;
 class CAppInboundProtocol;
 class CSettingsComponent;
 class CDecoderFilterManager;
+class CCPUInfo;
 
 namespace KODI
 {
@@ -131,6 +132,10 @@ public:
   static void RegisterDecoderFilterManager(CDecoderFilterManager* manager);
   static CDecoderFilterManager* GetDecoderFilterManager();
 
+  static std::shared_ptr<CCPUInfo> GetCPUInfo();
+  static void RegisterCPUInfo(std::shared_ptr<CCPUInfo> cpuInfo);
+  static void UnregisterCPUInfo();
+
 private:
   static std::shared_ptr<ANNOUNCEMENT::CAnnouncementManager> m_pAnnouncementManager;
   static CGUIComponent* m_pGUI;
@@ -139,4 +144,5 @@ private:
   static std::shared_ptr<CAppInboundProtocol> m_pAppPort;
   static CSettingsComponent* m_pSettingsComponent;
   static CDecoderFilterManager* m_decoderFilterManager;
+  static std::shared_ptr<CCPUInfo> m_cpuInfo;
 };
