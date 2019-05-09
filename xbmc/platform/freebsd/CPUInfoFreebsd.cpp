@@ -76,8 +76,6 @@ CCPUInfoFreebsd::CCPUInfoFreebsd()
 
 int CCPUInfoFreebsd::GetUsedPercentage()
 {
-  int result = 0;
-
   if (!m_nextUsedReadTime.IsTimePast())
     return m_lastUsedPercentage;
 
