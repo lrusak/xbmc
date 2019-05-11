@@ -97,6 +97,7 @@ public:
   std::vector<uint64_t> *GetGuiPlaneModifiersForFormat(uint32_t format) { return &m_gui_plane->modifiers_map[format]; }
   struct crtc* GetCrtc() const { return m_crtc; }
   struct connector* GetConnector() const { return m_connector; }
+  std::vector<uint8_t> GetEDID();
 
   virtual RESOLUTION_INFO GetCurrentMode();
   virtual std::vector<RESOLUTION_INFO> GetModes();
