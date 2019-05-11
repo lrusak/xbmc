@@ -9,6 +9,7 @@
 #include "VideoLayerBridgeDRMPRIME.h"
 
 #include "cores/VideoPlayer/Buffers/VideoBufferDRMPRIME.h"
+#include "utils/EDIDUtils.h"
 #include "utils/log.h"
 #include "windowing/gbm/DRMUtils.h"
 
@@ -164,21 +165,26 @@ void CVideoLayerBridgeDRMPRIME::Configure(CVideoBufferDRMPRIME* buffer)
   if (m_DRM->SupportsPropertyAndValue(plane, "COLOR_RANGE", GetColorRange(picture)))
     m_DRM->AddProperty(plane, "COLOR_RANGE", GetColorRange(picture));
 
+  KODI::UTILS::CEDIDUtils edid{m_DRM->GetEDID()};
+
   struct connector* connector = m_DRM->GetConnector();
   if (m_DRM->SupportsProperty(connector, "HDR_OUTPUT_METADATA"))
   {
     m_hdr_metadata.metadata_type = HDMI_STATIC_METADATA_TYPE1;
-    m_hdr_metadata.hdmi_metadata_type1 = {
-        .eotf = GetEOTF(picture),
-        .metadata_type = HDMI_STATIC_METADATA_TYPE1,
-    };
 
-    if (m_hdr_blob_id)
-      drmModeDestroyPropertyBlob(m_DRM->GetFileDescriptor(), m_hdr_blob_id);
-    m_hdr_blob_id = 0;
+    m_hdr_metadata.hdmi_metadata_type1.metadata_type = HDMI_STATIC_METADATA_TYPE1;
 
-    if (m_hdr_metadata.hdmi_metadata_type1.eotf)
+
+    uint8_t eotf = GetEOTF(picture);
+
+    if (edid.SupportsEOTF(eotf))
     {
+      m_hdr_metadata.hdmi_metadata_type1.eotf = eotf;
+
+      if (m_hdr_blob_id)
+        drmModeDestroyPropertyBlob(m_DRM->GetFileDescriptor(), m_hdr_blob_id);
+      m_hdr_blob_id = 0;
+
       const AVMasteringDisplayMetadata* mdmd = GetMasteringDisplayMetadata(picture);
       if (mdmd && mdmd->has_primaries)
       {
@@ -196,6 +202,7 @@ void CVideoLayerBridgeDRMPRIME::Configure(CVideoBufferDRMPRIME* buffer)
         m_hdr_metadata.hdmi_metadata_type1.white_point.y =
             std::round(av_q2d(mdmd->white_point[1]) * 50000.0);
       }
+
       if (mdmd && mdmd->has_luminance)
       {
         // Convert to unsigned 16-bit value in units of 1 cd/m2,
@@ -218,11 +225,13 @@ void CVideoLayerBridgeDRMPRIME::Configure(CVideoBufferDRMPRIME* buffer)
 
       drmModeCreatePropertyBlob(m_DRM->GetFileDescriptor(), &m_hdr_metadata, sizeof(m_hdr_metadata),
                                 &m_hdr_blob_id);
-    }
 
-    m_DRM->AddProperty(connector, "HDR_OUTPUT_METADATA", m_hdr_blob_id);
-    m_DRM->SetActive(true);
+
+      m_DRM->AddProperty(connector, "HDR_OUTPUT_METADATA", m_hdr_blob_id);
+    }
   }
+
+  m_DRM->SetActive(true);
 }
 
 void CVideoLayerBridgeDRMPRIME::SetVideoPlane(CVideoBufferDRMPRIME* buffer, const CRect& destRect)
