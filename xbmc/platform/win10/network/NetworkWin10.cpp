@@ -10,7 +10,6 @@
 #include "filesystem/SpecialProtocol.h"
 #include "platform/win10/AsyncHelpers.h"
 #include "platform/win32/WIN32Util.h"
-#include "platform/win32/CharsetConverter.h"
 #include "settings/Settings.h"
 #include "threads/SingleLock.h"
 #include "utils/log.h"
@@ -56,16 +55,11 @@ typedef struct icmp_echo_reply {
 #endif //! IP_STATUS_BASE
 #include <Icmpapi.h>
 
-using namespace winrt::Windows::Networking;
 using namespace winrt::Windows::Networking::Connectivity;
-using namespace KODI::PLATFORM::WINDOWS;
 
-CNetworkInterfaceWin10::CNetworkInterfaceWin10(const PIP_ADAPTER_ADDRESSES address, IUnknown* winRTadapter)
+CNetworkInterfaceWin10::CNetworkInterfaceWin10(const PIP_ADAPTER_ADDRESSES address)
 {
   m_adapterAddr = address;
-  m_adaptername = address->AdapterName;
-  winrt::attach_abi(m_winRT, winRTadapter);
-  m_profile = nullptr;
 }
 
 CNetworkInterfaceWin10::~CNetworkInterfaceWin10(void) = default;
@@ -241,7 +235,6 @@ void CNetworkWin10::queryInterfaceList()
 
   const ULONG flags = GAA_FLAG_INCLUDE_GATEWAYS | GAA_FLAG_INCLUDE_PREFIX;
   ULONG ulOutBufLen;
-  NetworkAdapter winRTAdapter = nullptr;
 
   if (GetAdaptersAddresses(AF_INET, flags, nullptr, nullptr, &ulOutBufLen) != ERROR_BUFFER_OVERFLOW)
     return;
@@ -257,9 +250,7 @@ void CNetworkWin10::queryInterfaceList()
       if (adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK)
         continue;
 
-      std::wstring name = ToW(adapter->AdapterName);
-      m_interfaces.push_back(new CNetworkInterfaceWin10(adapter, adapters[name]));
-      winRTAdapter = nullptr;
+      m_interfaces.push_back(new CNetworkInterfaceWin10(adapter));
     }
   }
 }

@@ -22,7 +22,7 @@ class CNetworkWin10;
 class CNetworkInterfaceWin10 : public CNetworkInterface
 {
 public:
-  CNetworkInterfaceWin10(const PIP_ADAPTER_ADDRESSES adapter, ::IUnknown* winRTadapter);
+  CNetworkInterfaceWin10(const PIP_ADAPTER_ADDRESSES adapter);
   ~CNetworkInterfaceWin10(void);
 
   virtual bool IsEnabled(void) const;
@@ -38,10 +38,7 @@ public:
   virtual std::string GetCurrentDefaultGateway(void) const;
 
 private:
-  std::string m_adaptername;
   PIP_ADAPTER_ADDRESSES m_adapterAddr;
-  winrt::Windows::Networking::Connectivity::NetworkAdapter m_winRT = nullptr;
-  mutable winrt::Windows::Networking::Connectivity::ConnectionProfile m_profile = nullptr;
 };
 
 

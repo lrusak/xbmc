@@ -8,11 +8,9 @@
 
 #include "PlatformDefs.h"
 #include "NetworkWin32.h"
-#include "platform/win32/CharsetConverter.h"
 #include "platform/win32/WIN32Util.h"
 #include "utils/log.h"
 #include "threads/SingleLock.h"
-#include "utils/CharsetConverter.h"
 #include "utils/StringUtils.h"
 
 #include <errno.h>
@@ -20,18 +18,12 @@
 #include <IcmpAPI.h>
 #include <netinet/in.h>
 #include <Mstcpip.h>
-#include <Wlanapi.h>
 
 #pragma comment(lib, "Ntdll.lib")
-#pragma comment (lib,"Wlanapi.lib")
-
-using namespace KODI::PLATFORM::WINDOWS;
 
 CNetworkInterfaceWin32::CNetworkInterfaceWin32(const IP_ADAPTER_ADDRESSES& adapter)
-  : m_adaptername(adapter.AdapterName)
 {
   m_adapter = adapter;
-  g_charsetConverter.unknownToUTF8(m_adaptername);
 }
 
 CNetworkInterfaceWin32::~CNetworkInterfaceWin32(void)

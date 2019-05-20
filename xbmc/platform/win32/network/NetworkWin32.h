@@ -27,7 +27,7 @@ public:
 
    bool IsEnabled(void) const override;
    bool IsConnected(void) const override;
-   
+
    std::string GetMacAddress(void) const override;
    void GetMacAddressRaw(char rawMac[6]) const override;
 
@@ -40,7 +40,6 @@ public:
 
 private:
    IP_ADAPTER_ADDRESSES m_adapter;
-   std::string m_adaptername;
 };
 
 class CNetworkWin32 : public CNetworkBase
