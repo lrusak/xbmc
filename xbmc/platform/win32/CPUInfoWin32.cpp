@@ -8,8 +8,8 @@
 
 #include "CPUInfoWin32.h"
 
-#include "platform/win32/CharsetConverter.h"
 #include "ServiceBroker.h"
+#include "platform/win32/CharsetConverter.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/SettingsComponent.h"
 #include "utils/StringUtils.h"
@@ -32,6 +32,8 @@ const unsigned int CPUINFO_ECX{2};
 const unsigned int CPUINFO_EDX{3};
 }
 
+using KODI::PLATFORM::WINDOWS::FromW;
+
 std::shared_ptr<CCPUInfo> CCPUInfo::GetCPUInfo()
 {
   return std::make_shared<CCPUInfoWin32>();
@@ -39,6 +41,7 @@ std::shared_ptr<CCPUInfo> CCPUInfo::GetCPUInfo()
 
 CCPUInfoWin32::CCPUInfoWin32()
 {
+
   HKEY hKeyCpuRoot;
 
   if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"HARDWARE\\DESCRIPTION\\System\\CentralProcessor", 0, KEY_READ, &hKeyCpuRoot) == ERROR_SUCCESS)
@@ -52,35 +55,36 @@ CCPUInfoWin32::CCPUInfoWin32()
       if (RegOpenKeyExW(hKeyCpuRoot, subKeyName, 0, KEY_QUERY_VALUE, &hCpuKey) == ERROR_SUCCESS)
       {
         CoreInfo cpuCore;
+        bool vendorfound = false;
+        bool modelfound = false;
         if (swscanf_s(subKeyName, L"%i", &cpuCore.m_id) != 1)
           cpuCore.m_id = num - 1;
         wchar_t buf[300]; // more than enough
         DWORD bufSize = sizeof(buf);
         DWORD valType;
-        if (RegQueryValueExW(hCpuKey, L"ProcessorNameString", nullptr, &valType, LPBYTE(buf), &bufSize) == ERROR_SUCCESS &&
+        if (!modelfound &&
+            RegQueryValueExW(hCpuKey, L"ProcessorNameString", nullptr, &valType, LPBYTE(buf), &bufSize) == ERROR_SUCCESS &&
             valType == REG_SZ)
         {
-          cpuCore.m_strModel = FromW(buf, bufSize / sizeof(wchar_t));
-          cpuCore.m_strModel = cpuCore.m_strModel.substr(0, cpuCore.m_strModel.find(char(0))); // remove extra null terminations
-          StringUtils::RemoveDuplicatedSpacesAndTabs(cpuCore.m_strModel);
-          StringUtils::Trim(cpuCore.m_strModel);
+          m_cpuModel = FromW(buf, bufSize / sizeof(wchar_t));
+          m_cpuModel = m_cpuModel.substr(0, m_cpuModel.find(char(0))); // remove extra null terminations
+          StringUtils::RemoveDuplicatedSpacesAndTabs(m_cpuModel);
+          StringUtils::Trim(m_cpuModel);
+          modelfound = true;
         }
         bufSize = sizeof(buf);
-        if (RegQueryValueExW(hCpuKey, L"VendorIdentifier", nullptr, &valType, LPBYTE(buf), &bufSize) == ERROR_SUCCESS &&
+        if (!vendorfound &&
+            RegQueryValueExW(hCpuKey, L"VendorIdentifier", nullptr, &valType, LPBYTE(buf), &bufSize) == ERROR_SUCCESS &&
             valType == REG_SZ)
         {
-          cpuCore.m_strVendor = FromW(buf, bufSize / sizeof(wchar_t));
-          cpuCore.m_strVendor = cpuCore.m_strVendor.substr(0, cpuCore.m_strVendor.find(char(0))); // remove extra null terminations
+          m_cpuVendor = FromW(buf, bufSize / sizeof(wchar_t));
+          m_cpuVendor = m_cpuVendor.substr(0, m_cpuVendor.find(char(0))); // remove extra null terminations
+          vendorfound = true;
         }
-        DWORD mhzVal;
-        bufSize = sizeof(mhzVal);
-        if (RegQueryValueExW(hCpuKey, L"~MHz", nullptr, &valType, LPBYTE(&mhzVal), &bufSize) == ERROR_SUCCESS &&
-            valType == REG_DWORD)
-          cpuCore.m_fSpeed = double(mhzVal);
-
         RegCloseKey(hCpuKey);
 
-        m_cpuCores.push_back(cpuCore);
+        m_cores.push_back(cpuCore);
+        m_coreCounters.push_back(nullptr);
       }
       subKeyNameLen = sizeof(subKeyName) / sizeof(wchar_t); // restore length value
     }
@@ -103,12 +107,17 @@ CCPUInfoWin32::CCPUInfoWin32()
   {
     for (size_t i = 0; i < m_cores.size(); i++)
     {
-      if (PdhAddEnglishCounterW(m_cpuQueryLoad, StringUtils::Format(L"\\Processor(%d)\\%% Idle Time", int(i)).c_str(), 0, &m_cores[i].m_coreCounter) != ERROR_SUCCESS)
-        m_cores[i].m_coreCounter = nullptr;
+      if (i < m_coreCounters.size() &&
+          PdhAddEnglishCounterW(
+              m_cpuQueryLoad, StringUtils::Format(L"\\Processor(%d)\\%% Idle Time", int(i)).c_str(),
+              0, &m_coreCounters[i]) != ERROR_SUCCESS)
+        m_coreCounters[i] = nullptr;
     }
   }
   else
     m_cpuQueryLoad = nullptr;
+
+
 
 #ifndef _M_ARM
   int CPUInfo[4]; // receives EAX, EBX, ECD and EDX in that order
@@ -172,34 +181,63 @@ int CCPUInfoWin32::GetUsedPercentage()
   if (!m_nextUsedReadTime.IsTimePast())
     return m_lastUsedPercentage;
 
-  FILETIME idleTime;
-  FILETIME kernelTime;
-  FILETIME userTime;
-  if (GetSystemTimes(&idleTime, &kernelTime, &userTime) == 0)
-    return false;
+  FILETIME idleTimestamp;
+  FILETIME kernelTimestamp;
+  FILETIME userTimestamp;
+  if (GetSystemTimes(&idleTimestamp, &kernelTimestamp, &userTimestamp) == 0)
+    return m_lastUsedPercentage;
 
-  idle = (static_cast<uint64_t>(idleTime.dwHighDateTime) << 32) + static_cast<uint64_t>(idleTime.dwLowDateTime);
-  // returned "kernelTime" includes "idleTime"
-  system = (static_cast<uint64_t>(kernelTime.dwHighDateTime) << 32) + static_cast<uint64_t>(kernelTime.dwLowDateTime) - idle;
-  user = (static_cast<uint64_t>(userTime.dwHighDateTime) << 32) + static_cast<uint64_t>(userTime.dwLowDateTime);
+  size_t kernelTime = 0;
+  size_t userTime = 0;
+  size_t activeTime = 0;
+  size_t idleTime = 0;
+  size_t totalTime = 0;
+    
+  idleTime = (static_cast<size_t>(idleTimestamp.dwHighDateTime) << 32) + static_cast<size_t>(idleTimestamp.dwLowDateTime);
+  kernelTime = (static_cast<size_t>(kernelTimestamp.dwHighDateTime) << 32) + static_cast<size_t>(kernelTimestamp.dwLowDateTime);
+  userTime = (static_cast<size_t>(userTimestamp.dwHighDateTime) << 32) + static_cast<size_t>(userTimestamp.dwLowDateTime);
+  if (userTime + kernelTime + idleTime == 0)
+    return m_lastUsedPercentage;
+
+  // Teturned "kernelTime" includes "idleTime"
+  activeTime = static_cast<size_t>(userTime + kernelTime - idleTime); 
+  totalTime = static_cast<size_t>(userTime + kernelTime);
+
+  activeTime -= m_activeTime;
+  idleTime -= m_idleTime;
+  totalTime -= m_totalTime;
+
+  m_activeTime += activeTime;
+  m_idleTime += idleTime;
+  m_totalTime += totalTime;
+
+  m_lastUsedPercentage = activeTime * 100.0f / totalTime;
+  m_nextUsedReadTime.Set(MINIMUM_TIME_BETWEEN_READS);
 
   if (m_cpuFreqCounter && PdhCollectQueryData(m_cpuQueryLoad) == ERROR_SUCCESS)
   {
+    size_t i = 0;
     for (auto& core : m_cores)
     {
       PDH_RAW_COUNTER cnt;
       DWORD cntType;
-      if (core.m_coreCounter && PdhGetRawCounterValue(core.m_coreCounter, &cntType, &cnt) == ERROR_SUCCESS &&
+      PDH_HCOUNTER coreCounter;
+      if (i < m_coreCounters.size())
+        coreCounter = m_coreCounters[i];
+      if (coreCounter && PdhGetRawCounterValue(coreCounter, &cntType, &cnt) == ERROR_SUCCESS &&
           (cnt.CStatus == PDH_CSTATUS_VALID_DATA || cnt.CStatus == PDH_CSTATUS_NEW_DATA))
       {
-        const LONGLONG coreTotal = cnt.SecondValue,
-                       coreIdle  = cnt.FirstValue;
-        const LONGLONG deltaTotal = coreTotal - core.m_totalTime,
-                       deltaIdle  = coreIdle - core.m_idleTime;
+        const LONGLONG coreTotal = cnt.SecondValue;
+        const LONGLONG coreIdle  = cnt.FirstValue;
+        const LONGLONG deltaTotal = coreTotal - core.m_totalTime;
+        const LONGLONG deltaIdle  = coreIdle - core.m_idleTime;
         const double load = (double(deltaTotal - deltaIdle) * 100.0) / double(deltaTotal);
 
         // win32 has some problems with calculation of load if load close to zero
-        core.m_usagePercent = (load < 0) ? 0 : load;
+        if (load < 0)
+          core.m_usagePercent = 0;
+        else
+          core.m_usagePercent = load;
         if (load >= 0 || deltaTotal > 5 * 10 * 1000 * 1000) // do not update (smooth) values for 5 seconds on negative loads
         {
           core.m_totalTime = coreTotal;
@@ -208,13 +246,16 @@ int CCPUInfoWin32::GetUsedPercentage()
       }
       else
         core.m_usagePercent = double(m_lastUsedPercentage); // use CPU average as fallback
+
+      i++;
     }
   }
   else
     for (auto& core : m_cores)
       core.m_usagePercent = double(m_lastUsedPercentage); // use CPU average as fallback
 
-  m_nextUsedReadTime.Set(MINIMUM_TIME_BETWEEN_READS);
+  
+  result = static_cast<int>(m_lastUsedPercentage);
 
   return result;
 }

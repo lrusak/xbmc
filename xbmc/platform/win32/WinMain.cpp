@@ -8,6 +8,7 @@
 
 #include "AppParamParser.h"
 #include "CompileInfo.h"
+#include "ServiceBroker.h"
 #include "threads/Thread.h"
 #include "threads/platform/win/Win32Exception.h"
 #include "platform/win32/CharsetConverter.h"
@@ -75,6 +76,7 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR commandLine, INT)
     return 0;
   }
 
+  CServiceBroker::RegisterCPUInfo(CCPUInfo::GetCPUInfo());
   if ((CServiceBroker::GetCPUInfo()->GetCPUFeatures() & CPU_FEATURE_SSE2) == 0)
   {
     MessageBox(NULL, L"No SSE2 support detected", ToW(appName + ": Fatal Error").c_str(), MB_OK | MB_ICONERROR);

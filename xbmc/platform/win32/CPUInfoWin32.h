@@ -30,4 +30,5 @@ private:
   PDH_HQUERY m_cpuQueryFreq{nullptr};
   PDH_HQUERY m_cpuQueryLoad{nullptr};
   PDH_HCOUNTER m_cpuFreqCounter{nullptr};
+  std::vector<PDH_HCOUNTER> m_coreCounters;
 };
