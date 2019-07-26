@@ -84,6 +84,12 @@ bool CWinSystemGbmEGLContext::CreateNewWindow(const std::string& name,
     return false;
   }
 
+  if (!m_GBM->CreateBo(res.iWidth, res.iHeight, format, modifiers->data(), modifiers->size()))
+  {
+    CLog::Log(LOGERROR, "CWinSystemGbmEGLContext::{} - failed to initialize bo", __FUNCTION__);
+    return false;
+  }
+
   // This check + the reinterpret cast is for security reason, if the user has outdated platform header files which often is the case
   static_assert(sizeof(EGLNativeWindowType) == sizeof(gbm_surface*), "Declaration specifier differs in size");
 

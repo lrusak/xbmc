@@ -29,6 +29,10 @@ public:
   struct gbm_bo *LockFrontBuffer();
   void ReleaseBuffer();
 
+  bool CreateBo(int width, int height, uint32_t format, const uint64_t *modifiers, const int modifiers_count);
+  void DestroyBo();
+  struct gbm_bo *GetBo() { return m_backup_bo; }
+
   struct gbm_device* GetDevice() const { return m_device; }
   struct gbm_surface* GetSurface() const { return m_surface; }
 
@@ -37,6 +41,8 @@ protected:
   struct gbm_surface *m_surface = nullptr;
   struct gbm_bo *m_bo = nullptr;
   struct gbm_bo *m_next_bo = nullptr;
+
+  struct gbm_bo *m_backup_bo = nullptr;
 };
 
 }

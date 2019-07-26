@@ -50,19 +50,19 @@ void CDRMAtomic::DrmAtomicCommit(int fb_id, int flags, bool rendered, bool video
     }
   }
 
+  AddProperty(m_gui_plane, "FB_ID", fb_id);
+  AddProperty(m_gui_plane, "CRTC_ID", m_crtc->crtc->crtc_id);
+  AddProperty(m_gui_plane, "SRC_X", 0);
+  AddProperty(m_gui_plane, "SRC_Y", 0);
+  AddProperty(m_gui_plane, "SRC_W", m_width << 16);
+  AddProperty(m_gui_plane, "SRC_H", m_height << 16);
+  AddProperty(m_gui_plane, "CRTC_X", 0);
+  AddProperty(m_gui_plane, "CRTC_Y", 0);
+  AddProperty(m_gui_plane, "CRTC_W", m_mode->hdisplay);
+  AddProperty(m_gui_plane, "CRTC_H", m_mode->vdisplay);
+
   if (rendered)
   {
-    AddProperty(m_gui_plane, "FB_ID", fb_id);
-    AddProperty(m_gui_plane, "CRTC_ID", m_crtc->crtc->crtc_id);
-    AddProperty(m_gui_plane, "SRC_X", 0);
-    AddProperty(m_gui_plane, "SRC_Y", 0);
-    AddProperty(m_gui_plane, "SRC_W", m_width << 16);
-    AddProperty(m_gui_plane, "SRC_H", m_height << 16);
-    AddProperty(m_gui_plane, "CRTC_X", 0);
-    AddProperty(m_gui_plane, "CRTC_Y", 0);
-    AddProperty(m_gui_plane, "CRTC_W", m_mode->hdisplay);
-    AddProperty(m_gui_plane, "CRTC_H", m_mode->vdisplay);
-
     if (m_gui_plane->zpos)
     {
       AddProperty(m_gui_plane, "zpos", 1);
@@ -120,13 +120,13 @@ void CDRMAtomic::FlipPage(struct gbm_bo *bo, bool rendered, bool videoLayer)
       m_gui_plane->SetFormat(CDRMUtils::FourCCWithAlpha(m_gui_plane->GetFormat()));
     else
       m_gui_plane->SetFormat(CDRMUtils::FourCCWithoutAlpha(m_gui_plane->GetFormat()));
+  }
 
-    drm_fb = CDRMUtils::DrmFbGetFromBo(bo);
-    if (!drm_fb)
-    {
-      CLog::Log(LOGERROR, "CDRMAtomic::%s - Failed to get a new FBO", __FUNCTION__);
-      return;
-    }
+  drm_fb = CDRMUtils::DrmFbGetFromBo(bo);
+  if (!drm_fb)
+  {
+    CLog::Log(LOGERROR, "CDRMAtomic::%s - Failed to get a new FBO", __FUNCTION__);
+    return;
   }
 
   uint32_t flags = 0;

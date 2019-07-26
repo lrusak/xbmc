@@ -105,3 +105,48 @@ void CGBMUtils::ReleaseBuffer()
   m_bo = m_next_bo;
   m_next_bo = nullptr;
 }
+
+bool CGBMUtils::CreateBo(int width, int height, uint32_t format, const uint64_t *modifiers, const int modifiers_count)
+{
+  if (m_backup_bo)
+    CLog::Log(LOGWARNING, "CGBMUtils::%s - bo already created", __FUNCTION__);
+
+#if defined(HAS_GBM_MODIFIERS)
+  m_backup_bo = gbm_bo_create_with_modifiers(m_device,
+                                      width,
+                                      height,
+                                      format,
+                                      modifiers,
+                                      modifiers_count);
+#endif
+  if (!m_backup_bo)
+  {
+    m_backup_bo = gbm_bo_create(m_device,
+                         width,
+                         height,
+                         format,
+                         GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+  }
+
+  if (!m_backup_bo)
+  {
+    CLog::Log(LOGERROR, "CGBMUtils::%s - failed to create bo", __FUNCTION__);
+    return false;
+  }
+
+  CLog::Log(LOGDEBUG, "CGBMUtils::%s - created bo with size %dx%d", __FUNCTION__, width, height);
+
+  return true;
+}
+
+void CGBMUtils::DestroyBo()
+{
+  if (!m_backup_bo)
+    CLog::Log(LOGWARNING, "CGBMUtils::%s - bo already destroyed", __FUNCTION__);
+
+  if (m_backup_bo)
+  {
+    gbm_bo_destroy(m_backup_bo);
+    m_backup_bo = nullptr;
+  }
+}
