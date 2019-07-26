@@ -67,12 +67,23 @@ void CDRMAtomic::DrmAtomicCommit(int fb_id, int flags, bool rendered, bool video
     {
       AddProperty(m_gui_plane, "zpos", 1);
     }
+
+    if (m_video_plane->zpos)
+    {
+      AddProperty(m_video_plane, "zpos", 0);
+    }
   }
   else if (videoLayer && !CServiceBroker::GetGUI()->GetWindowManager().HasVisibleControls())
   {
-    // disable gui plane when video layer is active and gui has no visible controls
-    AddProperty(m_gui_plane, "FB_ID", 0);
-    AddProperty(m_gui_plane, "CRTC_ID", 0);
+    if (m_gui_plane->zpos)
+    {
+      AddProperty(m_gui_plane, "zpos", 0);
+    }
+
+    if (m_video_plane->zpos)
+    {
+      AddProperty(m_video_plane, "zpos", 1);
+    }
   }
 
   auto ret = drmModeAtomicCommit(m_fd, m_req, flags | DRM_MODE_ATOMIC_TEST_ONLY, nullptr);
