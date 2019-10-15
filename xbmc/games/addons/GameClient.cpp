@@ -165,6 +165,7 @@ bool CGameClient::Initialize(void)
     return false;
 
   m_ifc.game->toKodi->kodiInstance = this;
+  m_ifc.game->toKodi->EnableHardwareRendering = cb_enable_hardware_rendering;
   m_ifc.game->toKodi->CloseGame = cb_close_game;
   m_ifc.game->toKodi->OpenStream = cb_open_stream;
   m_ifc.game->toKodi->GetStreamBuffer = cb_get_stream_buffer;
@@ -590,6 +591,27 @@ void CGameClient::LogException(const char* strFunctionName) const
   CLog::Log(LOGERROR, "Please contact the developer of this add-on: {}", Author());
 }
 
+void CGameClient::HardwareContextReset()
+{
+  try
+  {
+    LogError(m_ifc.game->toAddon->HwContextReset(m_ifc.game), "HwContextReset()");
+  }
+  catch (...) { LogException("HwContextReset()"); }
+}
+
+void CGameClient::cb_enable_hardware_rendering(KODI_HANDLE kodiInstance, const game_hw_rendering_properties* properties)
+{
+  if (properties == nullptr)
+    return;
+
+  CGameClient *gameClient = static_cast<CGameClient*>(kodiInstance);
+  if (gameClient == nullptr)
+    return;
+
+  return gameClient->Streams().EnableHardwareRendering(*properties);
+}
+
 void CGameClient::cb_close_game(KODI_HANDLE kodiInstance)
 {
   using namespace MESSAGING;
@@ -674,8 +696,7 @@ game_proc_address_t CGameClient::cb_hw_get_proc_address(KODI_HANDLE kodiInstance
   if (!gameClient)
     return nullptr;
 
-  //! @todo
-  return nullptr;
+  return gameClient->Streams().GetHwProcedureAddress(sym);
 }
 
 bool CGameClient::cb_input_event(KODI_HANDLE kodiInstance, const game_input_event* event)
