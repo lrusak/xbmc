@@ -161,6 +161,7 @@ bool CGameClient::Initialize(void)
     return false;
 
   m_struct.toKodi->kodiInstance = this;
+  m_struct.toKodi->EnableHardwareRendering = cb_enable_hardware_rendering;
   m_struct.toKodi->CloseGame = cb_close_game;
   m_struct.toKodi->OpenStream = cb_open_stream;
   m_struct.toKodi->GetStreamBuffer = cb_get_stream_buffer;
@@ -584,6 +585,18 @@ void CGameClient::HardwareContextReset()
 {
   try { LogError(m_struct.toAddon.HwContextReset(), "HwContextReset()"); }
   catch (...) { LogException("HwContextReset()"); }
+}
+
+void CGameClient::cb_enable_hardware_rendering(KODI_HANDLE kodiInstance, const game_hw_rendering_properties* properties)
+{
+  if (properties == nullptr)
+    return;
+
+  CGameClient *gameClient = static_cast<CGameClient*>(kodiInstance);
+  if (gameClient == nullptr)
+    return;
+
+  return gameClient->Streams().EnableHardwareRendering(*properties);
 }
 
 void CGameClient::cb_close_game(KODI_HANDLE kodiInstance)
