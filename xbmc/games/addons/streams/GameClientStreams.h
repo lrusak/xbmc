@@ -39,6 +39,9 @@ public:
 
   game_proc_address_t GetHwProcedureAddress(const char *sym);
 
+  // TODO: Find me a better place
+  void EnableHardwareRendering(const game_hw_rendering_properties& properties);
+
 private:
   // Utility functions
   std::unique_ptr<IGameClientStream> CreateStream(GAME_STREAM_TYPE streamType) const;

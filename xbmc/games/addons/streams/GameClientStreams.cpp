@@ -97,6 +97,11 @@ game_proc_address_t CGameClientStreams::GetHwProcedureAddress(const char *symbol
   return nullptr;
 }
 
+void CGameClientStreams::EnableHardwareRendering(const game_hw_rendering_properties& properties)
+{
+  // TODO
+}
+
 std::unique_ptr<IGameClientStream> CGameClientStreams::CreateStream(
     GAME_STREAM_TYPE streamType) const
 {
