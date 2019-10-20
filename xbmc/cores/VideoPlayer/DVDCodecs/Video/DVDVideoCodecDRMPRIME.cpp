@@ -62,7 +62,7 @@ void CDVDVideoCodecDRMPRIME::Register()
 
 static bool IsSupportedHwFormat(const enum AVPixelFormat fmt)
 {
-  return fmt == AV_PIX_FMT_DRM_PRIME;
+  return fmt == AV_PIX_FMT_DRM_PRIME || fmt == AV_PIX_FMT_VAAPI;
 }
 
 static bool IsSupportedSwFormat(const enum AVPixelFormat fmt)
@@ -79,7 +79,8 @@ static const AVCodecHWConfig* FindHWConfig(const AVCodec* codec)
       continue;
 
     if ((config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) &&
-        config->device_type == AV_HWDEVICE_TYPE_DRM)
+        (config->device_type == AV_HWDEVICE_TYPE_DRM ||
+         config->device_type == AV_HWDEVICE_TYPE_VAAPI))
       return config;
 
     if ((config->methods & AV_CODEC_HW_CONFIG_METHOD_INTERNAL))
@@ -223,8 +224,7 @@ bool CDVDVideoCodecDRMPRIME::Open(CDVDStreamInfo& hints, CDVDCodecOptions& optio
   m_hints = hints;
 
   const AVCodecHWConfig* pConfig = FindHWConfig(pCodec);
-  if (pConfig && (pConfig->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) &&
-      pConfig->device_type == AV_HWDEVICE_TYPE_DRM)
+  if (pConfig && (pConfig->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX))
   {
     // hack: fix with proper device when dma-hints wayland protocol works
     const char* device = "/dev/dri/renderD129";
@@ -232,12 +232,13 @@ bool CDVDVideoCodecDRMPRIME::Open(CDVDStreamInfo& hints, CDVDCodecOptions& optio
 #if defined(HAVE_GBM)
     auto winSystem =
         dynamic_cast<KODI::WINDOWING::GBM::CWinSystemGbm*>(CServiceBroker::GetWinSystem());
-    if (pConfig->device_type == AV_HWDEVICE_TYPE_DRM)
+    if (pConfig->device_type == AV_HWDEVICE_TYPE_DRM ||
+        pConfig->device_type == AV_HWDEVICE_TYPE_VAAPI)
       device = drmGetRenderDeviceNameFromFd(winSystem->GetDrm()->GetFileDescriptor());
 #endif
 
-    if (av_hwdevice_ctx_create(&m_pCodecContext->hw_device_ctx, AV_HWDEVICE_TYPE_DRM,
-                               renderNode.c_str(), nullptr, 0) < 0)
+    if (av_hwdevice_ctx_create(&m_pCodecContext->hw_device_ctx, pConfig->device_type, device,
+                               nullptr, 0) < 0)
     {
       CLog::Log(LOGNOTICE,
                 "CDVDVideoCodecDRMPRIME::{} - unable to create hwdevice context using device={}",
@@ -254,11 +255,16 @@ bool CDVDVideoCodecDRMPRIME::Open(CDVDStreamInfo& hints, CDVDCodecOptions& optio
   m_pCodecContext->codec_tag = hints.codec_tag;
   m_pCodecContext->coded_width = hints.width;
   m_pCodecContext->coded_height = hints.height;
+  m_pCodecContext->level = hints.level;
+  m_pCodecContext->profile = hints.profile;
   m_pCodecContext->bits_per_coded_sample = hints.bitsperpixel;
   m_pCodecContext->time_base.num = 1;
   m_pCodecContext->time_base.den = DVD_TIME_BASE;
   m_pCodecContext->thread_safe_callbacks = 1;
   m_pCodecContext->thread_count = CServiceBroker::GetCPUInfo()->GetCPUCount();
+
+  if (pConfig && pConfig->device_type == AV_HWDEVICE_TYPE_VAAPI)
+    m_pCodecContext->extra_hw_frames = 6;
 
   if (hints.extradata && hints.extrasize > 0)
   {
