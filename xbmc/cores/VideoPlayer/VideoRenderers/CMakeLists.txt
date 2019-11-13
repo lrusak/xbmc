@@ -43,6 +43,13 @@ if(OPENGL_FOUND)
                       RenderCaptureGL.h)
 endif()
 
+if (VULKAN_FOUND)
+  list(APPEND SOURCES OverlayRendererVulkan.cpp
+                      RendererVulkan.cpp)
+  list(APPEND HEADERS OverlayRendererVulkan.h
+                      RendererVulkan.h)
+endif()
+
 if(OPENGLES_FOUND AND ("android" IN_LIST CORE_PLATFORM_NAME_LC OR
                        "ios" IN_LIST CORE_PLATFORM_NAME_LC OR
                        "tvos" IN_LIST CORE_PLATFORM_NAME_LC OR
