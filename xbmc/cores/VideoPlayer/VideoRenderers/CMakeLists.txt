@@ -55,4 +55,8 @@ if(OPENGLES_FOUND AND ("android" IN_LIST CORE_PLATFORM_NAME_LC OR
                       RenderCaptureGLES.h)
 endif()
 
+if(VULKAN_FOUND)
+  list(APPEND HEADERS RenderCaptureVulkan.h)
+endif()
+
 core_add_library(videorenderers)
