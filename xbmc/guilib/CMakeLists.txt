@@ -157,6 +157,15 @@ set(HEADERS DDSImage.h
             XBTF.h
             XBTFReader.h)
 
+if(VULKAN_FOUND)
+  list(APPEND SOURCES GUIFontTTFVulkan.cpp
+                      GUITextureVulkan.cpp
+                      TextureVulkan.cpp)
+  list(APPEND HEADERS GUIFontTTFVulkan.h
+                      GUITextureVulkan.h
+                      TextureVulkan.h)
+endif()
+
 if(OPENGL_FOUND OR OPENGLES_FOUND)
   list(APPEND SOURCES GUIFontTTFGL.cpp
                       Shader.cpp
