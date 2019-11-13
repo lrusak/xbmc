@@ -223,8 +223,8 @@ struct CVertexBuffer
   typedef unsigned int BufferHandleType;
 #define  BUFFER_HANDLE_INIT 0
 #elif defined(HAS_VULKAN) // todo
-  typedef unsigned int BufferHandleType;
-#define BUFFER_HANDLE_INIT 0
+  typedef void* BufferHandleType;
+#define BUFFER_HANDLE_INIT nullptr
 #elif defined(HAS_DX)
   typedef void* BufferHandleType;
 #define BUFFER_HANDLE_INIT nullptr

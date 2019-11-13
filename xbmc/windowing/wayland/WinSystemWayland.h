@@ -96,10 +96,7 @@ public:
 
 protected:
   std::unique_ptr<KODI::WINDOWING::IOSScreenSaver> GetOSScreenSaverImpl() override;
-  CSizeInt GetBufferSize() const
-  {
-    return m_bufferSize;
-  }
+  CSizeInt GetBufferSize() const { return m_bufferSize; }
   std::unique_ptr<CConnection> const& GetConnection()
   {
     return m_connection;
