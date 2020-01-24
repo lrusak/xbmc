@@ -20,6 +20,7 @@ ffmpg_config += --enable-muxer=asf --enable-muxer=ipod
 ffmpg_config += --enable-encoder=ac3 --enable-encoder=aac
 ffmpg_config += --enable-encoder=wmav2 --enable-protocol=http
 ffmpg_config += --enable-gnutls
+ffmpg_config += --extra-libs="-ldl"
 ffmpg_config += --enable-encoder=png --enable-encoder=mjpeg
 ffmpg_config += $(FFMPEG_CONFIGURE_OPTIONS)
 
