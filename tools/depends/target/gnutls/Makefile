@@ -3,7 +3,7 @@ DEPS= ../../Makefile.include Makefile size-max.patch 02-darwin-getentropy.patch
 
 # lib name, version
 LIBNAME=gnutls
-VERSION=3.5.10
+VERSION=3.6.11.1
 SOURCE=$(LIBNAME)-$(VERSION)
 ARCHIVE=$(SOURCE).tar.xz
 
