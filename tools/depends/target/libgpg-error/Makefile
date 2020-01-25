@@ -25,7 +25,7 @@ $(PLATFORM): $(TARBALLS_LOCATION)/$(ARCHIVE) $(DEPS)
 	rm -rf $(PLATFORM)/*; mkdir -p $(PLATFORM)
 	cd $(PLATFORM); $(ARCHIVE_TOOL) $(ARCHIVE_TOOL_FLAGS) $(TARBALLS_LOCATION)/$(ARCHIVE)
 	cd $(PLATFORM); patch -p1 -i ../libgpg-error-1.36-gawk5-support.patch
-	cd $(PLATFORM); ./autogen.sh
+	cd $(PLATFORM); GETTEXT="$(NATIVEPREFIX)/bin/gettext" ./autogen.sh
 	cd $(PLATFORM); $(CONFIGURE)
 
 $(LIBDYLIB): $(PLATFORM)

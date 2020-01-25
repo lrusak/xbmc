@@ -39,9 +39,11 @@ $(PLATFORM): $(TARBALLS_LOCATION)/$(ARCHIVE) $(DEPS)
 
 $(LIBDYLIB): $(PLATFORM)
 	$(MAKE) -C $(PLATFORM)/gettext-tools
+	$(MAKE) -C $(PLATFORM)/gettext-runtime
 
 .installed-$(PLATFORM): $(LIBDYLIB)
 	$(MAKE) -j1 -C $(PLATFORM)/gettext-tools install
+	$(MAKE) -j1 -C $(PLATFORM)/gettext-runtime install
 	touch $@
 
 clean:
