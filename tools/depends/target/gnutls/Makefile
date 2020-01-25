@@ -1,5 +1,5 @@
 include ../../Makefile.include
-DEPS= ../../Makefile.include Makefile size-max.patch 02-darwin-getentropy.patch
+DEPS= ../../Makefile.include Makefile size-max.patch 02-darwin-getentropy.patch remove-weak_import-check-for-osx.patch
 
 # lib name, version
 LIBNAME=gnutls
@@ -32,6 +32,7 @@ $(PLATFORM): $(TARBALLS_LOCATION)/$(ARCHIVE) $(DEPS)
 	cd $(PLATFORM); $(ARCHIVE_TOOL) $(ARCHIVE_TOOL_FLAGS) $(TARBALLS_LOCATION)/$(ARCHIVE)
 	cd $(PLATFORM); patch -p1 -i ../size-max.patch
 	cd $(PLATFORM); patch -p1 -i ../02-darwin-getentropy.patch
+	cd $(PLATFORM); patch -p1 -i ../remove-weak_import-check-for-osx.patch
 	cd $(PLATFORM); $(AUTORECONF) -vif
 	cd $(PLATFORM); $(CONFIGURE)
 
