@@ -1,5 +1,5 @@
 include ../../Makefile.include
-DEPS= ../../Makefile.include Makefile tvos_remove-fork.patch
+DEPS= ../../Makefile.include Makefile tvos_remove-fork.patch libgpg-error-1.36-gawk5-support.patch
 
 # lib name, version
 LIBNAME=libgpg-error
@@ -28,7 +28,7 @@ $(PLATFORM): $(TARBALLS_LOCATION)/$(ARCHIVE) $(DEPS)
 ifeq ($(TARGET_PLATFORM),appletvos)
 	cd $(PLATFORM); patch -p1 -i ../tvos_remove-fork.patch
 endif
-	cd $(PLATFORM); ./autogen.sh
+	cd $(PLATFORM); $(AUTORECONF) -vif
 	cd $(PLATFORM); $(CONFIGURE)
 
 $(LIBDYLIB): $(PLATFORM)
