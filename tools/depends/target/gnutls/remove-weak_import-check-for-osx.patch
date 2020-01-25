@@ -1,17 +1,6 @@
-From 3eca0020d80cebbe9a344717781fc92151068bd4 Mon Sep 17 00:00:00 2001
-From: Lukas Rusak <lorusak@gmail.com>
-Date: Sat, 25 Jan 2020 07:42:27 -0800
-Subject: [PATCH] configure.ac: remove weak_import check for osx
-
----
- configure.ac | 8 --------
- 1 file changed, 8 deletions(-)
-
-diff --git a/configure.ac b/configure.ac
-index db1ce841f..c250df819 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -122,14 +122,6 @@ case "$host" in
+--- a/configure.ac	2020-01-25 08:26:59.223068640 -0800
++++ b/configure.ac	2020-01-25 08:26:38.846233553 -0800
+@@ -122,14 +122,6 @@
    ;;
    *darwin*)
      have_macosx=yes
@@ -26,6 +15,3 @@ index db1ce841f..c250df819 100644
    ;;
    *solaris*)
      have_elf=yes
--- 
-2.24.1
-
