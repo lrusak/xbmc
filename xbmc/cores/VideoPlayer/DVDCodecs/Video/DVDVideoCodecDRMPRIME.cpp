@@ -30,8 +30,6 @@ extern "C"
 #include <libavutil/pixdesc.h>
 }
 
-using namespace KODI::WINDOWING::GBM;
-
 CDVDVideoCodecDRMPRIME::CDVDVideoCodecDRMPRIME(CProcessInfo& processInfo)
   : CDVDVideoCodec(processInfo)
 {
@@ -228,13 +226,22 @@ bool CDVDVideoCodecDRMPRIME::Open(CDVDStreamInfo& hints, CDVDCodecOptions& optio
   if (pConfig && (pConfig->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX) &&
       pConfig->device_type == AV_HWDEVICE_TYPE_DRM)
   {
-    CWinSystemGbm* winSystem = dynamic_cast<CWinSystemGbm*>(CServiceBroker::GetWinSystem());
+    // hack: fix with proper device when dma-hints wayland protocol works
+    const char* device = "/dev/dri/renderD129";
+
+#if defined(HAVE_GBM)
+    auto winSystem =
+        dynamic_cast<KODI::WINDOWING::GBM::CWinSystemGbm*>(CServiceBroker::GetWinSystem());
+    if (pConfig->device_type == AV_HWDEVICE_TYPE_DRM)
+      device = drmGetRenderDeviceNameFromFd(winSystem->GetDrm()->GetFileDescriptor());
+#endif
+
     if (av_hwdevice_ctx_create(&m_pCodecContext->hw_device_ctx, AV_HWDEVICE_TYPE_DRM,
-                               drmGetDeviceNameFromFd2(winSystem->GetDrm()->GetFileDescriptor()),
-                               nullptr, 0) < 0)
+                               renderNode.c_str(), nullptr, 0) < 0)
     {
-      CLog::Log(LOGNOTICE, "CDVDVideoCodecDRMPRIME::{} - unable to create hwdevice context",
-                __FUNCTION__);
+      CLog::Log(LOGNOTICE,
+                "CDVDVideoCodecDRMPRIME::{} - unable to create hwdevice context using device={}",
+                __FUNCTION__, device);
       avcodec_free_context(&m_pCodecContext);
       return false;
     }

@@ -17,9 +17,9 @@
 #include "utils/EGLFence.h"
 #include "utils/GLUtils.h"
 #include "utils/log.h"
-#include "windowing/gbm/WinSystemGbmEGLContext.h"
+#include "windowing/WinSystem.h"
+#include "windowing/linux/WinSystemEGL.h"
 
-using namespace KODI::WINDOWING::GBM;
 using namespace KODI::UTILS::EGL;
 
 CRendererDRMPRIMEGLES::~CRendererDRMPRIMEGLES()
@@ -44,11 +44,6 @@ bool CRendererDRMPRIMEGLES::Configure(const VideoPicture& picture,
                                       float fps,
                                       unsigned int orientation)
 {
-  CWinSystemGbmEGLContext* winSystem =
-      dynamic_cast<CWinSystemGbmEGLContext*>(CServiceBroker::GetWinSystem());
-  if (!winSystem)
-    return false;
-
   m_format = picture.videoBuffer->GetFormat();
   m_sourceWidth = picture.iWidth;
   m_sourceHeight = picture.iHeight;
@@ -66,7 +61,15 @@ bool CRendererDRMPRIMEGLES::Configure(const VideoPicture& picture,
 
   Flush(false);
 
-  EGLDisplay eglDisplay = winSystem->GetEGLDisplay();
+  auto winSystem = CServiceBroker::GetWinSystem();
+
+  if (!winSystem)
+    return false;
+
+  auto winSystemEGL = dynamic_cast<KODI::WINDOWING::LINUX::CWinSystemEGL*>(winSystem);
+
+  EGLDisplay eglDisplay = winSystemEGL->GetEGLDisplay();
+
   for (auto&& buf : m_buffers)
   {
     if (!buf.fence)
@@ -76,7 +79,7 @@ bool CRendererDRMPRIMEGLES::Configure(const VideoPicture& picture,
     }
   }
 
-  m_clearColour = winSystem->UseLimitedColor() ? (16.0f / 0xff) : 0.0f;
+  // m_clearColour = dynamic_cast<KODI::WINDOWING::GBM::CWinSystemGbmEGLContext*>(winSystem)->UseLimitedColor() ? (16.0f / 0xff) : 0.0f;
 
   m_configured = true;
   return true;
