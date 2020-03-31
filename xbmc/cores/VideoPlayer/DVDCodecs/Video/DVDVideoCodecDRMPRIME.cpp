@@ -28,21 +28,18 @@ extern "C"
 #include <libavutil/imgutils.h>
 #include <libavutil/opt.h>
 #include <libavutil/pixdesc.h>
-#include <libswscale/swscale.h>
 }
 
 CDVDVideoCodecDRMPRIME::CDVDVideoCodecDRMPRIME(CProcessInfo& processInfo)
   : CDVDVideoCodec(processInfo)
 {
   m_pFrame = av_frame_alloc();
-  m_filterFrame = av_frame_alloc();
   m_videoBufferPool = std::make_shared<CVideoBufferPoolDRMPRIMEFFmpeg>();
 }
 
 CDVDVideoCodecDRMPRIME::~CDVDVideoCodecDRMPRIME()
 {
   av_frame_free(&m_pFrame);
-  av_frame_free(&m_filterFrame);
   avcodec_free_context(&m_pCodecContext);
 }
 
@@ -70,7 +67,7 @@ static bool IsSupportedHwFormat(const enum AVPixelFormat fmt)
 
 static bool IsSupportedSwFormat(const enum AVPixelFormat fmt)
 {
-  return fmt == AV_PIX_FMT_YUV420P || fmt == AV_PIX_FMT_YUV420P10;
+  return fmt == AV_PIX_FMT_YUV420P;
 }
 
 static const AVCodecHWConfig* FindHWConfig(const AVCodec* codec)
@@ -178,21 +175,18 @@ int CDVDVideoCodecDRMPRIME::GetBuffer(struct AVCodecContext* avctx, AVFrame* fra
     AlignedSize(avctx, width, height);
 
     int size;
-    switch (frame->format)
+    switch (avctx->pix_fmt)
     {
       case AV_PIX_FMT_YUV420P:
         size = width * height * 3 / 2;
-        break;
-      case AV_PIX_FMT_YUV420P10:
-        size = width * height * 3;
         break;
       default:
         return -1;
     }
 
     CDVDVideoCodecDRMPRIME* ctx = static_cast<CDVDVideoCodecDRMPRIME*>(avctx->opaque);
-    auto buffer = dynamic_cast<CVideoBufferDMA*>(ctx->m_processInfo.GetVideoBufferManager().Get(
-        static_cast<AVPixelFormat>(frame->format), size, nullptr));
+    auto buffer = dynamic_cast<CVideoBufferDMA*>(
+        ctx->m_processInfo.GetVideoBufferManager().Get(avctx->pix_fmt, size, nullptr));
     if (!buffer)
       return -1;
 
@@ -522,69 +516,12 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecDRMPRIME::GetPicture(VideoPicture* pVideo
   {
     CVideoBufferDMA* buffer = static_cast<CVideoBufferDMA*>(m_pFrame->opaque);
     buffer->SetPictureParams(*pVideoPicture);
+    buffer->Acquire();
     buffer->SyncEnd();
+    buffer->SetDimensions(m_pFrame->width, m_pFrame->height);
 
-    switch (m_pFrame->format)
-    {
-      case AV_PIX_FMT_YUV420P:
-        m_filterFrame->format = AV_PIX_FMT_NV12;
-        break;
-      case AV_PIX_FMT_YUV420P10:
-        m_filterFrame->format = AV_PIX_FMT_P010;
-        break;
-
-      default:
-        break;
-    }
-
-    auto filterBuffer = dynamic_cast<CVideoBufferDMA*>(m_processInfo.GetVideoBufferManager().Get(
-        static_cast<AVPixelFormat>(m_filterFrame->format), buffer->GetSize(), nullptr));
-    if (!filterBuffer)
-      return VC_ERROR;
-
-    int width = m_pFrame->width;
-    int height = m_pFrame->height;
-
-    AlignedSize(m_pCodecContext, width, height);
-
-    filterBuffer->Export(m_filterFrame, width, height);
-    filterBuffer->SetDimensions(m_pFrame->width, m_pFrame->height);
-
-    if (!m_sws)
-    {
-      m_sws = sws_alloc_context();
-      if (!m_sws)
-        return VC_ERROR;
-
-      av_opt_set_int(m_sws, "srcw", m_pFrame->width, 0);
-      av_opt_set_int(m_sws, "srch", m_pFrame->height, 0);
-      av_opt_set_int(m_sws, "src_format", m_pFrame->format, 0);
-      av_opt_set_int(m_sws, "dstw", m_pFrame->width, 0);
-      av_opt_set_int(m_sws, "dsth", m_pFrame->height, 0);
-      av_opt_set_int(m_sws, "dst_format", m_filterFrame->format, 0);
-      av_opt_set_int(m_sws, "sws_flags", SWS_PRINT_INFO, 0);
-
-      if (sws_init_context(m_sws, nullptr, nullptr) < 0)
-        return VC_ERROR;
-
-      UpdateProcessInfo(m_pCodecContext, static_cast<AVPixelFormat>(m_filterFrame->format));
-    }
-
-    YuvImage image = {};
-    buffer->GetPlanes(image.plane);
-    buffer->GetStrides(image.stride);
-
-    YuvImage newimage = {};
-    filterBuffer->GetPlanes(newimage.plane);
-    filterBuffer->GetStrides(newimage.stride);
-
-    sws_scale(m_sws, (const uint8_t* const*)&image.plane, image.stride, 0, m_pFrame->height,
-              newimage.plane, newimage.stride);
-
+    pVideoPicture->videoBuffer = buffer;
     av_frame_unref(m_pFrame);
-    av_frame_unref(m_filterFrame);
-
-    pVideoPicture->videoBuffer = filterBuffer;
   }
 
   if (!pVideoPicture->videoBuffer)

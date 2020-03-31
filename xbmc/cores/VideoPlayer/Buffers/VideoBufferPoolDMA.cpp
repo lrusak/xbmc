@@ -108,7 +108,6 @@ void CVideoBufferPoolDMA::Released(CVideoBufferManager& videoBufferManager)
     return;
 
   videoBufferManager.RegisterPool(std::make_shared<CVideoBufferPoolDMA>());
-  videoBufferManager.RegisterPool(std::make_shared<CVideoBufferPoolDMA>());
 }
 
 std::shared_ptr<IVideoBufferPool> CVideoBufferPoolDMA::CreatePool()
@@ -120,14 +119,8 @@ uint32_t CVideoBufferPoolDMA::TranslateFormat(AVPixelFormat format)
 {
   switch (format)
   {
-    case AV_PIX_FMT_YUV420P10:
     case AV_PIX_FMT_YUV420P:
       return DRM_FORMAT_YUV420;
-    case AV_PIX_FMT_NV12:
-      return DRM_FORMAT_NV12;
-    case AV_PIX_FMT_P010:
-      return DRM_FORMAT_P010;
-
     default:
       return 0;
   }

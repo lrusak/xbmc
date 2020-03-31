@@ -14,8 +14,6 @@
 
 #include <memory>
 
-class SwsContext;
-
 class CDVDVideoCodecDRMPRIME : public CDVDVideoCodec
 {
 public:
@@ -45,9 +43,5 @@ protected:
   CDVDStreamInfo m_hints;
   AVCodecContext* m_pCodecContext = nullptr;
   AVFrame* m_pFrame = nullptr;
-  AVFrame* m_filterFrame = nullptr;
   std::shared_ptr<IVideoBufferPool> m_videoBufferPool;
-
-private:
-  SwsContext* m_sws = nullptr;
 };
