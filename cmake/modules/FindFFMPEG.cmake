@@ -229,13 +229,15 @@ if(NOT FFMPEG_FOUND)
     message(STATUS "FFMPEG_URL: ${FFMPEG_URL}")
   endif()
 
+  find_package(LibDRM)
   find_package(Dav1d)
 
   set(FFMPEG_OPTIONS -DENABLE_CCACHE=${ENABLE_CCACHE}
                      -DCCACHE_PROGRAM=${CCACHE_PROGRAM}
                      -DENABLE_VAAPI=${ENABLE_VAAPI}
                      -DENABLE_VDPAU=${ENABLE_VDPAU}
-                     -DENABLE_DAV1D=${DAV1D_FOUND})
+                     -DENABLE_DAV1D=${DAV1D_FOUND}
+                     -DENABLE_LIBDRM=${LIBDRM_FOUND})
 
   if(KODI_DEPENDSBUILD)
     set(CROSS_ARGS -DDEPENDS_PATH=${DEPENDS_PATH}
