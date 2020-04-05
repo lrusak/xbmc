@@ -35,14 +35,53 @@ CRendererDRMPRIME::~CRendererDRMPRIME()
 
 CBaseRenderer* CRendererDRMPRIME::Create(CVideoBuffer* buffer)
 {
-  if (buffer && dynamic_cast<CVideoBufferDRMPRIME*>(buffer) &&
-      CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(
-          SETTING_VIDEOPLAYER_USEPRIMERENDERER) == 0)
+  if (buffer && CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(
+                    SETTING_VIDEOPLAYER_USEPRIMERENDERER) == 0)
   {
-    CWinSystemGbm* winSystem = dynamic_cast<CWinSystemGbm*>(CServiceBroker::GetWinSystem());
-    if (winSystem && winSystem->GetDrm()->GetVideoPlane()->plane &&
-        std::dynamic_pointer_cast<CDRMAtomic>(winSystem->GetDrm()))
-      return new CRendererDRMPRIME();
+    CWinSystemGbm* winSystem = static_cast<CWinSystemGbm*>(CServiceBroker::GetWinSystem());
+    if (!winSystem)
+      return nullptr;
+
+    auto drm = std::static_pointer_cast<CDRMAtomic>(winSystem->GetDrm());
+    if (!drm)
+      return nullptr;
+
+    auto buf = static_cast<CVideoBufferDRMPRIME*>(buffer);
+    if (!buf)
+      return nullptr;
+
+    if (!buf->AcquireDescriptor())
+      return nullptr;
+
+    auto desc = buf->GetDescriptor();
+    if (!desc)
+      return nullptr;
+
+    auto modifiers = drm->GetVideoPlaneModifiersForFormat(desc->format);
+    if (modifiers->empty())
+    {
+      CLog::Log(LOGDEBUG, "CRendererDRMPRIME::{} - format not supported: {}", __FUNCTION__,
+                CDRMUtils::FourCCToString(desc->format));
+      return nullptr;
+    }
+
+    auto modifier =
+        std::find(modifiers->begin(), modifiers->end(), desc->objects[0].format_modifier);
+    if (modifier == modifiers->end())
+    {
+      CLog::Log(LOGDEBUG, "CRendererDRMPRIME::{} - modifier ({:#x}) not supported for format ({})",
+                __FUNCTION__, desc->objects[0].format_modifier,
+                CDRMUtils::FourCCToString(desc->format));
+      return nullptr;
+    }
+
+    CLog::Log(LOGDEBUG, "CRendererDRMPRIME::{} - found plane format ({}) and modifier ({:#x})",
+              __FUNCTION__, CDRMUtils::FourCCToString(desc->format),
+              desc->objects[0].format_modifier);
+
+    buf->ReleaseDescriptor();
+
+    return new CRendererDRMPRIME();
   }
 
   return nullptr;
