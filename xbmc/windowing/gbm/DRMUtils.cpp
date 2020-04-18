@@ -328,6 +328,9 @@ bool CDRMUtils::FindCrtcs()
       }
 
       m_crtcs.emplace_back(object);
+
+      if (object->crtc->crtc_id == m_encoder->encoder->crtc_id)
+        m_orig_crtc = object;
     }
   }
 
@@ -460,7 +463,7 @@ bool CDRMUtils::FindPlanes()
     return false;
   }
 
-  drmModePlanePtr fallback;
+  drmModePlanePtr fallback = nullptr;
 
   for (size_t i = 0; i < m_crtcs.size(); i++)
   {
@@ -734,8 +737,6 @@ bool CDRMUtils::InitDrm()
     CLog::Log(LOGNOTICE, "CDRMUtils::%s - successfully authorized drm magic", __FUNCTION__);
   }
 
-  m_orig_crtc = drmModeGetCrtc(m_fd, m_crtc->crtc->crtc_id);
-
   return true;
 }
 
@@ -747,13 +748,13 @@ bool CDRMUtils::RestoreOriginalMode()
   }
 
   auto ret = drmModeSetCrtc(m_fd,
-                            m_orig_crtc->crtc_id,
-                            m_orig_crtc->buffer_id,
-                            m_orig_crtc->x,
-                            m_orig_crtc->y,
+                            m_orig_crtc->crtc->crtc_id,
+                            m_orig_crtc->crtc->buffer_id,
+                            m_orig_crtc->crtc->x,
+                            m_orig_crtc->crtc->y,
                             &m_connector->connector->connector_id,
                             1,
-                            &m_orig_crtc->mode);
+                            &m_orig_crtc->crtc->mode);
 
   if(ret)
   {
@@ -762,9 +763,6 @@ bool CDRMUtils::RestoreOriginalMode()
   }
 
   CLog::Log(LOGDEBUG, "CDRMUtils::%s - set original crtc mode", __FUNCTION__);
-
-  drmModeFreeCrtc(m_orig_crtc);
-  m_orig_crtc = nullptr;
 
   return true;
 }
@@ -803,6 +801,7 @@ void CDRMUtils::DestroyDrm()
   }
 
   m_crtc = nullptr;
+  m_orig_crtc = nullptr;
 
   drmModeFreePlane(m_video_plane->plane);
   FreeProperties(m_video_plane);
