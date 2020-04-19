@@ -9,6 +9,8 @@
 #pragma once
 
 #include <array>
+#include <map>
+#include <vector>
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -48,7 +50,18 @@ public:
   void UploadImage(GLenum textureTarget);
   void DestroyImage();
 
+#if defined(EGL_EXT_image_dma_buf_import_modifiers)
+  std::vector<EGLuint64KHR>* GetModifiersForFormat(uint32_t format);
+#endif
+
 private:
+#if defined(EGL_EXT_image_dma_buf_import_modifiers)
+  void QueryFormats();
+  void QueryModifiersForFormat(EGLint format);
+
+  std::map<EGLint, std::vector<EGLuint64KHR>> m_modifiers;
+#endif
+
   EGLDisplay m_display{nullptr};
   EGLImageKHR m_image{nullptr};
 

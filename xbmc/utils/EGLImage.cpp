@@ -8,8 +8,9 @@
 
 #include "EGLImage.h"
 
-#include "EGLUtils.h"
-#include "log.h"
+#include "utils/EGLUtils.h"
+#include "utils/log.h"
+#include "windowing/gbm/DRMUtils.h"
 
 #include <map>
 
@@ -195,3 +196,80 @@ void CEGLImage::DestroyImage()
 {
   m_eglDestroyImageKHR(m_display, m_image);
 }
+
+#if defined(EGL_EXT_image_dma_buf_import_modifiers)
+std::vector<EGLuint64KHR>* CEGLImage::GetModifiersForFormat(uint32_t format)
+{
+  QueryFormats();
+
+  return &m_modifiers[format];
+}
+
+void CEGLImage::QueryFormats()
+{
+  auto eglQueryDmaBufFormatsEXT =
+      CEGLUtils::GetRequiredProcAddress<PFNEGLQUERYDMABUFFORMATSEXTPROC>(
+          "eglQueryDmaBufFormatsEXT");
+
+  EGLint numFormats;
+  if (eglQueryDmaBufFormatsEXT(m_display, 0, nullptr, &numFormats) != EGL_TRUE)
+  {
+    CLog::Log(LOGERROR, "CEGLImage::{} - failed to query the max number of EGL dma-buf formats",
+              __FUNCTION__);
+    return;
+  }
+
+  std::vector<EGLint> formats(numFormats);
+  if (eglQueryDmaBufFormatsEXT(m_display, numFormats, formats.data(), &numFormats) != EGL_TRUE)
+  {
+    CLog::Log(LOGERROR, "CEGLImage::{} - failed to query EGL dma-buf formats", __FUNCTION__);
+    return;
+  }
+
+  m_modifiers.clear();
+
+  CLog::Log(LOGDEBUG, LOGVIDEO, "CEGLImage::{} - supported EGL image formats:", __FUNCTION__);
+
+  for (const auto& format : formats)
+  {
+    CLog::Log(LOGDEBUG, LOGVIDEO, "\t{}", KODI::WINDOWING::GBM::CDRMUtils::FourCCToString(format));
+    QueryModifiersForFormat(format);
+  }
+}
+
+void CEGLImage::QueryModifiersForFormat(EGLint format)
+{
+  auto eglQueryDmaBufModifiersEXT =
+      CEGLUtils::GetRequiredProcAddress<PFNEGLQUERYDMABUFMODIFIERSEXTPROC>(
+          "eglQueryDmaBufModifiersEXT");
+
+  EGLint numFormats;
+  if (eglQueryDmaBufModifiersEXT(m_display, format, 0, nullptr, nullptr, &numFormats) != EGL_TRUE)
+  {
+    CLog::Log(LOGERROR,
+              "CEGLImage::{} - failed to query the max number of EGL dma-buf format modifiers for "
+              "format: {}",
+              __FUNCTION__, KODI::WINDOWING::GBM::CDRMUtils::FourCCToString(format));
+    return;
+  }
+
+  std::vector<EGLuint64KHR> modifiers(numFormats);
+
+  if (eglQueryDmaBufModifiersEXT(m_display, format, numFormats, modifiers.data(), nullptr,
+                                 &numFormats) != EGL_TRUE)
+  {
+    CLog::Log(LOGERROR,
+              "CEGLImage::{} - failed to query EGL dma-buf format modifiers for format: {}",
+              __FUNCTION__, KODI::WINDOWING::GBM::CDRMUtils::FourCCToString(format));
+    return;
+  }
+
+  CLog::Log(LOGDEBUG, LOGVIDEO, "\tsupported EGL image format modifiers:");
+  for (const auto& modifier : modifiers)
+  {
+    CLog::Log(LOGDEBUG, LOGVIDEO, "\t\t{:#x}", modifier);
+  }
+
+  m_modifiers.emplace(format, modifiers);
+}
+#endif

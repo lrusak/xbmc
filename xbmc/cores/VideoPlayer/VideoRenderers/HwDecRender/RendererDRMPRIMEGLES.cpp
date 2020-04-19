@@ -15,9 +15,11 @@
 #include "cores/VideoPlayer/VideoRenderers/RenderFlags.h"
 #include "rendering/gles/RenderSystemGLES.h"
 #include "utils/EGLFence.h"
+#include "utils/EGLImage.h"
 #include "utils/GLUtils.h"
 #include "utils/log.h"
 #include "windowing/WinSystem.h"
+#include "windowing/gbm/DRMUtils.h"
 #include "windowing/linux/WinSystemEGL.h"
 
 using namespace KODI::UTILS::EGL;
@@ -29,8 +31,56 @@ CRendererDRMPRIMEGLES::~CRendererDRMPRIMEGLES()
 
 CBaseRenderer* CRendererDRMPRIMEGLES::Create(CVideoBuffer* buffer)
 {
-  if (buffer && dynamic_cast<CVideoBufferDRMPRIME*>(buffer))
+  if (buffer)
+  {
+    auto buf = dynamic_cast<CVideoBufferDRMPRIME*>(buffer);
+    if (!buf)
+      return nullptr;
+
+#if defined(EGL_EXT_image_dma_buf_import_modifiers)
+    if (!buf->AcquireDescriptor())
+      return nullptr;
+
+    auto desc = buf->GetDescriptor();
+    if (!desc)
+      return nullptr;
+
+    auto winSystemEGL =
+        dynamic_cast<KODI::WINDOWING::LINUX::CWinSystemEGL*>(CServiceBroker::GetWinSystem());
+    if (!winSystemEGL)
+      return nullptr;
+
+    EGLDisplay eglDisplay = winSystemEGL->GetEGLDisplay();
+    CEGLImage image{eglDisplay};
+
+    auto modifiers = image.GetModifiersForFormat(desc->format);
+    if (modifiers->empty())
+    {
+      CLog::Log(LOGDEBUG, "CRendererDRMPRIMEGLES::{} - format not supported: {}", __FUNCTION__,
+                KODI::WINDOWING::GBM::CDRMUtils::FourCCToString(desc->format));
+      return nullptr;
+    }
+
+    auto modifier =
+        std::find(modifiers->begin(), modifiers->end(), desc->objects[0].format_modifier);
+    if (modifier == modifiers->end())
+    {
+      CLog::Log(LOGDEBUG,
+                "CRendererDRMPRIMEGLES::{} - modifier ({:#x}) not supported for format ({})",
+                __FUNCTION__, desc->objects[0].format_modifier,
+                KODI::WINDOWING::GBM::CDRMUtils::FourCCToString(desc->format));
+      return nullptr;
+    }
+
+    CLog::Log(LOGDEBUG, "CRendererDRMPRIMEGLES::{} - found plane format ({}) and modifier ({:#x})",
+              __FUNCTION__, KODI::WINDOWING::GBM::CDRMUtils::FourCCToString(desc->format),
+              desc->objects[0].format_modifier);
+
+    buf->ReleaseDescriptor();
+#endif
+
     return new CRendererDRMPRIMEGLES();
+  }
 
   return nullptr;
 }
