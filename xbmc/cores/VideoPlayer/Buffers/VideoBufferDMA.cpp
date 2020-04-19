@@ -74,6 +74,7 @@ void CVideoBufferDMA::SetDimensions(int width,
   m_height = height;
 
   AVDRMFrameDescriptor* descriptor = &m_descriptor;
+  descriptor->format = m_fourcc;
   descriptor->nb_objects = 1;
   descriptor->objects[0].fd = m_fd;
   descriptor->nb_layers = 1;
