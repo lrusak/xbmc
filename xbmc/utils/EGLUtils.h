@@ -173,7 +173,7 @@ public:
   CEGLContextUtils(EGLenum platform, std::string const& platformExtension);
   ~CEGLContextUtils();
 
-  bool CreateDisplay(EGLNativeDisplayType nativeDisplay);
+  bool CreateDisplay(void* nativeDisplay);
   /**
    * Create EGLDisplay with EGL_EXT_platform_base
    *
@@ -185,11 +185,11 @@ public:
    * \param nativeDisplay native display to use with eglGetPlatformDisplayEXT
    * \param nativeDisplayLegacy native display to use with eglGetDisplay
    */
-  bool CreatePlatformDisplay(void* nativeDisplay, EGLNativeDisplayType nativeDisplayLegacy);
+  bool CreatePlatformDisplay(void* nativeDisplay, void* nativeDisplayLegacy);
 
   void SurfaceAttrib(EGLint attribute, EGLint value);
-  bool CreateSurface(EGLNativeWindowType nativeWindow, EGLint HDRcolorSpace = EGL_NONE);
-  bool CreatePlatformSurface(void* nativeWindow, EGLNativeWindowType nativeWindowLegacy);
+  bool CreateSurface(void* nativeWindow, EGLint HDRcolorSpace = EGL_NONE);
+  bool CreatePlatformSurface(void* nativeWindow, void* nativeWindowLegacy);
   bool InitializeDisplay(EGLint renderingApi);
   bool ChooseConfig(EGLint renderableType, EGLint visualId = 0, bool hdr = false);
   bool CreateContext(CEGLAttributesVec contextAttribs);

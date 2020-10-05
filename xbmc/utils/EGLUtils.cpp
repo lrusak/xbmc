@@ -197,7 +197,7 @@ CEGLContextUtils::~CEGLContextUtils()
   Destroy();
 }
 
-bool CEGLContextUtils::CreateDisplay(EGLNativeDisplayType nativeDisplay)
+bool CEGLContextUtils::CreateDisplay(void* nativeDisplay)
 {
   if (m_eglDisplay != EGL_NO_DISPLAY)
   {
@@ -214,7 +214,7 @@ bool CEGLContextUtils::CreateDisplay(EGLNativeDisplayType nativeDisplay)
   return true;
 }
 
-bool CEGLContextUtils::CreatePlatformDisplay(void* nativeDisplay, EGLNativeDisplayType nativeDisplayLegacy)
+bool CEGLContextUtils::CreatePlatformDisplay(void* nativeDisplay, void* nativeDisplayLegacy)
 {
   if (m_eglDisplay != EGL_NO_DISPLAY)
   {
@@ -471,7 +471,7 @@ void CEGLContextUtils::SurfaceAttrib(EGLint attribute, EGLint value)
   }
 }
 
-bool CEGLContextUtils::CreateSurface(EGLNativeWindowType nativeWindow, EGLint HDRcolorSpace /* = EGL_NONE */)
+bool CEGLContextUtils::CreateSurface(void* nativeWindow, EGLint HDRcolorSpace /* = EGL_NONE */)
 {
   if (m_eglDisplay == EGL_NO_DISPLAY)
   {
@@ -493,7 +493,8 @@ bool CEGLContextUtils::CreateSurface(EGLNativeWindowType nativeWindow, EGLint HD
   }
 #endif
 
-  m_eglSurface = eglCreateWindowSurface(m_eglDisplay, config, nativeWindow, attribs.Get());
+  m_eglSurface = eglCreateWindowSurface(
+      m_eglDisplay, config, reinterpret_cast<khronos_uintptr_t>(nativeWindow), attribs.Get());
 
   if (m_eglSurface == EGL_NO_SURFACE)
   {
@@ -506,7 +507,7 @@ bool CEGLContextUtils::CreateSurface(EGLNativeWindowType nativeWindow, EGLint HD
   return true;
 }
 
-bool CEGLContextUtils::CreatePlatformSurface(void* nativeWindow, EGLNativeWindowType nativeWindowLegacy)
+bool CEGLContextUtils::CreatePlatformSurface(void* nativeWindow, void* nativeWindowLegacy)
 {
   if (m_eglDisplay == EGL_NO_DISPLAY)
   {

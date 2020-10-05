@@ -76,9 +76,9 @@ bool CWinSystemGbmEGLContext::CreateNewWindow(const std::string& name,
   }
 
   // This check + the reinterpret cast is for security reason, if the user has outdated platform header files which often is the case
-  static_assert(sizeof(EGLNativeWindowType) == sizeof(gbm_surface*), "Declaration specifier differs in size");
+  // static_assert(sizeof(EGLNativeWindowType) == sizeof(gbm_surface*), "Declaration specifier differs in size");
 
-  if (!m_eglContext.CreatePlatformSurface(m_GBM->GetSurface(), reinterpret_cast<EGLNativeWindowType>(m_GBM->GetSurface())))
+  if (!m_eglContext.CreatePlatformSurface(m_GBM->GetSurface(), m_GBM->GetSurface()))
   {
     return false;
   }
