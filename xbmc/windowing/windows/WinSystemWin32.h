@@ -80,6 +80,8 @@ public:
   CWinSystemWin32();
   virtual ~CWinSystemWin32();
 
+  std::string GetName() override { return "win32"; }
+
   // CWinSystemBase overrides
   bool InitWindowSystem() override;
   bool DestroyWindowSystem() override;

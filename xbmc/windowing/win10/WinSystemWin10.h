@@ -66,6 +66,8 @@ public:
   CWinSystemWin10();
   virtual ~CWinSystemWin10();
 
+  std::string GetName() override { return "win10"; }
+
   // CWinSystemBase overrides
   bool InitWindowSystem() override;
   bool DestroyWindowSystem() override;

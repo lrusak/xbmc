@@ -25,6 +25,8 @@ public:
   CWinSystemAndroid();
   ~CWinSystemAndroid() override;
 
+  std::string GetName() override { return "android"; }
+
   bool InitWindowSystem() override;
   bool DestroyWindowSystem() override;
 

@@ -52,6 +52,8 @@ public:
   CWinSystemWayland();
   ~CWinSystemWayland() noexcept override;
 
+  std::string GetName() override { return "wayland"; }
+
   bool InitWindowSystem() override;
   bool DestroyWindowSystem() override;
 

@@ -31,6 +31,8 @@ public:
   CWinSystemOSX();
   ~CWinSystemOSX() override;
 
+  std::string GetName() override { return "osx"; }
+
   // ITimerCallback interface
   void OnTimeout() override;
 

@@ -45,7 +45,7 @@ public:
   CWinSystemBase();
   virtual ~CWinSystemBase();
 
-  static std::unique_ptr<CWinSystemBase> CreateWinSystem();
+  virtual std::string GetName() = 0;
 
   // Access render system interface
   virtual CRenderSystemBase *GetRenderSystem() { return nullptr; }

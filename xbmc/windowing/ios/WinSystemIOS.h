@@ -27,6 +27,8 @@ public:
   CWinSystemIOS();
   ~CWinSystemIOS() override;
 
+  std::string GetName() override { return "ios"; }
+
   int GetDisplayIndexFromSettings();
   // Implementation of CWinSystemBase
   CRenderSystemBase *GetRenderSystem() override { return this; }
