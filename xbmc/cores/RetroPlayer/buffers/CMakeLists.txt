@@ -24,7 +24,7 @@ if(OPENGL_FOUND)
                       RenderBufferPoolOpenGL.cpp)
 endif()
 
-if(CORE_PLATFORM_NAME_LC STREQUAL gbm OR CORE_PLATFORM_NAME_LC STREQUAL wayland)
+if("gbm" IN_LIST CORE_PLATFORM_NAME_LC OR "wayland" IN_LIST CORE_PLATFORM_NAME_LC)
   list(APPEND SOURCES RenderBufferDMA.cpp
                       RenderBufferPoolDMA.cpp)
   list(APPEND HEADERS RenderBufferDMA.h

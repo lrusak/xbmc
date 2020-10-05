@@ -1,5 +1,5 @@
-set(PLATFORM_REQUIRED_DEPS EGL WaylandProtocols>=1.7 Waylandpp>=0.2.2 LibDRM Xkbcommon>=0.4.1)
-set(PLATFORM_OPTIONAL_DEPS VAAPI)
+list(APPEND PLATFORM_REQUIRED_DEPS EGL WaylandProtocols>=1.7 Waylandpp>=0.2.2 LibDRM Xkbcommon>=0.4.1)
+list(APPEND PLATFORM_OPTIONAL_DEPS VAAPI)
 
 set(WAYLAND_RENDER_SYSTEM "" CACHE STRING "Render system to use with Wayland: \"gl\" or \"gles\"")
 
@@ -16,6 +16,6 @@ endif()
 set(PLATFORM_GLOBAL_TARGET_DEPS generate-wayland-extra-protocols)
 set(WAYLAND_EXTRA_PROTOCOL_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 # WL_EGL_PLATFORM is needed by eglplatform.h in case it is included before wayland-egl.h
-list(APPEND PLATFORM_DEFINES -DWL_EGL_PLATFORM=1 -DPLATFORM_SETTINGS_FILE=wayland.xml)
+list(APPEND PLATFORM_DEFINES -DMESA_EGL_NO_X11_HEADERS -DEGL_NO_X11)
 # for wayland-extra-protocols.hpp
 include_directories("${WAYLAND_EXTRA_PROTOCOL_GENERATED_DIR}")

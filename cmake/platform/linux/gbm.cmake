@@ -1,5 +1,5 @@
-set(PLATFORM_REQUIRED_DEPS EGL GBM LibDRM LibInput Xkbcommon)
-set(PLATFORM_OPTIONAL_DEPS VAAPI)
+list(APPEND PLATFORM_REQUIRED_DEPS EGL GBM LibDRM LibInput Xkbcommon)
+list(APPEND PLATFORM_OPTIONAL_DEPS VAAPI)
 
 set(GBM_RENDER_SYSTEM "" CACHE STRING "Render system to use with GBM: \"gl\" or \"gles\"")
 
@@ -14,4 +14,4 @@ else()
 endif()
 
 # __GBM__ is needed by eglplatform.h in case it is included before gbm.h
-list(APPEND PLATFORM_DEFINES -DMESA_EGL_NO_X11_HEADERS -DEGL_NO_X11 -D__GBM__=1 -DPLATFORM_SETTINGS_FILE=gbm.xml)
+list(APPEND PLATFORM_DEFINES -DMESA_EGL_NO_X11_HEADERS -DEGL_NO_X11) # -DPLATFORM_SETTINGS_FILE=gbm.xml)

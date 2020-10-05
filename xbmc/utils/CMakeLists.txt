@@ -189,7 +189,7 @@ if(NOT CORE_SYSTEM_NAME STREQUAL windows AND NOT CORE_SYSTEM_NAME STREQUAL windo
   list(APPEND HEADERS GLUtils.h)
 endif()
 
-if(CORE_PLATFORM_NAME_LC STREQUAL gbm OR CORE_PLATFORM_NAME_LC STREQUAL wayland)
+if("gbm" IN_LIST CORE_PLATFORM_NAME_LC OR "wayland" IN_LIST CORE_PLATFORM_NAME_LC)
   list(APPEND SOURCES BufferObject.cpp
                       BufferObjectFactory.cpp
                       EGLImage.cpp)
@@ -197,7 +197,7 @@ if(CORE_PLATFORM_NAME_LC STREQUAL gbm OR CORE_PLATFORM_NAME_LC STREQUAL wayland)
                       BufferObjectFactory.h
                       EGLImage.h)
 
-  if(CORE_PLATFORM_NAME_LC STREQUAL gbm)
+  if("gbm" IN_LIST CORE_PLATFORM_NAME_LC)
     list(APPEND SOURCES DumbBufferObject.cpp)
     list(APPEND SOURCES DumbBufferObject.h)
   endif()
@@ -212,7 +212,7 @@ if(CORE_PLATFORM_NAME_LC STREQUAL gbm OR CORE_PLATFORM_NAME_LC STREQUAL wayland)
     list(APPEND HEADERS DMAHeapBufferObject.h)
   endif()
 
-  if(GBM_HAS_BO_MAP)
+  if(GBM_HAS_BO_MAP AND "gbm" IN_LIST CORE_PLATFORM_NAME_LC)
     list(APPEND SOURCES GBMBufferObject.cpp)
     list(APPEND HEADERS GBMBufferObject.h)
   endif()
