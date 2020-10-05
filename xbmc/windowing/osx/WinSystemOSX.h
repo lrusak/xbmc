@@ -31,6 +31,9 @@ public:
   CWinSystemOSX();
   ~CWinSystemOSX() override;
 
+  static void Register();
+  static std::unique_ptr<CWinSystemBase> CreateWinSystem();
+
   std::string GetName() override { return "osx"; }
 
   // ITimerCallback interface

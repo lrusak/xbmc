@@ -23,6 +23,7 @@
 #include "utils/UDMABufferObject.h"
 #include "utils/XTimeUtils.h"
 #include "utils/log.h"
+#include "windowing/WindowSystemFactory.h"
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -33,10 +34,14 @@ CWinSystemGbmGLContext::CWinSystemGbmGLContext()
 : CWinSystemGbmEGLContext(EGL_PLATFORM_GBM_MESA, "EGL_MESA_platform_gbm")
 {}
 
-std::unique_ptr<CWinSystemBase> CWinSystemBase::CreateWinSystem()
+void CWinSystemGbmGLContext::Register()
 {
-  std::unique_ptr<CWinSystemBase> winSystem(new CWinSystemGbmGLContext());
-  return winSystem;
+  CWindowSystemFactory::RegisterWindowSystem(CreateWinSystem);
+}
+
+std::unique_ptr<CWinSystemBase> CWinSystemGbmGLContext::CreateWinSystem()
+{
+  return std::make_unique<CWinSystemGbmGLContext>();
 }
 
 bool CWinSystemGbmGLContext::InitWindowSystem()

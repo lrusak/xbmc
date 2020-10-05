@@ -66,6 +66,9 @@ public:
   CWinSystemWin10();
   virtual ~CWinSystemWin10();
 
+  static void Register();
+  static std::unique_ptr<CWinSystemBase> CreateWinSystem();
+
   std::string GetName() override { return "win10"; }
 
   // CWinSystemBase overrides

@@ -80,6 +80,9 @@ public:
   CWinSystemWin32();
   virtual ~CWinSystemWin32();
 
+  static void Register();
+  static std::unique_ptr<CWinSystemBase> CreateWinSystem();
+
   std::string GetName() override { return "win32"; }
 
   // CWinSystemBase overrides
