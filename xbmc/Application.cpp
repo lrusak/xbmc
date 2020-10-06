@@ -365,6 +365,7 @@ bool CApplication::Create(const CAppParamParser &params)
   m_bPlatformDirectories = params.m_platformDirectories;
   m_bTestMode = params.m_testmode;
   m_bStandalone = params.m_standAlone;
+  m_windowing = params.m_windowing;
 
   CServiceBroker::CreateLogging();
 
@@ -629,6 +630,9 @@ bool CApplication::CreateGUI()
     m_pWinSystem = createFunction();
 
     if (!m_pWinSystem)
+      continue;
+
+    if (!m_windowing.empty() && m_windowing != m_pWinSystem->GetName())
       continue;
 
     CServiceBroker::RegisterWinSystem(m_pWinSystem.get());
