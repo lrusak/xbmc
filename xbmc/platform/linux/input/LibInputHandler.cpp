@@ -12,6 +12,10 @@
 #include "LibInputPointer.h"
 #include "LibInputSettings.h"
 #include "LibInputTouch.h"
+#include "ServiceBroker.h"
+#include "settings/Settings.h"
+#include "settings/SettingsComponent.h"
+#include "settings/lib/Setting.h"
 #include "utils/log.h"
 
 #include <algorithm>
@@ -93,6 +97,11 @@ CLibInputHandler::CLibInputHandler() : CThread("libinput")
   m_pointer.reset(new CLibInputPointer());
   m_touch.reset(new CLibInputTouch());
   m_settings.reset(new CLibInputSettings(this));
+
+  CServiceBroker::GetSettingsComponent()
+      ->GetSettings()
+      ->GetSetting("input.libinputkeyboardlayout")
+      ->SetVisible(true);
 }
 
 CLibInputHandler::~CLibInputHandler()
