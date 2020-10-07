@@ -13,6 +13,7 @@
 #include "utils/XTimeUtils.h"
 #include "utils/log.h"
 #include "windowing/GraphicContext.h"
+#include "windowing/X11/WinSystemX11.h"
 #include "windowing/X11/WinSystemX11GLContext.h"
 
 #include <sstream>
@@ -37,7 +38,7 @@ void CVideoSyncGLX::OnResetDisplay()
 
 bool CVideoSyncGLX::Setup(PUPDATECLOCK func)
 {
-  CSingleLock lock(m_winSystem.GetGfxContext());
+  CSingleLock lock(m_winSystem->GetGfxContext());
 
   m_glXWaitVideoSyncSGI = NULL;
   m_glXGetVideoSyncSGI = NULL;
@@ -64,7 +65,7 @@ bool CVideoSyncGLX::Setup(PUPDATECLOCK func)
 
   CLog::Log(LOGDEBUG, "CVideoReferenceClock: Setting up GLX");
 
-  m_winSystem.Register(this);
+  static_cast<CWinSystemX11*>(m_winSystem)->Register(this);
 
   m_displayLost = false;
   m_displayReset = false;
@@ -87,7 +88,7 @@ bool CVideoSyncGLX::Setup(PUPDATECLOCK func)
   }
 
   bool ExtensionFound = false;
-  std::istringstream Extensions(glXQueryExtensionsString(m_Dpy, m_winSystem.GetScreen()));
+  std::istringstream Extensions(glXQueryExtensionsString(m_Dpy, m_winSystem->GetScreen()));
   std::string ExtensionStr;
 
   while (!ExtensionFound)
@@ -106,7 +107,7 @@ bool CVideoSyncGLX::Setup(PUPDATECLOCK func)
     return false;
   }
 
-  m_vInfo = glXChooseVisual(m_Dpy, m_winSystem.GetScreen(), singleBufferAttributes);
+  m_vInfo = glXChooseVisual(m_Dpy, m_winSystem->GetScreen(), singleBufferAttributes);
   if (!m_vInfo)
   {
     CLog::Log(LOGDEBUG, "CVideoReferenceClock: glXChooseVisual returned NULL");
@@ -115,11 +116,11 @@ bool CVideoSyncGLX::Setup(PUPDATECLOCK func)
 
   Swa.border_pixel = 0;
   Swa.event_mask = StructureNotifyMask;
-  Swa.colormap = XCreateColormap(m_Dpy, m_winSystem.GetWindow(), m_vInfo->visual, AllocNone );
+  Swa.colormap = XCreateColormap(m_Dpy, m_winSystem->GetWindow(), m_vInfo->visual, AllocNone);
   SwaMask = CWBorderPixel | CWColormap | CWEventMask;
 
-  m_Window = XCreateWindow(m_Dpy, m_winSystem.GetWindow(), 0, 0, 256, 256, 0,
-                           m_vInfo->depth, InputOutput, m_vInfo->visual, SwaMask, &Swa);
+  m_Window = XCreateWindow(m_Dpy, m_winSystem->GetWindow(), 0, 0, 256, 256, 0, m_vInfo->depth,
+                           InputOutput, m_vInfo->visual, SwaMask, &Swa);
 
   m_Context = glXCreateContext(m_Dpy, m_vInfo, NULL, True);
   if (!m_Context)
@@ -242,7 +243,7 @@ void CVideoSyncGLX::Cleanup()
   CLog::Log(LOGDEBUG, "CVideoReferenceClock: Cleaning up GLX");
 
   {
-    CSingleLock lock(m_winSystem.GetGfxContext());
+    CSingleLock lock(m_winSystem->GetGfxContext());
 
     if (m_vInfo)
     {
@@ -263,11 +264,11 @@ void CVideoSyncGLX::Cleanup()
   }
 
   m_lostEvent.Set();
-  m_winSystem.Unregister(this);
+  m_winSystem->Unregister(this);
 }
 
 float CVideoSyncGLX::GetFps()
 {
-  m_fps = m_winSystem.GetGfxContext().GetFPS();
+  m_fps = m_winSystem->GetGfxContext().GetFPS();
   return m_fps;
 }

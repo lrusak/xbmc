@@ -338,11 +338,11 @@ std::unique_ptr<CVideoSync> CWinSystemX11GLContext::GetVideoSync(void *clock)
 
   if (dynamic_cast<CGLContextEGL*>(m_pGLContext))
   {
-    pVSync.reset(new CVideoSyncOML(clock, *this));
+    pVSync.reset(new CVideoSyncOML(clock, this));
   }
   else
   {
-    pVSync.reset(X11::GLXVideoSyncCreate(clock, *this));
+    pVSync.reset(X11::GLXVideoSyncCreate(clock, this));
   }
 
   return pVSync;

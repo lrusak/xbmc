@@ -111,7 +111,7 @@ CGLContext* X11::GLXContextCreate(Display *dpy)
   return new CGLContextGLX(dpy);
 }
 
-CVideoSync* X11::GLXVideoSyncCreate(void *clock, CWinSystemX11GLContext& winSystem)
+CVideoSync* X11::GLXVideoSyncCreate(void* clock, CWinSystemX11GLContext* winSystem)
 {
   return new  CVideoSyncGLX(clock, winSystem);
 }
@@ -133,7 +133,7 @@ CGLContext* X11::GLXContextCreate(Display *dpy)
   return nullptr;
 }
 
-CVideoSync* X11::GLXVideoSyncCreate(void *clock, CWinSystemX11GLContext& winSystem)
+CVideoSync* X11::GLXVideoSyncCreate(void* clock, CWinSystemX11GLContext* winSystem)
 {
   return nullptr;
 }

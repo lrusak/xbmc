@@ -11,8 +11,8 @@
 #include "utils/TimeUtils.h"
 #include "utils/log.h"
 #include "windowing/GraphicContext.h"
+#include "windowing/X11/WinSystemX11.h"
 #include "windowing/X11/WinSystemX11GLContext.h"
-
 
 bool CVideoSyncOML::Setup(PUPDATECLOCK func)
 {
@@ -21,7 +21,7 @@ bool CVideoSyncOML::Setup(PUPDATECLOCK func)
   UpdateClock = func;
 
   m_abort = false;
-  m_winSystem.Register(this);
+  static_cast<CWinSystemX11*>(m_winSystem)->Register(this);
 
   return true;
 }
@@ -30,7 +30,7 @@ void CVideoSyncOML::Run(CEvent& stopEvent)
 {
   uint64_t interval, timeSinceVblank, msc;
 
-  timeSinceVblank = m_winSystem.GetVblankTiming(msc, interval);
+  timeSinceVblank = m_winSystem->GetVblankTiming(msc, interval);
 
   while (!stopEvent.Signaled() && !m_abort)
   {
@@ -43,7 +43,7 @@ void CVideoSyncOML::Run(CEvent& stopEvent)
       usleep(interval - timeSinceVblank + 1000);
     }
     uint64_t newMsc;
-    timeSinceVblank = m_winSystem.GetVblankTiming(newMsc, interval);
+    timeSinceVblank = m_winSystem->GetVblankTiming(newMsc, interval);
 
     if (newMsc == msc)
     {
@@ -63,7 +63,7 @@ void CVideoSyncOML::Run(CEvent& stopEvent)
 
 void CVideoSyncOML::Cleanup()
 {
-  m_winSystem.Unregister(this);
+  m_winSystem->Unregister(this);
 }
 
 void CVideoSyncOML::OnResetDisplay()
@@ -73,7 +73,7 @@ void CVideoSyncOML::OnResetDisplay()
 
 float CVideoSyncOML::GetFps()
 {
-  m_fps = m_winSystem.GetGfxContext().GetFPS();
+  m_fps = m_winSystem->GetGfxContext().GetFPS();
   return m_fps;
 }
 

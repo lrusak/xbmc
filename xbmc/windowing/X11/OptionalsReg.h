@@ -38,7 +38,7 @@ namespace X11
 XID GLXGetWindow(void* context);
 void* GLXGetContext(void* context);
 CGLContext* GLXContextCreate(Display *dpy);
-CVideoSync* GLXVideoSyncCreate(void *clock, CWinSystemX11GLContext& winSystem);
+CVideoSync* GLXVideoSyncCreate(void* clock, CWinSystemX11GLContext* winSystem);
 }
 
 //-----------------------------------------------------------------------------

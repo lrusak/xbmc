@@ -18,8 +18,8 @@ class CWinSystemX11GLContext;
 class CVideoSyncOML : public CVideoSync, IDispResource
 {
 public:
-  explicit CVideoSyncOML(void *clock, CWinSystemX11GLContext& winSystem) :
-    CVideoSync(clock), m_winSystem(winSystem) {};
+  explicit CVideoSyncOML(void* clock, CWinSystemX11GLContext* winSystem)
+    : CVideoSync(clock), m_winSystem(winSystem){};
   bool Setup(PUPDATECLOCK func) override;
   void Run(CEvent& stopEvent) override;
   void Cleanup() override;
@@ -28,6 +28,6 @@ public:
 
 private:
   std::atomic_bool m_abort;
-  CWinSystemX11GLContext &m_winSystem;
+  CWinSystemX11GLContext* m_winSystem;
 };
 
