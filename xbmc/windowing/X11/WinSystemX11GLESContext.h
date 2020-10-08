@@ -25,6 +25,8 @@ namespace WINDOWING
 namespace X11
 {
 
+class CVaapiProxy;
+
 class CWinSystemX11GLESContext : public CWinSystemX11, public CRenderSystemGLES
 {
 public:
@@ -56,6 +58,12 @@ protected:
 
   CGLContextEGL* m_pGLContext = nullptr;
   bool m_newGlContext;
+
+  struct delete_CVaapiProxy
+  {
+    void operator()(CVaapiProxy* p) const;
+  };
+  std::unique_ptr<CVaapiProxy, delete_CVaapiProxy> m_vaapiProxy;
 
   std::unique_ptr<OPTIONALS::CLircContainer, OPTIONALS::delete_CLircContainer> m_lirc;
 };

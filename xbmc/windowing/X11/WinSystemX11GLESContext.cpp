@@ -296,11 +296,25 @@ bool CWinSystemX11GLESContext::RefreshGLContext(bool force)
   VIDEOPLAYER::CRendererFactory::ClearRenderer();
   CLinuxRendererGLES::Register();
 
-  std::string gli = (getenv("KODI_GL_INTERFACE") != nullptr) ? getenv("KODI_GL_INTERFACE") : "";
+  std::string gli = (getenv("KODI_GLES_INTERFACE") != nullptr) ? getenv("KODI_GLES_INTERFACE") : "";
 
   m_pGLContext = new CGLContextEGL(m_dpy, EGL_OPENGL_ES_API);
   success = m_pGLContext->Refresh(force, m_screen, m_glWindow, m_newGlContext);
-  if (!success && gli == "EGL_PB")
+  if (success)
+  {
+    m_vaapiProxy.reset(VaapiProxyCreate());
+    VaapiProxyConfig(m_vaapiProxy.get(), GetDisplay(),
+                     static_cast<CGLContextEGL*>(m_pGLContext)->m_eglDisplay);
+    bool general = false;
+    bool deepColor = false;
+    VAAPIRegisterRender(m_vaapiProxy.get(), general, deepColor);
+    if (general)
+    {
+      VAAPIRegister(m_vaapiProxy.get(), deepColor);
+      return true;
+    }
+  }
+  else if (!success && gli == "EGL_PB")
   {
     success = m_pGLContext->CreatePB();
     m_newGlContext = true;
@@ -312,4 +326,9 @@ bool CWinSystemX11GLESContext::RefreshGLContext(bool force)
     m_pGLContext = nullptr;
   }
   return success;
+}
+
+void CWinSystemX11GLESContext::delete_CVaapiProxy::operator()(CVaapiProxy* p) const
+{
+  VaapiProxyDelete(p);
 }
