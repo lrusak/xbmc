@@ -14,6 +14,8 @@
 #include "windowing/X11/WinSystemX11.h"
 #include "windowing/X11/WinSystemX11GLContext.h"
 
+using namespace KODI::WINDOWING::X11;
+
 bool CVideoSyncOML::Setup(PUPDATECLOCK func)
 {
   CLog::Log(LOGDEBUG, "CVideoSyncOML::%s - setting up OML", __FUNCTION__);
