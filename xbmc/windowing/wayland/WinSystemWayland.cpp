@@ -189,6 +189,13 @@ CWinSystemWayland::~CWinSystemWayland() noexcept
 
 bool CWinSystemWayland::InitWindowSystem()
 {
+  const char* env = getenv("WAYLAND_DISPLAY");
+  if (!env)
+  {
+    CLog::Log(LOGDEBUG, "WAYLAND_DISPLAY env not set");
+    return false;
+  }
+
   wayland::set_log_handler([](std::string message)
   {
     CLog::Log(LOGWARNING, "wayland-client log message: %s", message.c_str());
