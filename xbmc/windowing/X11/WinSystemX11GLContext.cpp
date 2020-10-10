@@ -41,7 +41,7 @@ using namespace KODI::WINDOWING::X11;
 
 void CWinSystemX11GLContext::Register()
 {
-  KODI::WINDOWING::CWindowSystemFactory::RegisterWindowSystem(CreateWinSystem);
+  KODI::WINDOWING::CWindowSystemFactory::RegisterWindowSystem("x11", CreateWinSystem);
 }
 
 std::unique_ptr<CWinSystemBase> CWinSystemX11GLContext::CreateWinSystem()

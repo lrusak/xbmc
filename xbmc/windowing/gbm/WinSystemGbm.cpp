@@ -82,6 +82,14 @@ CWinSystemGbm::CWinSystemGbm() :
 
 bool CWinSystemGbm::InitWindowSystem()
 {
+  const char* x11 = getenv("DISPLAY");
+  const char* wayland = getenv("WAYLAND_DISPLAY");
+  if (x11 || wayland)
+  {
+    CLog::Log(LOGDEBUG, "Running under a Window Manager");
+    return false;
+  }
+
   m_DRM = std::make_shared<CDRMAtomic>();
 
   if (!m_DRM->InitDrm())

@@ -36,7 +36,7 @@ CWinSystemGbmGLContext::CWinSystemGbmGLContext()
 
 void CWinSystemGbmGLContext::Register()
 {
-  CWindowSystemFactory::RegisterWindowSystem(CreateWinSystem);
+  CWindowSystemFactory::RegisterWindowSystem("gbm", CreateWinSystem);
 }
 
 std::unique_ptr<CWinSystemBase> CWinSystemGbmGLContext::CreateWinSystem()

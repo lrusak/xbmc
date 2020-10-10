@@ -12,6 +12,7 @@
 
 #include <functional>
 #include <list>
+#include <map>
 #include <memory>
 
 namespace KODI
@@ -22,12 +23,13 @@ namespace WINDOWING
 class CWindowSystemFactory
 {
 public:
-  static std::list<std::function<std::unique_ptr<CWinSystemBase>()>> GetWindowSystems();
-  static void RegisterWindowSystem(std::function<std::unique_ptr<CWinSystemBase>()> createFunction);
+  static std::function<std::unique_ptr<CWinSystemBase>()> GetWindowSystem(std::string name="default") { return m_windowSystems[name]; }
+  static std::map<std::string, std::function<std::unique_ptr<CWinSystemBase>()>> GetWindowSystems();
+  static void RegisterWindowSystem(std::string windowSystem, std::function<std::unique_ptr<CWinSystemBase>()> createFunction);
   static void ClearBufferObjects();
 
 private:
-  static std::list<std::function<std::unique_ptr<CWinSystemBase>()>> m_windowSystems;
+  static std::map<std::string, std::function<std::unique_ptr<CWinSystemBase>()>> m_windowSystems;
 };
 
 } // namespace WINDOWING

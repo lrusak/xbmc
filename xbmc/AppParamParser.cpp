@@ -23,20 +23,8 @@
 #if defined(TARGET_LINUX)
 namespace
 {
-
-std::vector<std::string> availableWindowSystems = {
-#if defined(HAVE_WAYLAND)
-    "wayland",
-#endif
-#if defined(HAVE_X11)
-    "x11",
-#endif
-#if defined(HAVE_GBM)
-    "gbm",
-#endif
-};
-
-} // namespace
+std::vector<std::string> availableWindowSystems = CCompileInfo::GetAvailableWindowSystems();
+}// namespace
 #endif
 
 CAppParamParser::CAppParamParser()

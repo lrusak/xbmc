@@ -623,16 +623,20 @@ bool CApplication::CreateGUI()
 
   m_renderGUI = true;
 
-  auto windowSystems = KODI::WINDOWING::CWindowSystemFactory::GetWindowSystems();
+  auto windowSystems = CCompileInfo::GetAvailableWindowSystems();
+  if (!m_windowing.empty())
+    windowSystems = {m_windowing};
 
-  for (auto& createFunction : windowSystems)
+  for (auto& windowSystem : windowSystems)
   {
-    m_pWinSystem = createFunction();
+    if (windowSystem.empty())
+      windowSystem = "default";
+
+    CLog::Log(LOGDEBUG, "CApplication::{} - trying to init {} windowing system", __FUNCTION__,
+              windowSystem);
+    m_pWinSystem = KODI::WINDOWING::CWindowSystemFactory::GetWindowSystem(windowSystem)();
 
     if (!m_pWinSystem)
-      continue;
-
-    if (!m_windowing.empty() && m_windowing != m_pWinSystem->GetName())
       continue;
 
     CServiceBroker::RegisterWinSystem(m_pWinSystem.get());
@@ -642,22 +646,22 @@ bool CApplication::CreateGUI()
       CLog::Log(LOGDEBUG, "CApplication::{} - unable to init {} windowing system", __FUNCTION__,
                 m_pWinSystem->GetName());
       m_pWinSystem->DestroyWindowSystem();
+      m_pWinSystem.reset();
+      CServiceBroker::UnregisterWinSystem();
       continue;
     }
-
-    if (m_pWinSystem)
+    else
     {
-      CLog::Log(LOGDEBUG, "CApplication::{} - using the {} windowing system", __FUNCTION__,
+      CLog::Log(LOGINFO, "CApplication::{} - using the {} windowing system", __FUNCTION__,
                 m_pWinSystem->GetName());
       break;
     }
-
-    m_pWinSystem.reset();
   }
 
   if (!m_pWinSystem)
   {
     CLog::Log(LOGFATAL, "CApplication::{} - unable to init windowing system", __FUNCTION__);
+    CServiceBroker::UnregisterWinSystem();
     return false;
   }
 

@@ -10,17 +10,18 @@
 
 using namespace KODI::WINDOWING;
 
-std::list<std::function<std::unique_ptr<CWinSystemBase>()>> CWindowSystemFactory::m_windowSystems;
+std::map<std::string, std::function<std::unique_ptr<CWinSystemBase>()>> CWindowSystemFactory::m_windowSystems;
 
-std::list<std::function<std::unique_ptr<CWinSystemBase>()>> CWindowSystemFactory::GetWindowSystems()
+std::map<std::string, std::function<std::unique_ptr<CWinSystemBase>()>> CWindowSystemFactory::GetWindowSystems()
 {
   return m_windowSystems;
 }
 
 void CWindowSystemFactory::RegisterWindowSystem(
+    const std::string windowSystem,
     std::function<std::unique_ptr<CWinSystemBase>()> createFunction)
 {
-  m_windowSystems.emplace_back(createFunction);
+  m_windowSystems.insert({{windowSystem, createFunction}});
 }
 
 void CWindowSystemFactory::ClearBufferObjects()
