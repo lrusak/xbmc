@@ -49,6 +49,8 @@ public:
   void UploadImage(GLenum textureTarget);
   void DestroyImage();
 
+  void AttachRenderBuffer(GLenum textureTarget);
+
 #if defined(EGL_EXT_image_dma_buf_import_modifiers)
   bool SupportsFormatAndModifier(uint32_t format, uint64_t modifier);
 
@@ -63,4 +65,5 @@ private:
   PFNEGLCREATEIMAGEKHRPROC m_eglCreateImageKHR{nullptr};
   PFNEGLDESTROYIMAGEKHRPROC m_eglDestroyImageKHR{nullptr};
   PFNGLEGLIMAGETARGETTEXTURE2DOESPROC m_glEGLImageTargetTexture2DOES{nullptr};
+  PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC m_glEGLImageTargetRenderbufferStorageOES{nullptr};
 };
