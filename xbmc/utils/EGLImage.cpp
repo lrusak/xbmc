@@ -110,6 +110,9 @@ CEGLImage::CEGLImage(EGLDisplay display) :
   m_eglCreateImageKHR = CEGLUtils::GetRequiredProcAddress<PFNEGLCREATEIMAGEKHRPROC>("eglCreateImageKHR");
   m_eglDestroyImageKHR = CEGLUtils::GetRequiredProcAddress<PFNEGLDESTROYIMAGEKHRPROC>("eglDestroyImageKHR");
   m_glEGLImageTargetTexture2DOES = CEGLUtils::GetRequiredProcAddress<PFNGLEGLIMAGETARGETTEXTURE2DOESPROC>("glEGLImageTargetTexture2DOES");
+  m_glEGLImageTargetRenderbufferStorageOES =
+      CEGLUtils::GetRequiredProcAddress<PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC>(
+          "glEGLImageTargetRenderbufferStorageOES");
 }
 
 bool CEGLImage::CreateImage(EglAttrs imageAttrs)
@@ -198,6 +201,11 @@ bool CEGLImage::CreateImage(EglAttrs imageAttrs)
 void CEGLImage::UploadImage(GLenum textureTarget)
 {
   m_glEGLImageTargetTexture2DOES(textureTarget, m_image);
+}
+
+void CEGLImage::AttachRenderBuffer(GLenum textureTarget)
+{
+  m_glEGLImageTargetRenderbufferStorageOES(textureTarget, m_image);
 }
 
 void CEGLImage::DestroyImage()
