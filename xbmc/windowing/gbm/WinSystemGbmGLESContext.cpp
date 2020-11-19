@@ -31,6 +31,7 @@
 
 #include <mutex>
 
+#include <EGL/eglext.h>
 #include <gbm.h>
 
 using namespace KODI::WINDOWING::GBM;
