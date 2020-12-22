@@ -36,6 +36,10 @@
 #include "windowing/gbm/WinSystemGbmGLContext.h"
 #endif
 #endif
+
+#if defined(HAS_VULKAN)
+#include "windowing/wayland/WinSystemWaylandVulkanContext.h"
+#endif
 // clang-format on
 
 #include <cstdlib>
@@ -74,6 +78,10 @@ bool CPlatformLinux::InitStageOne()
 #if defined(HAVE_GBM)
   KODI::WINDOWING::GBM::CWinSystemGbmGLContext::Register();
 #endif
+#endif
+
+#if defined(HAS_VULKAN)
+  KODI::WINDOWING::WAYLAND::CWinSystemWaylandVulkanContext::Register();
 #endif
 
   CLinuxPowerSyscall::Register();
