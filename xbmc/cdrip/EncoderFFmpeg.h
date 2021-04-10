@@ -31,7 +31,7 @@ private:
   AVCodecContext   *m_CodecCtx;
   SwrContext       *m_SwrCtx;
   AVStream         *m_Stream;
-  AVPacket          m_Pkt;
+  AVPacket* m_Pkt;
   AVSampleFormat    m_InFormat;
   AVSampleFormat    m_OutFormat;
   /* From libavformat/avio.h:

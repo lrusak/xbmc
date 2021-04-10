@@ -18,9 +18,7 @@
 #include <string.h>
 #include <cassert>
 
-CAEEncoderFFmpeg::CAEEncoderFFmpeg():
-  m_CodecCtx      (NULL ),
-  m_SwrCtx        (NULL )
+CAEEncoderFFmpeg::CAEEncoderFFmpeg() : m_CodecCtx(NULL), m_SwrCtx(NULL), m_Pkt(nullptr)
 {
 }
 
@@ -263,12 +261,20 @@ int CAEEncoderFFmpeg::Encode(uint8_t *in, int in_size, uint8_t *out, int out_siz
                     in, in_size, 0);
 
   /* initialize the output packet */
-  av_init_packet(&m_Pkt);
-  m_Pkt.size = out_size;
-  m_Pkt.data = out;
+  m_Pkt = av_packet_alloc();
+  if (!m_Pkt)
+  {
+    CLog::Log(LOGERROR, "CAEEncoderFFmpeg::{} - av_packet_alloc failed: {}", __FUNCTION__,
+              strerror(errno));
+    av_frame_free(&frame);
+    return 0;
+  }
+
+  m_Pkt->size = out_size;
+  m_Pkt->data = out;
 
   /* encode it */
-  int ret = avcodec_encode_audio2(m_CodecCtx, &m_Pkt, frame, &got_output);
+  int ret = avcodec_encode_audio2(m_CodecCtx, m_Pkt, frame, &got_output);
 
   /* free temporary data */
   av_frame_free(&frame);
@@ -279,10 +285,10 @@ int CAEEncoderFFmpeg::Encode(uint8_t *in, int in_size, uint8_t *out, int out_siz
     return 0;
   }
 
-  int size = m_Pkt.size;
+  int size = m_Pkt->size;
 
   /* free the packet */
-  av_packet_unref(&m_Pkt);
+  av_packet_free(&m_Pkt);
 
   /* return the number of frames used */
   return size;

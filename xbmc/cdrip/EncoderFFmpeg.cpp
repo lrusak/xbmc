@@ -30,15 +30,16 @@
 
 using namespace ADDON;
 
-CEncoderFFmpeg::CEncoderFFmpeg():
-  m_Format    (NULL),
-  m_CodecCtx  (NULL),
-  m_SwrCtx    (NULL),
-  m_Stream    (NULL),
-  m_Buffer    (NULL),
-  m_BufferFrame(NULL),
-  m_ResampledBuffer(NULL),
-  m_ResampledFrame(NULL)
+CEncoderFFmpeg::CEncoderFFmpeg()
+  : m_Format(NULL),
+    m_CodecCtx(NULL),
+    m_SwrCtx(NULL),
+    m_Stream(NULL),
+    m_Pkt(nullptr),
+    m_Buffer(NULL),
+    m_BufferFrame(NULL),
+    m_ResampledBuffer(NULL),
+    m_ResampledFrame(NULL)
 {
   memset(&m_callbacks, 0, sizeof(m_callbacks));
 }
@@ -280,9 +281,13 @@ bool CEncoderFFmpeg::WriteFrame()
   int encoded, got_output;
   AVFrame* frame;
 
-  av_init_packet(&m_Pkt);
-  m_Pkt.data = NULL;
-  m_Pkt.size = 0;
+  m_Pkt = av_packet_alloc();
+  if (!m_Pkt)
+  {
+    CLog::Log(LOGERROR, "CEncoderFFmpeg::{} - av_packet_alloc failed: {}", __FUNCTION__,
+              strerror(errno));
+    return false;
+  }
 
   if(m_NeedConversion)
   {
@@ -296,7 +301,7 @@ bool CEncoderFFmpeg::WriteFrame()
   }
   else frame = m_BufferFrame;
 
-  encoded = avcodec_encode_audio2(m_CodecCtx, &m_Pkt, frame, &got_output);
+  encoded = avcodec_encode_audio2(m_CodecCtx, m_Pkt, frame, &got_output);
 
   m_BufferSize = 0;
 
@@ -307,13 +312,14 @@ bool CEncoderFFmpeg::WriteFrame()
 
   if (got_output)
   {
-    if (av_write_frame(m_Format, &m_Pkt) < 0) {
+    if (av_write_frame(m_Format, m_Pkt) < 0)
+    {
       CLog::Log(LOGERROR, "CEncoderFFMmpeg::WriteFrame - Failed to write the frame data");
       return false;
     }
   }
 
-  av_packet_unref(&m_Pkt);
+  av_packet_free(&m_Pkt);
 
   return true;
 }
