@@ -28,6 +28,15 @@ public:
   CWebServer();
   virtual ~CWebServer() = default;
 
+  static constexpr auto SETTING_SERVICES_WEBSERVER = "services.webserver";
+  static constexpr auto SETTING_SERVICES_WEBSERVERPORT = "services.webserverport";
+  static constexpr auto SETTING_SERVICES_WEBSERVERAUTHENTICATION =
+      "services.webserverauthentication";
+  static constexpr auto SETTING_SERVICES_WEBSERVERUSERNAME = "services.webserverusername";
+  static constexpr auto SETTING_SERVICES_WEBSERVERPASSWORD = "services.webserverpassword";
+  static constexpr auto SETTING_SERVICES_WEBSERVERSSL = "services.webserverssl";
+  static constexpr auto SETTING_SERVICES_WEBSKIN = "services.webskin";
+
   bool Start(uint16_t port, const std::string &username, const std::string &password);
   bool Stop();
   bool IsStarted();

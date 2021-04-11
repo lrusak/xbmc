@@ -308,13 +308,6 @@ public:
       "services.upnplookforexternalsubtitles";
   static constexpr auto SETTING_SERVICES_UPNPCONTROLLER = "services.upnpcontroller";
   static constexpr auto SETTING_SERVICES_UPNPRENDERER = "services.upnprenderer";
-  static constexpr auto SETTING_SERVICES_WEBSERVER = "services.webserver";
-  static constexpr auto SETTING_SERVICES_WEBSERVERPORT = "services.webserverport";
-  static constexpr auto SETTING_SERVICES_WEBSERVERAUTHENTICATION =
-      "services.webserverauthentication";
-  static constexpr auto SETTING_SERVICES_WEBSERVERUSERNAME = "services.webserverusername";
-  static constexpr auto SETTING_SERVICES_WEBSERVERPASSWORD = "services.webserverpassword";
-  static constexpr auto SETTING_SERVICES_WEBSERVERSSL = "services.webserverssl";
   static constexpr auto SETTING_SERVICES_WEBSKIN = "services.webskin";
   static constexpr auto SETTING_SERVICES_ESENABLED = "services.esenabled";
   static constexpr auto SETTING_SERVICES_ESPORT = "services.esport";

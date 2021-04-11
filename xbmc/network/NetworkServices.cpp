@@ -107,33 +107,34 @@ CNetworkServices::CNetworkServices()
 #endif // HAS_WEB_INTERFACE
 #endif // HAS_WEB_SERVER
   std::set<std::string> settingSet{
-    CSettings::SETTING_SERVICES_WEBSERVER,
-    CSettings::SETTING_SERVICES_WEBSERVERPORT,
-    CSettings::SETTING_SERVICES_WEBSERVERAUTHENTICATION,
-    CSettings::SETTING_SERVICES_WEBSERVERUSERNAME,
-    CSettings::SETTING_SERVICES_WEBSERVERPASSWORD,
-    CSettings::SETTING_SERVICES_WEBSERVERSSL,
-    CSettings::SETTING_SERVICES_ZEROCONF,
-    CSettings::SETTING_SERVICES_AIRPLAY,
-    CSettings::SETTING_SERVICES_AIRPLAYVOLUMECONTROL,
-    CSettings::SETTING_SERVICES_AIRPLAYVIDEOSUPPORT,
-    CSettings::SETTING_SERVICES_USEAIRPLAYPASSWORD,
-    CSettings::SETTING_SERVICES_AIRPLAYPASSWORD,
-    CSettings::SETTING_SERVICES_UPNP,
-    CSettings::SETTING_SERVICES_UPNPSERVER,
-    CSettings::SETTING_SERVICES_UPNPRENDERER,
-    CSettings::SETTING_SERVICES_UPNPCONTROLLER,
-    CSettings::SETTING_SERVICES_ESENABLED,
-    CSettings::SETTING_SERVICES_ESPORT,
-    CSettings::SETTING_SERVICES_ESALLINTERFACES,
-    CSettings::SETTING_SERVICES_ESINITIALDELAY,
-    CSettings::SETTING_SERVICES_ESCONTINUOUSDELAY,
-    CSettings::SETTING_SMB_WINSSERVER,
-    CSettings::SETTING_SMB_WORKGROUP,
-    CSettings::SETTING_SMB_MINPROTOCOL,
-    CSettings::SETTING_SMB_MAXPROTOCOL,
-    CSettings::SETTING_SMB_LEGACYSECURITY
-  };
+#ifdef HAS_WEB_SERVER
+      CWebServer::SETTING_SERVICES_WEBSERVER,
+      CWebServer::SETTING_SERVICES_WEBSERVERPORT,
+      CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION,
+      CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME,
+      CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD,
+      CWebServer::SETTING_SERVICES_WEBSERVERSSL,
+#endif
+      CSettings::SETTING_SERVICES_ZEROCONF,
+      CSettings::SETTING_SERVICES_AIRPLAY,
+      CSettings::SETTING_SERVICES_AIRPLAYVOLUMECONTROL,
+      CSettings::SETTING_SERVICES_AIRPLAYVIDEOSUPPORT,
+      CSettings::SETTING_SERVICES_USEAIRPLAYPASSWORD,
+      CSettings::SETTING_SERVICES_AIRPLAYPASSWORD,
+      CSettings::SETTING_SERVICES_UPNP,
+      CSettings::SETTING_SERVICES_UPNPSERVER,
+      CSettings::SETTING_SERVICES_UPNPRENDERER,
+      CSettings::SETTING_SERVICES_UPNPCONTROLLER,
+      CSettings::SETTING_SERVICES_ESENABLED,
+      CSettings::SETTING_SERVICES_ESPORT,
+      CSettings::SETTING_SERVICES_ESALLINTERFACES,
+      CSettings::SETTING_SERVICES_ESINITIALDELAY,
+      CSettings::SETTING_SERVICES_ESCONTINUOUSDELAY,
+      CSettings::SETTING_SMB_WINSSERVER,
+      CSettings::SETTING_SMB_WORKGROUP,
+      CSettings::SETTING_SMB_MINPROTOCOL,
+      CSettings::SETTING_SMB_MAXPROTOCOL,
+      CSettings::SETTING_SMB_LEGACYSECURITY};
   m_settings = CServiceBroker::GetSettingsComponent()->GetSettings();
   m_settings->GetSettingsManager()->RegisterCallback(this, settingSet);
 }
@@ -175,37 +176,37 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
   // Ask user to confirm disabling the authentication requirement, but not when the configuration
   // would be invalid when authentication was enabled (meaning that the change was triggered
   // automatically)
-  if (settingId == CSettings::SETTING_SERVICES_WEBSERVERAUTHENTICATION &&
+  if (settingId == CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION &&
       !std::static_pointer_cast<const CSettingBool>(setting)->GetValue() &&
-      (!m_settings->GetBool(CSettings::SETTING_SERVICES_WEBSERVER) ||
-       (m_settings->GetBool(CSettings::SETTING_SERVICES_WEBSERVER) &&
-        !m_settings->GetString(CSettings::SETTING_SERVICES_WEBSERVERPASSWORD).empty())) &&
+      (!m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVER) ||
+       (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVER) &&
+        !m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD).empty())) &&
       HELPERS::ShowYesNoDialogText(19098, 36634) != DialogResponse::YES)
   {
     // Leave it as-is
     return false;
   }
 
-  if (settingId == CSettings::SETTING_SERVICES_WEBSERVER ||
-      settingId == CSettings::SETTING_SERVICES_WEBSERVERPORT ||
-      settingId == CSettings::SETTING_SERVICES_WEBSERVERSSL ||
-      settingId == CSettings::SETTING_SERVICES_WEBSERVERAUTHENTICATION ||
-      settingId == CSettings::SETTING_SERVICES_WEBSERVERUSERNAME ||
-      settingId == CSettings::SETTING_SERVICES_WEBSERVERPASSWORD)
+  if (settingId == CWebServer::SETTING_SERVICES_WEBSERVER ||
+      settingId == CWebServer::SETTING_SERVICES_WEBSERVERPORT ||
+      settingId == CWebServer::SETTING_SERVICES_WEBSERVERSSL ||
+      settingId == CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION ||
+      settingId == CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME ||
+      settingId == CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD)
   {
     if (IsWebserverRunning() && !StopWebserver())
       return false;
 
-    if (m_settings->GetBool(CSettings::SETTING_SERVICES_WEBSERVER))
+    if (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVER))
     {
       // Prevent changing to an invalid configuration
-      if ((settingId == CSettings::SETTING_SERVICES_WEBSERVER ||
-           settingId == CSettings::SETTING_SERVICES_WEBSERVERAUTHENTICATION ||
-           settingId == CSettings::SETTING_SERVICES_WEBSERVERPASSWORD) &&
-          m_settings->GetBool(CSettings::SETTING_SERVICES_WEBSERVERAUTHENTICATION) &&
-          m_settings->GetString(CSettings::SETTING_SERVICES_WEBSERVERPASSWORD).empty())
+      if ((settingId == CWebServer::SETTING_SERVICES_WEBSERVER ||
+           settingId == CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION ||
+           settingId == CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD) &&
+          m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION) &&
+          m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD).empty())
       {
-        if (settingId == CSettings::SETTING_SERVICES_WEBSERVERAUTHENTICATION)
+        if (settingId == CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION)
         {
           HELPERS::ShowOKDialogText(CVariant{257}, CVariant{36636});
         }
@@ -217,7 +218,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
       }
 
       // Ask for confirmation when enabling the web server
-      if (settingId == CSettings::SETTING_SERVICES_WEBSERVER &&
+      if (settingId == CWebServer::SETTING_SERVICES_WEBSERVER &&
           HELPERS::ShowYesNoDialogText(19098, 36632) != DialogResponse::YES)
       {
         // Revert change, do not start server
@@ -232,7 +233,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
     }
   }
   else if (settingId == CSettings::SETTING_SERVICES_ESPORT ||
-           settingId == CSettings::SETTING_SERVICES_WEBSERVERPORT)
+           settingId == CWebServer::SETTING_SERVICES_WEBSERVERPORT)
     return ValidatePort(std::static_pointer_cast<const CSettingInt>(setting)->GetValue());
   else
 #endif // HAS_WEB_SERVER
@@ -499,22 +500,25 @@ bool CNetworkServices::OnSettingUpdate(const std::shared_ptr<CSetting>& setting,
   if (setting == NULL)
     return false;
 
+#ifdef HAS_WEB_SERVER
   const std::string &settingId = setting->GetId();
-  if (settingId == CSettings::SETTING_SERVICES_WEBSERVERUSERNAME)
+  if (settingId == CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME)
   {
     // if webserverusername is xbmc and pw is not empty we treat it as altered
     // and don't change the username to kodi - part of rebrand
-    if (m_settings->GetString(CSettings::SETTING_SERVICES_WEBSERVERUSERNAME) == "xbmc" &&
-        !m_settings->GetString(CSettings::SETTING_SERVICES_WEBSERVERPASSWORD).empty())
+    if (m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME) == "xbmc" &&
+        !m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD).empty())
       return true;
   }
-  if (settingId == CSettings::SETTING_SERVICES_WEBSERVERPORT)
+  if (settingId == CWebServer::SETTING_SERVICES_WEBSERVERPORT)
   {
     // if webserverport is default but webserver is activated then treat it as altered
     // and don't change the port to new value
-    if (m_settings->GetBool(CSettings::SETTING_SERVICES_WEBSERVER))
+    if (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVER))
       return true;
   }
+#endif
+
   return false;
 }
 
@@ -531,18 +535,18 @@ void CNetworkServices::Start()
 #ifdef HAS_WEB_SERVER
   // Start web server after eventserver and JSON-RPC server, so users can use these interfaces
   // to confirm the warning message below if it is shown
-  if (m_settings->GetBool(CSettings::SETTING_SERVICES_WEBSERVER))
+  if (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVER))
   {
     // services.webserverauthentication setting was added in Kodi v18 and requires a valid password
     // to be set, but on upgrade the setting will be activated automatically regardless of whether
     // a password was set before -> this can lead to an invalid configuration
-    if (m_settings->GetBool(CSettings::SETTING_SERVICES_WEBSERVERAUTHENTICATION) &&
-        m_settings->GetString(CSettings::SETTING_SERVICES_WEBSERVERPASSWORD).empty())
+    if (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION) &&
+        m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD).empty())
     {
       // Alert user to new default security settings in new Kodi version
       HELPERS::ShowOKDialogText(33101, 33104);
       // Fix settings: Disable web server
-      m_settings->SetBool(CSettings::SETTING_SERVICES_WEBSERVER, false);
+      m_settings->SetBool(CWebServer::SETTING_SERVICES_WEBSERVER, false);
       // Bring user to settings screen where authentication can be configured properly
       CServiceBroker::GetGUI()->GetWindowManager().ActivateWindow(
           WINDOW_SETTINGS_SERVICE, std::vector<std::string>{"services.webserverauthentication"});
@@ -589,11 +593,12 @@ bool CNetworkServices::StartServer(enum ESERVERS server, bool start)
   bool ret = false;
   switch (server)
   {
+#ifdef HAS_WEB_SERVER
     case ES_WEBSERVER:
       // the callback will take care of starting/stopping webserver
-      ret = settings->SetBool(CSettings::SETTING_SERVICES_WEBSERVER, start);
+      ret = settings->SetBool(CWebServer::SETTING_SERVICES_WEBSERVER, start);
       break;
-
+#endif
     case ES_AIRPLAYSERVER:
       // the callback will take care of starting/stopping airplay
       ret = settings->SetBool(CSettings::SETTING_SERVICES_AIRPLAY, start);
@@ -639,18 +644,18 @@ bool CNetworkServices::StartWebserver()
   if (!CServiceBroker::GetNetwork().IsAvailable())
     return false;
 
-  if (!m_settings->GetBool(CSettings::SETTING_SERVICES_WEBSERVER))
+  if (!m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVER))
     return false;
 
-  if (m_settings->GetBool(CSettings::SETTING_SERVICES_WEBSERVERAUTHENTICATION) &&
-      m_settings->GetString(CSettings::SETTING_SERVICES_WEBSERVERPASSWORD).empty())
+  if (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION) &&
+      m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD).empty())
   {
     CLog::Log(LOGERROR, "Tried to start webserver with invalid configuration (authentication "
                         "enabled, but no password set");
     return false;
   }
 
-  int webPort = m_settings->GetInt(CSettings::SETTING_SERVICES_WEBSERVERPORT);
+  int webPort = m_settings->GetInt(CWebServer::SETTING_SERVICES_WEBSERVERPORT);
   if (!ValidatePort(webPort))
   {
     CLog::Log(LOGERROR, "Cannot start Web Server on port %i", webPort);
@@ -662,10 +667,10 @@ bool CNetworkServices::StartWebserver()
 
   std::string username;
   std::string password;
-  if (m_settings->GetBool(CSettings::SETTING_SERVICES_WEBSERVERAUTHENTICATION))
+  if (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION))
   {
-    username = m_settings->GetString(CSettings::SETTING_SERVICES_WEBSERVERUSERNAME);
-    password = m_settings->GetString(CSettings::SETTING_SERVICES_WEBSERVERPASSWORD);
+    username = m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME);
+    password = m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD);
   }
 
   if (!m_webserver.Start(webPort, username, password))

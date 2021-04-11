@@ -61,6 +61,13 @@ typedef struct
   uint64_t writePosition;
 } HttpFileDownloadContext;
 
+constexpr const char* CWebServer::SETTING_SERVICES_WEBSERVER;
+constexpr const char* CWebServer::SETTING_SERVICES_WEBSERVERPORT;
+constexpr const char* CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION;
+constexpr const char* CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME;
+constexpr const char* CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD;
+constexpr const char* CWebServer::SETTING_SERVICES_WEBSERVERSSL;
+
 CWebServer::CWebServer()
   : m_authenticationUsername("kodi"),
     m_authenticationPassword(""),
@@ -1226,7 +1233,7 @@ struct MHD_Daemon* CWebServer::StartMHD(unsigned int flags, int port)
   MHD_set_panic_func(&panicHandlerForMHD, nullptr);
 
   if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(
-          CSettings::SETTING_SERVICES_WEBSERVERSSL) &&
+          CWebServer::SETTING_SERVICES_WEBSERVERSSL) &&
       MHD_is_feature_supported(MHD_FEATURE_SSL) == MHD_YES && LoadCert(m_key, m_cert))
     // SSL enabled
     return MHD_start_daemon(
