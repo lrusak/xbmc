@@ -125,17 +125,6 @@ public:
   // of currently playing item, otherwise it will seek to start of the previous item in playlist
   static const unsigned int ACTION_PREV_ITEM_THRESHOLD = 3; // seconds;
 
-  enum ESERVERS
-  {
-    ES_WEBSERVER = 1,
-    ES_AIRPLAYSERVER,
-    ES_JSONRPCSERVER,
-    ES_UPNPRENDERER,
-    ES_UPNPSERVER,
-    ES_EVENTSERVER,
-    ES_ZEROCONF
-  };
-
   CApplication(void);
   ~CApplication(void) override;
   bool Initialize() override;
@@ -152,8 +141,6 @@ public:
   bool InitWindow(RESOLUTION res = RES_INVALID);
   void StartServices();
   void StopServices();
-
-  bool StartServer(enum ESERVERS eServer, bool bStart, bool bWait = false);
 
   bool IsCurrentThread() const;
   void Stop(int exitCode);
