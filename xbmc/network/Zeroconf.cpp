@@ -11,6 +11,9 @@
 #if defined(HAS_MDNS)
 #include "mdns/ZeroconfMDNS.h"
 #endif
+#if defined(HAS_AIRPLAY)
+#include "network/AirPlayServer.h"
+#endif
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
 #include "threads/Atomics.h"
@@ -110,8 +113,10 @@ bool CZeroconf::Start()
   {
     const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
     settings->SetBool(CSettings::SETTING_SERVICES_ZEROCONF, false);
-    if (settings->GetBool(CSettings::SETTING_SERVICES_AIRPLAY))
-      settings->SetBool(CSettings::SETTING_SERVICES_AIRPLAY, false);
+#if defined(HAS_AIRPLAY)
+    if (settings->GetBool(CAirPlayServer::SETTING_SERVICES_AIRPLAY))
+      settings->SetBool(CAirPlayServer::SETTING_SERVICES_AIRPLAY, false);
+#endif
     return false;
   }
   if(m_started)

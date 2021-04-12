@@ -116,11 +116,13 @@ CNetworkServices::CNetworkServices()
       CWebServer::SETTING_SERVICES_WEBSERVERSSL,
 #endif
       CSettings::SETTING_SERVICES_ZEROCONF,
-      CSettings::SETTING_SERVICES_AIRPLAY,
-      CSettings::SETTING_SERVICES_AIRPLAYVOLUMECONTROL,
-      CSettings::SETTING_SERVICES_AIRPLAYVIDEOSUPPORT,
-      CSettings::SETTING_SERVICES_USEAIRPLAYPASSWORD,
-      CSettings::SETTING_SERVICES_AIRPLAYPASSWORD,
+#ifdef HAS_AIRPLAY
+      CAirPlayServer::SETTING_SERVICES_AIRPLAY,
+      CAirPlayServer::SETTING_SERVICES_AIRPLAYVOLUMECONTROL,
+      CAirPlayServer::SETTING_SERVICES_AIRPLAYVIDEOSUPPORT,
+      CAirPlayServer::SETTING_SERVICES_USEAIRPLAYPASSWORD,
+      CAirPlayServer::SETTING_SERVICES_AIRPLAYPASSWORD,
+#endif
       CSettings::SETTING_SERVICES_UPNP,
       CSettings::SETTING_SERVICES_UPNPSERVER,
       CSettings::SETTING_SERVICES_UPNPRENDERER,
@@ -261,7 +263,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
 #endif // HAS_ZEROCONF
 
 #ifdef HAS_AIRPLAY
-  if (settingId == CSettings::SETTING_SERVICES_AIRPLAY)
+      if (settingId == CAirPlayServer::SETTING_SERVICES_AIRPLAY)
   {
     if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
     {
@@ -304,7 +306,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
         return false;
     }
   }
-  else if (settingId == CSettings::SETTING_SERVICES_AIRPLAYVIDEOSUPPORT)
+  else if (settingId == CAirPlayServer::SETTING_SERVICES_AIRPLAYVIDEOSUPPORT)
   {
     if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
     {
@@ -320,14 +322,15 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
         return false;
     }
   }
-  else if (settingId == CSettings::SETTING_SERVICES_AIRPLAYPASSWORD ||
-           settingId == CSettings::SETTING_SERVICES_USEAIRPLAYPASSWORD)
+  else if (settingId == CAirPlayServer::SETTING_SERVICES_AIRPLAYPASSWORD ||
+           settingId == CAirPlayServer::SETTING_SERVICES_USEAIRPLAYPASSWORD)
   {
-    if (!m_settings->GetBool(CSettings::SETTING_SERVICES_AIRPLAY))
+    if (!m_settings->GetBool(CAirPlayServer::SETTING_SERVICES_AIRPLAY))
       return false;
 
-    if (!CAirPlayServer::SetCredentials(m_settings->GetBool(CSettings::SETTING_SERVICES_USEAIRPLAYPASSWORD),
-                                        m_settings->GetString(CSettings::SETTING_SERVICES_AIRPLAYPASSWORD)))
+    if (!CAirPlayServer::SetCredentials(
+            m_settings->GetBool(CAirPlayServer::SETTING_SERVICES_USEAIRPLAYPASSWORD),
+            m_settings->GetString(CAirPlayServer::SETTING_SERVICES_AIRPLAYPASSWORD)))
       return false;
   }
   else
@@ -599,11 +602,12 @@ bool CNetworkServices::StartServer(enum ESERVERS server, bool start)
       ret = settings->SetBool(CWebServer::SETTING_SERVICES_WEBSERVER, start);
       break;
 #endif
+#ifdef HAS_AIRPLAY
     case ES_AIRPLAYSERVER:
       // the callback will take care of starting/stopping airplay
-      ret = settings->SetBool(CSettings::SETTING_SERVICES_AIRPLAY, start);
+      ret = settings->SetBool(CAirPlayServer::SETTING_SERVICES_AIRPLAY, start);
       break;
-
+#endif
     case ES_JSONRPCSERVER:
       // the callback will take care of starting/stopping jsonrpc server
       ret = settings->SetBool(CSettings::SETTING_SERVICES_ESENABLED, start);
@@ -728,11 +732,12 @@ bool CNetworkServices::StopWebserver()
 
 bool CNetworkServices::StartAirPlayServer()
 {
-  if (!m_settings->GetBool(CSettings::SETTING_SERVICES_AIRPLAYVIDEOSUPPORT))
+#ifdef HAS_AIRPLAY
+  if (!m_settings->GetBool(CAirPlayServer::SETTING_SERVICES_AIRPLAYVIDEOSUPPORT))
     return true;
 
-#ifdef HAS_AIRPLAY
-  if (!CServiceBroker::GetNetwork().IsAvailable() || !m_settings->GetBool(CSettings::SETTING_SERVICES_AIRPLAY))
+  if (!CServiceBroker::GetNetwork().IsAvailable() ||
+      !m_settings->GetBool(CAirPlayServer::SETTING_SERVICES_AIRPLAY))
     return false;
 
   if (IsAirPlayServerRunning())
@@ -741,8 +746,9 @@ bool CNetworkServices::StartAirPlayServer()
   if (!CAirPlayServer::StartServer(CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_airPlayPort, true))
     return false;
 
-  if (!CAirPlayServer::SetCredentials(m_settings->GetBool(CSettings::SETTING_SERVICES_USEAIRPLAYPASSWORD),
-                                      m_settings->GetString(CSettings::SETTING_SERVICES_AIRPLAYPASSWORD)))
+  if (!CAirPlayServer::SetCredentials(
+          m_settings->GetBool(CAirPlayServer::SETTING_SERVICES_USEAIRPLAYPASSWORD),
+          m_settings->GetString(CAirPlayServer::SETTING_SERVICES_AIRPLAYPASSWORD)))
     return false;
 
 #ifdef HAS_ZEROCONF
@@ -794,15 +800,17 @@ bool CNetworkServices::StopAirPlayServer(bool bWait)
 bool CNetworkServices::StartAirTunesServer()
 {
 #ifdef HAS_AIRTUNES
-  if (!CServiceBroker::GetNetwork().IsAvailable() || !m_settings->GetBool(CSettings::SETTING_SERVICES_AIRPLAY))
+  if (!CServiceBroker::GetNetwork().IsAvailable() ||
+      !m_settings->GetBool(CAirPlayServer::SETTING_SERVICES_AIRPLAY))
     return false;
 
   if (IsAirTunesServerRunning())
     return true;
 
-  if (!CAirTunesServer::StartServer(CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_airTunesPort, true,
-                                    m_settings->GetBool(CSettings::SETTING_SERVICES_USEAIRPLAYPASSWORD),
-                                    m_settings->GetString(CSettings::SETTING_SERVICES_AIRPLAYPASSWORD)))
+  if (!CAirTunesServer::StartServer(
+          CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_airTunesPort, true,
+          m_settings->GetBool(CAirPlayServer::SETTING_SERVICES_USEAIRPLAYPASSWORD),
+          m_settings->GetString(CAirPlayServer::SETTING_SERVICES_AIRPLAYPASSWORD)))
   {
     CLog::Log(LOGERROR, "Failed to start AirTunes Server");
     return false;

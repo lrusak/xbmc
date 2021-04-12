@@ -42,6 +42,12 @@
 
 #include <plist/plist.h>
 
+constexpr const char* CAirPlayServer::SETTING_SERVICES_AIRPLAY;
+constexpr const char* CAirPlayServer::SETTING_SERVICES_AIRPLAYVOLUMECONTROL;
+constexpr const char* CAirPlayServer::SETTING_SERVICES_USEAIRPLAYPASSWORD;
+constexpr const char* CAirPlayServer::SETTING_SERVICES_AIRPLAYPASSWORD;
+constexpr const char* CAirPlayServer::SETTING_SERVICES_AIRPLAYVIDEOSUPPORT;
+
 using namespace KODI::MESSAGING;
 using KODI::UTILITY::CDigest;
 
@@ -732,7 +738,9 @@ void CAirPlayServer::restoreVolume()
 {
   CSingleLock lock(ServerInstanceLock);
 
-  if (ServerInstance && ServerInstance->m_origVolume != -1 && CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_SERVICES_AIRPLAYVOLUMECONTROL))
+  if (ServerInstance && ServerInstance->m_origVolume != -1 &&
+      CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(
+          CAirPlayServer::SETTING_SERVICES_AIRPLAYVOLUMECONTROL))
   {
     g_application.SetVolume((float)ServerInstance->m_origVolume);
     ServerInstance->m_origVolume = -1;
@@ -837,7 +845,8 @@ int CAirPlayServer::CTCPClient::ProcessRequest( std::string& responseHeader,
       {
         float oldVolume = g_application.GetVolumePercent();
         volume *= 100;
-        if(oldVolume != volume && CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_SERVICES_AIRPLAYVOLUMECONTROL))
+        if (oldVolume != volume && CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(
+                                       CAirPlayServer::SETTING_SERVICES_AIRPLAYVOLUMECONTROL))
         {
           backupVolume();
           g_application.SetVolume(volume);

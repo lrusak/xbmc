@@ -45,6 +45,12 @@ public:
   static void restoreVolume();
   static int m_isPlaying;
 
+  static constexpr auto SETTING_SERVICES_AIRPLAY = "services.airplay";
+  static constexpr auto SETTING_SERVICES_AIRPLAYVOLUMECONTROL = "services.airplayvolumecontrol";
+  static constexpr auto SETTING_SERVICES_USEAIRPLAYPASSWORD = "services.useairplaypassword";
+  static constexpr auto SETTING_SERVICES_AIRPLAYPASSWORD = "services.airplaypassword";
+  static constexpr auto SETTING_SERVICES_AIRPLAYVIDEOSUPPORT = "services.airplayvideosupport";
+
 protected:
   void Process() override;
 
