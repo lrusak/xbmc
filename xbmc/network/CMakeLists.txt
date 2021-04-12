@@ -32,6 +32,11 @@ if(ENABLE_OPTICAL)
   list(APPEND HEADERS cddb.h)
 endif()
 
+if(PLIST_FOUND OR SHAIRPLAY_FOUND)
+  list(APPEND SOURCES NetworkServices/AirPlayService.cpp)
+  list(APPEND HEADERS NetworkServices/AirPlayService.h)
+endif()
+
 if(PLIST_FOUND)
   list(APPEND SOURCES AirPlayServer.cpp)
   list(APPEND HEADERS AirPlayServer.h)

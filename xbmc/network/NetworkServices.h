@@ -43,13 +43,6 @@ public:
 
   bool StartServer(enum ESERVERS server, bool start);
 
-  bool StartAirPlayServer();
-  bool IsAirPlayServerRunning();
-  bool StopAirPlayServer(bool bWait);
-  bool StartAirTunesServer();
-  bool IsAirTunesServerRunning();
-  bool StopAirTunesServer(bool bWait);
-
   bool StartJSONRPCServer();
   bool IsJSONRPCServerRunning();
   bool StopJSONRPCServer(bool bWait);
