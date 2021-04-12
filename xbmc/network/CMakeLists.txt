@@ -43,8 +43,10 @@ if(SHAIRPLAY_FOUND)
 endif()
 
 if(MICROHTTPD_FOUND)
-  list(APPEND SOURCES WebServer.cpp)
-  list(APPEND HEADERS WebServer.h)
+  list(APPEND SOURCES NetworkServices/WebServerService.cpp
+                      WebServer.cpp)
+  list(APPEND HEADERS NetworkServices/WebServerService.h
+                      WebServer.h)
 endif()
 
 core_add_library(network)

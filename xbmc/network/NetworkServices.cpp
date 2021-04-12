@@ -51,18 +51,8 @@
 #endif // HAS_UPNP
 
 #ifdef HAS_WEB_SERVER
+#include "network/NetworkServices/WebServerService.h"
 #include "network/WebServer.h"
-#include "network/httprequesthandler/HTTPImageHandler.h"
-#include "network/httprequesthandler/HTTPImageTransformationHandler.h"
-#include "network/httprequesthandler/HTTPVfsHandler.h"
-#include "network/httprequesthandler/HTTPJsonRpcHandler.h"
-#ifdef HAS_WEB_INTERFACE
-#ifdef HAS_PYTHON
-#include "network/httprequesthandler/HTTPPythonHandler.h"
-#endif
-#include "network/httprequesthandler/HTTPWebinterfaceHandler.h"
-#include "network/httprequesthandler/HTTPWebinterfaceAddonsHandler.h"
-#endif // HAS_WEB_INTERFACE
 #endif // HAS_WEB_SERVER
 
 #if defined(TARGET_DARWIN_OSX)
@@ -79,41 +69,8 @@ using namespace UPNP;
 using KODI::MESSAGING::HELPERS::DialogResponse;
 
 CNetworkServices::CNetworkServices()
-#ifdef HAS_WEB_SERVER
-  : m_webserver(*new CWebServer),
-  m_httpImageHandler(*new CHTTPImageHandler),
-  m_httpImageTransformationHandler(*new CHTTPImageTransformationHandler),
-  m_httpVfsHandler(*new CHTTPVfsHandler),
-  m_httpJsonRpcHandler(*new CHTTPJsonRpcHandler)
-#ifdef HAS_WEB_INTERFACE
-#ifdef HAS_PYTHON
-  , m_httpPythonHandler(*new CHTTPPythonHandler)
-#endif
-  , m_httpWebinterfaceHandler(*new CHTTPWebinterfaceHandler)
-  , m_httpWebinterfaceAddonsHandler(*new CHTTPWebinterfaceAddonsHandler)
-#endif // HAS_WEB_INTERFACE
-#endif // HAS_WEB_SERVER
 {
-#ifdef HAS_WEB_SERVER
-  m_webserver.RegisterRequestHandler(&m_httpImageHandler);
-  m_webserver.RegisterRequestHandler(&m_httpImageTransformationHandler);
-  m_webserver.RegisterRequestHandler(&m_httpVfsHandler);
-  m_webserver.RegisterRequestHandler(&m_httpJsonRpcHandler);
-#ifdef HAS_WEB_INTERFACE
-#ifdef HAS_PYTHON
-  m_webserver.RegisterRequestHandler(&m_httpPythonHandler);
-#endif
-  m_webserver.RegisterRequestHandler(&m_httpWebinterfaceAddonsHandler);
-  m_webserver.RegisterRequestHandler(&m_httpWebinterfaceHandler);
-#endif // HAS_WEB_INTERFACE
-#endif // HAS_WEB_SERVER
   std::set<std::string> settingSet{
-#ifdef HAS_WEB_SERVER
-    CWebServer::SETTING_SERVICES_WEBSERVER, CWebServer::SETTING_SERVICES_WEBSERVERPORT,
-        CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION,
-        CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME,
-        CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD, CWebServer::SETTING_SERVICES_WEBSERVERSSL,
-#endif
 #ifdef HAS_ZEROCONF
         CZeroconf::SETTING_SERVICES_ZEROCONF,
 #endif
@@ -139,33 +96,14 @@ CNetworkServices::CNetworkServices()
   };
   m_settings = CServiceBroker::GetSettingsComponent()->GetSettings();
   m_settings->GetSettingsManager()->RegisterCallback(this, settingSet);
+
+#ifdef HAS_WEB_SERVER
+  CWebServerService::Register(this);
+#endif
 }
 
 CNetworkServices::~CNetworkServices()
 {
-  m_settings->GetSettingsManager()->UnregisterCallback(this);
-#ifdef HAS_WEB_SERVER
-  m_webserver.UnregisterRequestHandler(&m_httpImageHandler);
-  delete &m_httpImageHandler;
-  m_webserver.UnregisterRequestHandler(&m_httpImageTransformationHandler);
-  delete &m_httpImageTransformationHandler;
-  m_webserver.UnregisterRequestHandler(&m_httpVfsHandler);
-  delete &m_httpVfsHandler;
-  m_webserver.UnregisterRequestHandler(&m_httpJsonRpcHandler);
-  delete &m_httpJsonRpcHandler;
-  CJSONRPC::Cleanup();
-#ifdef HAS_WEB_INTERFACE
-#ifdef HAS_PYTHON
-  m_webserver.UnregisterRequestHandler(&m_httpPythonHandler);
-  delete &m_httpPythonHandler;
-#endif
-  m_webserver.UnregisterRequestHandler(&m_httpWebinterfaceAddonsHandler);
-  delete &m_httpWebinterfaceAddonsHandler;
-  m_webserver.UnregisterRequestHandler(&m_httpWebinterfaceHandler);
-  delete &m_httpWebinterfaceHandler;
-#endif // HAS_WEB_INTERFACE
-  delete &m_webserver;
-#endif // HAS_WEB_SERVER
 }
 
 void CNetworkServices::RegisterService(std::unique_ptr<INetworkService> service)
@@ -179,72 +117,6 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
     return false;
 
   const std::string &settingId = setting->GetId();
-#ifdef HAS_WEB_SERVER
-  // Ask user to confirm disabling the authentication requirement, but not when the configuration
-  // would be invalid when authentication was enabled (meaning that the change was triggered
-  // automatically)
-  if (settingId == CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION &&
-      !std::static_pointer_cast<const CSettingBool>(setting)->GetValue() &&
-      (!m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVER) ||
-       (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVER) &&
-        !m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD).empty())) &&
-      HELPERS::ShowYesNoDialogText(19098, 36634) != DialogResponse::YES)
-  {
-    // Leave it as-is
-    return false;
-  }
-
-  if (settingId == CWebServer::SETTING_SERVICES_WEBSERVER ||
-      settingId == CWebServer::SETTING_SERVICES_WEBSERVERPORT ||
-      settingId == CWebServer::SETTING_SERVICES_WEBSERVERSSL ||
-      settingId == CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION ||
-      settingId == CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME ||
-      settingId == CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD)
-  {
-    if (IsWebserverRunning() && !StopWebserver())
-      return false;
-
-    if (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVER))
-    {
-      // Prevent changing to an invalid configuration
-      if ((settingId == CWebServer::SETTING_SERVICES_WEBSERVER ||
-           settingId == CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION ||
-           settingId == CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD) &&
-          m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION) &&
-          m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD).empty())
-      {
-        if (settingId == CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION)
-        {
-          HELPERS::ShowOKDialogText(CVariant{257}, CVariant{36636});
-        }
-        else
-        {
-          HELPERS::ShowOKDialogText(CVariant{257}, CVariant{36635});
-        }
-        return false;
-      }
-
-      // Ask for confirmation when enabling the web server
-      if (settingId == CWebServer::SETTING_SERVICES_WEBSERVER &&
-          HELPERS::ShowYesNoDialogText(19098, 36632) != DialogResponse::YES)
-      {
-        // Revert change, do not start server
-        return false;
-      }
-
-      if (!StartWebserver())
-      {
-        HELPERS::ShowOKDialogText(CVariant{33101}, CVariant{33100});
-        return false;
-      }
-    }
-  }
-  else if (settingId == CEventServer::SETTING_SERVICES_ESPORT ||
-           settingId == CWebServer::SETTING_SERVICES_WEBSERVERPORT)
-    return ValidatePort(std::static_pointer_cast<const CSettingInt>(setting)->GetValue());
-  else
-#endif // HAS_WEB_SERVER
-
 #ifdef HAS_ZEROCONF
       if (settingId == CZeroconf::SETTING_SERVICES_ZEROCONF)
   {
@@ -501,35 +373,6 @@ void CNetworkServices::OnSettingChanged(const std::shared_ptr<const CSetting>& s
 #endif
 }
 
-bool CNetworkServices::OnSettingUpdate(const std::shared_ptr<CSetting>& setting,
-                                       const char* oldSettingId,
-                                       const TiXmlNode* oldSettingNode)
-{
-  if (setting == NULL)
-    return false;
-
-#ifdef HAS_WEB_SERVER
-  const std::string &settingId = setting->GetId();
-  if (settingId == CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME)
-  {
-    // if webserverusername is xbmc and pw is not empty we treat it as altered
-    // and don't change the username to kodi - part of rebrand
-    if (m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME) == "xbmc" &&
-        !m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD).empty())
-      return true;
-  }
-  if (settingId == CWebServer::SETTING_SERVICES_WEBSERVERPORT)
-  {
-    // if webserverport is default but webserver is activated then treat it as altered
-    // and don't change the port to new value
-    if (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVER))
-      return true;
-  }
-#endif
-
-  return false;
-}
-
 void CNetworkServices::Start()
 {
   StartZeroconf();
@@ -541,32 +384,6 @@ void CNetworkServices::Start()
     CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33102), g_localizeStrings.Get(33100));
   if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED) && !StartJSONRPCServer())
     CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33103), g_localizeStrings.Get(33100));
-
-#ifdef HAS_WEB_SERVER
-  // Start web server after eventserver and JSON-RPC server, so users can use these interfaces
-  // to confirm the warning message below if it is shown
-  if (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVER))
-  {
-    // services.webserverauthentication setting was added in Kodi v18 and requires a valid password
-    // to be set, but on upgrade the setting will be activated automatically regardless of whether
-    // a password was set before -> this can lead to an invalid configuration
-    if (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION) &&
-        m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD).empty())
-    {
-      // Alert user to new default security settings in new Kodi version
-      HELPERS::ShowOKDialogText(33101, 33104);
-      // Fix settings: Disable web server
-      m_settings->SetBool(CWebServer::SETTING_SERVICES_WEBSERVER, false);
-      // Bring user to settings screen where authentication can be configured properly
-      CServiceBroker::GetGUI()->GetWindowManager().ActivateWindow(
-          WINDOW_SETTINGS_SERVICE, std::vector<std::string>{"services.webserverauthentication"});
-    }
-    // Only try to start server if configuration is OK
-    else if (!StartWebserver())
-      CGUIDialogKaiToast::QueueNotification(
-          CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33101), g_localizeStrings.Get(33100));
-  }
-#endif // HAS_WEB_SERVER
 
   for (const auto& service : m_services)
     service->Start();
@@ -583,7 +400,6 @@ void CNetworkServices::Stop(bool bWait)
   {
     StopUPnP(bWait);
     StopZeroconf();
-    StopWebserver();
     StopRss();
   }
 
@@ -653,94 +469,6 @@ bool CNetworkServices::StartServer(enum ESERVERS server, bool start)
   settings->Save();
 
   return ret;
-}
-
-bool CNetworkServices::StartWebserver()
-{
-#ifdef HAS_WEB_SERVER
-  if (!CServiceBroker::GetNetwork().IsAvailable())
-    return false;
-
-  if (!m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVER))
-    return false;
-
-  if (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION) &&
-      m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD).empty())
-  {
-    CLog::Log(LOGERROR, "Tried to start webserver with invalid configuration (authentication "
-                        "enabled, but no password set");
-    return false;
-  }
-
-  int webPort = m_settings->GetInt(CWebServer::SETTING_SERVICES_WEBSERVERPORT);
-  if (!ValidatePort(webPort))
-  {
-    CLog::Log(LOGERROR, "Cannot start Web Server on port %i", webPort);
-    return false;
-  }
-
-  if (IsWebserverRunning())
-    return true;
-
-  std::string username;
-  std::string password;
-  if (m_settings->GetBool(CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION))
-  {
-    username = m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME);
-    password = m_settings->GetString(CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD);
-  }
-
-  if (!m_webserver.Start(webPort, username, password))
-    return false;
-
-#ifdef HAS_ZEROCONF
-  std::vector<std::pair<std::string, std::string> > txt;
-  txt.emplace_back("txtvers", "1");
-  txt.emplace_back("uuid", CServiceBroker::GetSettingsComponent()->GetSettings()->GetString(
-                             CSettings::SETTING_SERVICES_DEVICEUUID));
-
-  // publish web frontend and API services
-#ifdef HAS_WEB_INTERFACE
-  CZeroconf::GetInstance()->PublishService("servers.webserver", "_http._tcp", CSysInfo::GetDeviceName(), webPort, txt);
-#endif // HAS_WEB_INTERFACE
-  CZeroconf::GetInstance()->PublishService("servers.jsonrpc-http", "_xbmc-jsonrpc-h._tcp", CSysInfo::GetDeviceName(), webPort, txt);
-#endif // HAS_ZEROCONF
-
-  return true;
-#endif // HAS_WEB_SERVER
-  return false;
-}
-
-bool CNetworkServices::IsWebserverRunning()
-{
-#ifdef HAS_WEB_SERVER
-  return m_webserver.IsStarted();
-#endif // HAS_WEB_SERVER
-  return false;
-}
-
-bool CNetworkServices::StopWebserver()
-{
-#ifdef HAS_WEB_SERVER
-  if (!IsWebserverRunning())
-    return true;
-
-  if (!m_webserver.Stop() || m_webserver.IsStarted())
-  {
-    CLog::Log(LOGWARNING, "Webserver: Failed to stop.");
-    return false;
-  }
-
-#ifdef HAS_ZEROCONF
-#ifdef HAS_WEB_INTERFACE
-  CZeroconf::GetInstance()->RemoveService("servers.webserver");
-#endif // HAS_WEB_INTERFACE
-  CZeroconf::GetInstance()->RemoveService("servers.jsonrpc-http");
-#endif // HAS_ZEROCONF
-
-  return true;
-#endif // HAS_WEB_SERVER
-  return false;
 }
 
 bool CNetworkServices::StartAirPlayServer()

@@ -15,20 +15,6 @@
 
 class INetworkService;
 class CSettings;
-#ifdef HAS_WEB_SERVER
-class CWebServer;
-class CHTTPImageHandler;
-class CHTTPImageTransformationHandler;
-class CHTTPVfsHandler;
-class CHTTPJsonRpcHandler;
-#ifdef HAS_WEB_INTERFACE
-#ifdef HAS_PYTHON
-class CHTTPPythonHandler;
-#endif
-class CHTTPWebinterfaceHandler;
-class CHTTPWebinterfaceAddonsHandler;
-#endif // HAS_WEB_INTERFACE
-#endif // HAS_WEB_SERVER
 
 class CNetworkServices : public ISettingCallback
 {
@@ -40,9 +26,6 @@ public:
 
   bool OnSettingChanging(const std::shared_ptr<const CSetting>& setting) override;
   void OnSettingChanged(const std::shared_ptr<const CSetting>& setting) override;
-  bool OnSettingUpdate(const std::shared_ptr<CSetting>& setting,
-                       const char* oldSettingId,
-                       const TiXmlNode* oldSettingNode) override;
 
   void Start();
   void Stop(bool bWait);
@@ -59,10 +42,6 @@ public:
   };
 
   bool StartServer(enum ESERVERS server, bool start);
-
-  bool StartWebserver();
-  bool IsWebserverRunning();
-  bool StopWebserver();
 
   bool StartAirPlayServer();
   bool IsAirPlayServerRunning();
@@ -103,31 +82,14 @@ public:
   bool IsZeroconfRunning();
   bool StopZeroconf();
 
+  static bool ValidatePort(int port);
+
 private:
   CNetworkServices(const CNetworkServices&);
   CNetworkServices const& operator=(CNetworkServices const&);
 
-  bool ValidatePort(int port);
-
   // Construction parameters
   std::shared_ptr<CSettings> m_settings;
-
-  // Network services
-#ifdef HAS_WEB_SERVER
-  CWebServer& m_webserver;
-  // Handlers
-  CHTTPImageHandler& m_httpImageHandler;
-  CHTTPImageTransformationHandler& m_httpImageTransformationHandler;
-  CHTTPVfsHandler& m_httpVfsHandler;
-  CHTTPJsonRpcHandler& m_httpJsonRpcHandler;
-#ifdef HAS_WEB_INTERFACE
-#ifdef HAS_PYTHON
-  CHTTPPythonHandler& m_httpPythonHandler;
-#endif
-  CHTTPWebinterfaceHandler& m_httpWebinterfaceHandler;
-  CHTTPWebinterfaceAddonsHandler& m_httpWebinterfaceAddonsHandler;
-#endif
-#endif
 
   std::vector<std::unique_ptr<INetworkService>> m_services;
 };
