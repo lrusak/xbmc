@@ -29,6 +29,7 @@ class CCriticalSection;
 class CZeroconf
 {
 public:
+  static constexpr auto SETTING_SERVICES_ZEROCONF = "services.zeroconf";
 
   //tries to publish this service via zeroconf
   //fcr_identifier can be used to stop or reannounce this service later

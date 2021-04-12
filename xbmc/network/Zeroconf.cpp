@@ -49,6 +49,8 @@ class CZeroconfDummy : public CZeroconf
 };
 #endif
 
+constexpr const char* CZeroconf::SETTING_SERVICES_ZEROCONF;
+
 std::atomic_flag CZeroconf::sm_singleton_guard = ATOMIC_FLAG_INIT;
 CZeroconf* CZeroconf::smp_instance = 0;
 
@@ -112,7 +114,7 @@ bool CZeroconf::Start()
   if(!IsZCdaemonRunning())
   {
     const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
-    settings->SetBool(CSettings::SETTING_SERVICES_ZEROCONF, false);
+    settings->SetBool(CZeroconf::SETTING_SERVICES_ZEROCONF, false);
 #if defined(HAS_AIRPLAY)
     if (settings->GetBool(CAirPlayServer::SETTING_SERVICES_AIRPLAY))
       settings->SetBool(CAirPlayServer::SETTING_SERVICES_AIRPLAY, false);

@@ -115,7 +115,9 @@ CNetworkServices::CNetworkServices()
       CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD,
       CWebServer::SETTING_SERVICES_WEBSERVERSSL,
 #endif
-      CSettings::SETTING_SERVICES_ZEROCONF,
+#ifdef HAS_ZEROCONF
+      CZeroconf::SETTING_SERVICES_ZEROCONF,
+#endif
 #ifdef HAS_AIRPLAY
       CAirPlayServer::SETTING_SERVICES_AIRPLAY,
       CAirPlayServer::SETTING_SERVICES_AIRPLAYVOLUMECONTROL,
@@ -243,7 +245,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
 #endif // HAS_WEB_SERVER
 
 #ifdef HAS_ZEROCONF
-  if (settingId == CSettings::SETTING_SERVICES_ZEROCONF)
+      if (settingId == CZeroconf::SETTING_SERVICES_ZEROCONF)
   {
     if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
       return StartZeroconf();
@@ -271,7 +273,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
     {
 #ifdef HAS_ZEROCONF
       // AirPlay needs zeroconf
-      if (!m_settings->GetBool(CSettings::SETTING_SERVICES_ZEROCONF))
+      if (!m_settings->GetBool(CZeroconf::SETTING_SERVICES_ZEROCONF))
       {
         HELPERS::ShowOKDialogText(CVariant{1273}, CVariant{34302});
         return false;
@@ -631,12 +633,12 @@ bool CNetworkServices::StartServer(enum ESERVERS server, bool start)
       // the callback will take care of starting/stopping event server
       ret = settings->SetBool(CEventServer::SETTING_SERVICES_ESENABLED, start);
       break;
-
+#ifdef HAS_ZEROCONF
     case ES_ZEROCONF:
       // the callback will take care of starting/stopping zeroconf
-      ret = settings->SetBool(CSettings::SETTING_SERVICES_ZEROCONF, start);
+      ret = settings->SetBool(CZeroconf::SETTING_SERVICES_ZEROCONF, start);
       break;
-
+#endif
     default:
       ret = false;
       break;
@@ -1171,7 +1173,7 @@ bool CNetworkServices::StopRss()
 bool CNetworkServices::StartZeroconf()
 {
 #ifdef HAS_ZEROCONF
-  if (!m_settings->GetBool(CSettings::SETTING_SERVICES_ZEROCONF))
+  if (!m_settings->GetBool(CZeroconf::SETTING_SERVICES_ZEROCONF))
     return false;
 
   if (IsZeroconfRunning())

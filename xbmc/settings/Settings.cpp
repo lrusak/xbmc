@@ -306,7 +306,6 @@ constexpr const char* CSettings::SETTING_WEATHER_ADDONSETTINGS;
 constexpr const char* CSettings::SETTING_SERVICES_DEVICENAME;
 constexpr const char* CSettings::SETTING_SERVICES_DEVICEUUID;
 constexpr const char* CSettings::SETTING_SERVICES_WEBSKIN;
-constexpr const char* CSettings::SETTING_SERVICES_ZEROCONF;
 constexpr const char* CSettings::SETTING_SMB_WINSSERVER;
 constexpr const char* CSettings::SETTING_SMB_WORKGROUP;
 constexpr const char* CSettings::SETTING_SMB_MINPROTOCOL;

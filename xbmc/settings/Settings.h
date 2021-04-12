@@ -302,7 +302,6 @@ public:
   static constexpr auto SETTING_SERVICES_DEVICENAME = "services.devicename";
   static constexpr auto SETTING_SERVICES_DEVICEUUID = "services.deviceuuid";
   static constexpr auto SETTING_SERVICES_WEBSKIN = "services.webskin";
-  static constexpr auto SETTING_SERVICES_ZEROCONF = "services.zeroconf";
   static constexpr auto SETTING_SMB_WINSSERVER = "smb.winsserver";
   static constexpr auto SETTING_SMB_WORKGROUP = "smb.workgroup";
   static constexpr auto SETTING_SMB_MINPROTOCOL = "smb.minprotocol";
