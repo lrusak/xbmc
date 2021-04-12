@@ -108,39 +108,34 @@ CNetworkServices::CNetworkServices()
 #endif // HAS_WEB_SERVER
   std::set<std::string> settingSet{
 #ifdef HAS_WEB_SERVER
-      CWebServer::SETTING_SERVICES_WEBSERVER,
-      CWebServer::SETTING_SERVICES_WEBSERVERPORT,
-      CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION,
-      CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME,
-      CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD,
-      CWebServer::SETTING_SERVICES_WEBSERVERSSL,
+    CWebServer::SETTING_SERVICES_WEBSERVER, CWebServer::SETTING_SERVICES_WEBSERVERPORT,
+        CWebServer::SETTING_SERVICES_WEBSERVERAUTHENTICATION,
+        CWebServer::SETTING_SERVICES_WEBSERVERUSERNAME,
+        CWebServer::SETTING_SERVICES_WEBSERVERPASSWORD, CWebServer::SETTING_SERVICES_WEBSERVERSSL,
 #endif
 #ifdef HAS_ZEROCONF
-      CZeroconf::SETTING_SERVICES_ZEROCONF,
+        CZeroconf::SETTING_SERVICES_ZEROCONF,
 #endif
 #ifdef HAS_AIRPLAY
-      CAirPlayServer::SETTING_SERVICES_AIRPLAY,
-      CAirPlayServer::SETTING_SERVICES_AIRPLAYVOLUMECONTROL,
-      CAirPlayServer::SETTING_SERVICES_AIRPLAYVIDEOSUPPORT,
-      CAirPlayServer::SETTING_SERVICES_USEAIRPLAYPASSWORD,
-      CAirPlayServer::SETTING_SERVICES_AIRPLAYPASSWORD,
+        CAirPlayServer::SETTING_SERVICES_AIRPLAY,
+        CAirPlayServer::SETTING_SERVICES_AIRPLAYVOLUMECONTROL,
+        CAirPlayServer::SETTING_SERVICES_AIRPLAYVIDEOSUPPORT,
+        CAirPlayServer::SETTING_SERVICES_USEAIRPLAYPASSWORD,
+        CAirPlayServer::SETTING_SERVICES_AIRPLAYPASSWORD,
 #endif
 #ifdef HAS_UPNP
-      UPNP::SETTING_SERVICES_UPNP,
-      UPNP::SETTING_SERVICES_UPNPSERVER,
-      UPNP::SETTING_SERVICES_UPNPRENDERER,
-      UPNP::SETTING_SERVICES_UPNPCONTROLLER,
+        UPNP::SETTING_SERVICES_UPNP, UPNP::SETTING_SERVICES_UPNPSERVER,
+        UPNP::SETTING_SERVICES_UPNPRENDERER, UPNP::SETTING_SERVICES_UPNPCONTROLLER,
 #endif
-      CEventServer::SETTING_SERVICES_ESENABLED,
-      CEventServer::SETTING_SERVICES_ESPORT,
-      CEventServer::SETTING_SERVICES_ESALLINTERFACES,
-      CEventServer::SETTING_SERVICES_ESINITIALDELAY,
-      CEventServer::SETTING_SERVICES_ESCONTINUOUSDELAY,
-      CSettings::SETTING_SMB_WINSSERVER,
-      CSettings::SETTING_SMB_WORKGROUP,
-      CSettings::SETTING_SMB_MINPROTOCOL,
-      CSettings::SETTING_SMB_MAXPROTOCOL,
-      CSettings::SETTING_SMB_LEGACYSECURITY};
+#if HAS_FILESYSTEM_SMB
+        SMB::SETTING_SMB_WINSSERVER, SMB::SETTING_SMB_WORKGROUP, SMB::SETTING_SMB_MINPROTOCOL,
+        SMB::SETTING_SMB_MAXPROTOCOL, SMB::SETTING_SMB_LEGACYSECURITY,
+#endif
+        CEventServer::SETTING_SERVICES_ESENABLED, CEventServer::SETTING_SERVICES_ESPORT,
+        CEventServer::SETTING_SERVICES_ESALLINTERFACES,
+        CEventServer::SETTING_SERVICES_ESINITIALDELAY,
+        CEventServer::SETTING_SERVICES_ESCONTINUOUSDELAY
+  };
   m_settings = CServiceBroker::GetSettingsComponent()->GetSettings();
   m_settings->GetSettingsManager()->RegisterCallback(this, settingSet);
 }
@@ -483,12 +478,11 @@ void CNetworkServices::OnSettingChanged(const std::shared_ptr<const CSetting>& s
   if (setting == NULL)
     return;
 
+#ifdef HAS_FILESYSTEM_SMB
   const std::string& settingId = setting->GetId();
-  if (settingId == CSettings::SETTING_SMB_WINSSERVER ||
-      settingId == CSettings::SETTING_SMB_WORKGROUP ||
-      settingId == CSettings::SETTING_SMB_MINPROTOCOL ||
-      settingId == CSettings::SETTING_SMB_MAXPROTOCOL ||
-      settingId == CSettings::SETTING_SMB_LEGACYSECURITY)
+  if (settingId == SMB::SETTING_SMB_WINSSERVER || settingId == SMB::SETTING_SMB_WORKGROUP ||
+      settingId == SMB::SETTING_SMB_MINPROTOCOL || settingId == SMB::SETTING_SMB_MAXPROTOCOL ||
+      settingId == SMB::SETTING_SMB_LEGACYSECURITY)
   {
     // okey we really don't need to restart, only deinit samba, but that could be damn hard if something is playing
     //! @todo - General way of handling setting changes that require restart
@@ -498,6 +492,7 @@ void CNetworkServices::OnSettingChanged(const std::shared_ptr<const CSetting>& s
       CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTARTAPP);
     }
   }
+#endif
 }
 
 bool CNetworkServices::OnSettingUpdate(const std::shared_ptr<CSetting>& setting,

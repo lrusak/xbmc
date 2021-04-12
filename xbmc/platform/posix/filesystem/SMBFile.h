@@ -28,6 +28,15 @@
 struct _SMBCCTX;
 typedef _SMBCCTX SMBCCTX;
 
+namespace SMB
+{
+static constexpr auto SETTING_SMB_WINSSERVER = "smb.winsserver";
+static constexpr auto SETTING_SMB_WORKGROUP = "smb.workgroup";
+static constexpr auto SETTING_SMB_MINPROTOCOL = "smb.minprotocol";
+static constexpr auto SETTING_SMB_MAXPROTOCOL = "smb.maxprotocol";
+static constexpr auto SETTING_SMB_LEGACYSECURITY = "smb.legacysecurity";
+} // namespace SMB
+
 class CSMB : public CCriticalSection
 {
 public:
