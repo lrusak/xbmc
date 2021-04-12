@@ -10,6 +10,10 @@
 
 #include "settings/lib/ISettingCallback.h"
 
+#include <memory>
+#include <vector>
+
+class INetworkService;
 class CSettings;
 #ifdef HAS_WEB_SERVER
 class CWebServer;
@@ -31,6 +35,8 @@ class CNetworkServices : public ISettingCallback
 public:
   CNetworkServices();
   ~CNetworkServices() override;
+
+  void RegisterService(std::unique_ptr<INetworkService> service);
 
   bool OnSettingChanging(const std::shared_ptr<const CSetting>& setting) override;
   void OnSettingChanged(const std::shared_ptr<const CSetting>& setting) override;
@@ -122,4 +128,6 @@ private:
   CHTTPWebinterfaceAddonsHandler& m_httpWebinterfaceAddonsHandler;
 #endif
 #endif
+
+  std::vector<std::unique_ptr<INetworkService>> m_services;
 };

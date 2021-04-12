@@ -8,8 +8,6 @@
 
 #include "NetworkServices.h"
 
-#include <utility>
-
 #include "ServiceBroker.h"
 #include "dialogs/GUIDialogKaiToast.h"
 #include "guilib/LocalizeStrings.h"
@@ -19,16 +17,19 @@
 #include "messaging/helpers/DialogOKHelper.h"
 #include "network/EventServer.h"
 #include "network/Network.h"
+#include "network/NetworkServices/INetworkService.h"
 #include "network/TCPServer.h"
 #include "settings/AdvancedSettings.h"
-#include "settings/lib/Setting.h"
-#include "settings/lib/SettingsManager.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
-#include "utils/log.h"
+#include "settings/lib/Setting.h"
+#include "settings/lib/SettingsManager.h"
 #include "utils/RssManager.h"
 #include "utils/SystemInfo.h"
 #include "utils/Variant.h"
+#include "utils/log.h"
+
+#include <utility>
 
 #ifdef TARGET_LINUX
 #include "Util.h"
@@ -165,6 +166,11 @@ CNetworkServices::~CNetworkServices()
 #endif // HAS_WEB_INTERFACE
   delete &m_webserver;
 #endif // HAS_WEB_SERVER
+}
+
+void CNetworkServices::RegisterService(std::unique_ptr<INetworkService> service)
+{
+  m_services.emplace_back(std::move(service));
 }
 
 bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& setting)
@@ -562,6 +568,9 @@ void CNetworkServices::Start()
   }
 #endif // HAS_WEB_SERVER
 
+  for (const auto& service : m_services)
+    service->Start();
+
   // note - airtunesserver has to start before airplay server (ios7 client detection bug)
   StartAirTunesServer();
   StartAirPlayServer();
@@ -577,6 +586,9 @@ void CNetworkServices::Stop(bool bWait)
     StopWebserver();
     StopRss();
   }
+
+  for (const auto& service : m_services)
+    service->Stop(bWait);
 
   StopEventServer(bWait, false);
   StopJSONRPCServer(bWait);

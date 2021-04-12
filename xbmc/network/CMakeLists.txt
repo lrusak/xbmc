@@ -17,6 +17,7 @@ set(HEADERS DNSNameCache.h
             EventPacket.h
             EventServer.h
             GUIDialogNetworkSetup.h
+            NetworkServices/INetworkService.h
             Network.h
             NetworkServices.h
             Socket.h
