@@ -35,6 +35,9 @@
 #include "dialogs/GUIDialogPlayEject.h"
 #include "filesystem/File.h"
 #include "messaging/helpers/DialogOKHelper.h"
+#ifdef HAS_UPNP
+#include "network/upnp/UPnP.h"
+#endif
 #include "settings/MediaSourceSettings.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
@@ -192,7 +195,7 @@ void CMediaManager::GetNetworkLocations(VECSOURCES &locations, bool autolocation
 #endif// HAS_FILESYSTEM_NFS
 
 #ifdef HAS_UPNP
-    if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_SERVICES_UPNP))
+    if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(UPNP::SETTING_SERVICES_UPNP))
     {
       const std::string& strDevices = g_localizeStrings.Get(33040); //"% Devices"
       share.strPath = "upnp://";

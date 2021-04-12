@@ -301,13 +301,6 @@ public:
   static constexpr auto SETTING_WEATHER_ADDONSETTINGS = "weather.addonsettings";
   static constexpr auto SETTING_SERVICES_DEVICENAME = "services.devicename";
   static constexpr auto SETTING_SERVICES_DEVICEUUID = "services.deviceuuid";
-  static constexpr auto SETTING_SERVICES_UPNP = "services.upnp";
-  static constexpr auto SETTING_SERVICES_UPNPSERVER = "services.upnpserver";
-  static constexpr auto SETTING_SERVICES_UPNPANNOUNCE = "services.upnpannounce";
-  static constexpr auto SETTING_SERVICES_UPNPLOOKFOREXTERNALSUBTITLES =
-      "services.upnplookforexternalsubtitles";
-  static constexpr auto SETTING_SERVICES_UPNPCONTROLLER = "services.upnpcontroller";
-  static constexpr auto SETTING_SERVICES_UPNPRENDERER = "services.upnprenderer";
   static constexpr auto SETTING_SERVICES_WEBSKIN = "services.webskin";
   static constexpr auto SETTING_SERVICES_ZEROCONF = "services.zeroconf";
   static constexpr auto SETTING_SMB_WINSSERVER = "smb.winsserver";

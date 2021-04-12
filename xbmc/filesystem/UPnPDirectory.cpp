@@ -135,25 +135,26 @@ CUPnPDirectory::GetFriendlyName(const CURL& url)
 +---------------------------------------------------------------------*/
 bool CUPnPDirectory::GetResource(const CURL& path, CFileItem &item)
 {
-    if (!CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_SERVICES_UPNP))
-      return false;
+  if (!CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(UPNP::SETTING_SERVICES_UPNP))
+    return false;
 
-    if(!path.IsProtocol("upnp"))
-      return false;
+  if (!path.IsProtocol("upnp"))
+    return false;
 
-    CUPnP* upnp = CUPnP::GetInstance();
-    if(!upnp)
-        return false;
+  CUPnP* upnp = CUPnP::GetInstance();
+  if (!upnp)
+    return false;
 
-    const std::string& uuid = path.GetHostName();
-    std::string object = path.GetFileName();
-    StringUtils::TrimRight(object, "/");
-    object = CURL::Decode(object);
+  const std::string& uuid = path.GetHostName();
+  std::string object = path.GetFileName();
+  StringUtils::TrimRight(object, "/");
+  object = CURL::Decode(object);
 
-    PLT_DeviceDataReference device;
-    if(!FindDeviceWait(upnp, uuid.c_str(), device)) {
-        CLog::Log(LOGERROR, "CUPnPDirectory::GetResource - unable to find uuid %s", uuid.c_str());
-        return false;
+  PLT_DeviceDataReference device;
+  if (!FindDeviceWait(upnp, uuid.c_str(), device))
+  {
+    CLog::Log(LOGERROR, "CUPnPDirectory::GetResource - unable to find uuid %s", uuid.c_str());
+    return false;
     }
 
     PLT_MediaObjectListReference list;
@@ -181,18 +182,19 @@ bool CUPnPDirectory::GetResource(const CURL& path, CFileItem &item)
 bool
 CUPnPDirectory::GetDirectory(const CURL& url, CFileItemList &items)
 {
-    if (!CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_SERVICES_UPNP))
-      return false;
+  if (!CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(UPNP::SETTING_SERVICES_UPNP))
+    return false;
 
-    CUPnP* upnp = CUPnP::GetInstance();
+  CUPnP* upnp = CUPnP::GetInstance();
 
-    /* upnp should never be cached, it has internal cache */
-    items.SetCacheToDisc(CFileItemList::CACHE_NEVER);
+  /* upnp should never be cached, it has internal cache */
+  items.SetCacheToDisc(CFileItemList::CACHE_NEVER);
 
-    // We accept upnp://devuuid/[item_id/]
-    NPT_String path = url.Get().c_str();
-    if (!path.StartsWith("upnp://", true)) {
-        return false;
+  // We accept upnp://devuuid/[item_id/]
+  NPT_String path = url.Get().c_str();
+  if (!path.StartsWith("upnp://", true))
+  {
+    return false;
     }
 
     if (path.Compare("upnp://", true) == 0) {

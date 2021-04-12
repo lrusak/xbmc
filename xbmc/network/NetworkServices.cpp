@@ -123,10 +123,12 @@ CNetworkServices::CNetworkServices()
       CAirPlayServer::SETTING_SERVICES_USEAIRPLAYPASSWORD,
       CAirPlayServer::SETTING_SERVICES_AIRPLAYPASSWORD,
 #endif
-      CSettings::SETTING_SERVICES_UPNP,
-      CSettings::SETTING_SERVICES_UPNPSERVER,
-      CSettings::SETTING_SERVICES_UPNPRENDERER,
-      CSettings::SETTING_SERVICES_UPNPCONTROLLER,
+#ifdef HAS_UPNP
+      UPNP::SETTING_SERVICES_UPNP,
+      UPNP::SETTING_SERVICES_UPNPSERVER,
+      UPNP::SETTING_SERVICES_UPNPRENDERER,
+      UPNP::SETTING_SERVICES_UPNPCONTROLLER,
+#endif
       CEventServer::SETTING_SERVICES_ESENABLED,
       CEventServer::SETTING_SERVICES_ESPORT,
       CEventServer::SETTING_SERVICES_ESALLINTERFACES,
@@ -337,7 +339,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
 #endif //HAS_AIRPLAY
 
 #ifdef HAS_UPNP
-  if (settingId == CSettings::SETTING_SERVICES_UPNP)
+      if (settingId == UPNP::SETTING_SERVICES_UPNP)
   {
     if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
     {
@@ -354,7 +356,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
       StopUPnPClient();
     }
   }
-  else if (settingId == CSettings::SETTING_SERVICES_UPNPSERVER)
+  else if (settingId == UPNP::SETTING_SERVICES_UPNPSERVER)
   {
     if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
     {
@@ -370,14 +372,14 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
     else
       return StopUPnPServer();
   }
-  else if (settingId == CSettings::SETTING_SERVICES_UPNPRENDERER)
+  else if (settingId == UPNP::SETTING_SERVICES_UPNPRENDERER)
   {
     if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
       return StartUPnPRenderer();
     else
       return StopUPnPRenderer();
   }
-  else if (settingId == CSettings::SETTING_SERVICES_UPNPCONTROLLER)
+  else if (settingId == UPNP::SETTING_SERVICES_UPNPCONTROLLER)
   {
     // always stop and restart
     StopUPnPController();
@@ -528,8 +530,10 @@ bool CNetworkServices::OnSettingUpdate(const std::shared_ptr<CSetting>& setting,
 void CNetworkServices::Start()
 {
   StartZeroconf();
-  if (m_settings->GetBool(CSettings::SETTING_SERVICES_UPNP))
+#ifdef HAS_UPNP
+  if (m_settings->GetBool(UPNP::SETTING_SERVICES_UPNP))
     StartUPnP();
+#endif
   if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED) && !StartEventServer())
     CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33102), g_localizeStrings.Get(33100));
   if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED) && !StartJSONRPCServer())
@@ -612,17 +616,17 @@ bool CNetworkServices::StartServer(enum ESERVERS server, bool start)
       // the callback will take care of starting/stopping jsonrpc server
       ret = settings->SetBool(CEventServer::SETTING_SERVICES_ESENABLED, start);
       break;
-
+#ifdef HAS_UPNP
     case ES_UPNPSERVER:
       // the callback will take care of starting/stopping upnp server
-      ret = settings->SetBool(CSettings::SETTING_SERVICES_UPNPSERVER, start);
+      ret = settings->SetBool(UPNP::SETTING_SERVICES_UPNPSERVER, start);
       break;
 
     case ES_UPNPRENDERER:
       // the callback will take care of starting/stopping upnp renderer
-      ret = settings->SetBool(CSettings::SETTING_SERVICES_UPNPRENDERER, start);
+      ret = settings->SetBool(UPNP::SETTING_SERVICES_UPNPRENDERER, start);
       break;
-
+#endif
     case ES_EVENTSERVER:
       // the callback will take care of starting/stopping event server
       ret = settings->SetBool(CEventServer::SETTING_SERVICES_ESENABLED, start);
@@ -965,17 +969,17 @@ bool CNetworkServices::StartUPnP()
   bool ret = false;
 #ifdef HAS_UPNP
   ret |= StartUPnPClient();
-  if (m_settings->GetBool(CSettings::SETTING_SERVICES_UPNPSERVER))
+  if (m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPSERVER))
   {
    ret |= StartUPnPServer();
   }
 
-  if (m_settings->GetBool(CSettings::SETTING_SERVICES_UPNPCONTROLLER))
+  if (m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPCONTROLLER))
   {
     ret |= StartUPnPController();
   }
 
-  if (m_settings->GetBool(CSettings::SETTING_SERVICES_UPNPRENDERER))
+  if (m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPRENDERER))
   {
     ret |= StartUPnPRenderer();
   }
@@ -1000,7 +1004,7 @@ bool CNetworkServices::StopUPnP(bool bWait)
 bool CNetworkServices::StartUPnPClient()
 {
 #ifdef HAS_UPNP
-  if (!m_settings->GetBool(CSettings::SETTING_SERVICES_UPNP))
+  if (!m_settings->GetBool(UPNP::SETTING_SERVICES_UPNP))
     return false;
 
   CLog::Log(LOGINFO, "starting upnp client");
@@ -1035,9 +1039,9 @@ bool CNetworkServices::StopUPnPClient()
 bool CNetworkServices::StartUPnPController()
 {
 #ifdef HAS_UPNP
-  if (!m_settings->GetBool(CSettings::SETTING_SERVICES_UPNPCONTROLLER) ||
-      !m_settings->GetBool(CSettings::SETTING_SERVICES_UPNPSERVER) ||
-      !m_settings->GetBool(CSettings::SETTING_SERVICES_UPNP))
+  if (!m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPCONTROLLER) ||
+      !m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPSERVER) ||
+      !m_settings->GetBool(UPNP::SETTING_SERVICES_UPNP))
     return false;
 
   CLog::Log(LOGINFO, "starting upnp controller");
@@ -1072,8 +1076,8 @@ bool CNetworkServices::StopUPnPController()
 bool CNetworkServices::StartUPnPRenderer()
 {
 #ifdef HAS_UPNP
-  if (!m_settings->GetBool(CSettings::SETTING_SERVICES_UPNPRENDERER) ||
-      !m_settings->GetBool(CSettings::SETTING_SERVICES_UPNP))
+  if (!m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPRENDERER) ||
+      !m_settings->GetBool(UPNP::SETTING_SERVICES_UPNP))
     return false;
 
   CLog::Log(LOGINFO, "starting upnp renderer");
@@ -1107,8 +1111,8 @@ bool CNetworkServices::StopUPnPRenderer()
 bool CNetworkServices::StartUPnPServer()
 {
 #ifdef HAS_UPNP
-  if (!m_settings->GetBool(CSettings::SETTING_SERVICES_UPNPSERVER) ||
-      !m_settings->GetBool(CSettings::SETTING_SERVICES_UPNP))
+  if (!m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPSERVER) ||
+      !m_settings->GetBool(UPNP::SETTING_SERVICES_UPNP))
     return false;
 
   CLog::Log(LOGINFO, "starting upnp server");

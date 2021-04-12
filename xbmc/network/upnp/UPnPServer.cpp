@@ -26,6 +26,7 @@
 #include "music/MusicDatabase.h"
 #include "music/MusicThumbLoader.h"
 #include "music/tags/MusicInfoTag.h"
+#include "network/upnp/UPnP.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
 #include "utils/Digest.h"
@@ -162,8 +163,9 @@ CUPnPServer::PropagateUpdates()
     std::string buffer;
     std::map<std::string, std::pair<bool, unsigned long> >::iterator itr;
 
-    if (m_scanning || !CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_SERVICES_UPNPANNOUNCE))
-        return;
+    if (m_scanning || !CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(
+                          UPNP::SETTING_SERVICES_UPNPANNOUNCE))
+      return;
 
     NPT_CHECK_LABEL(FindServiceById("urn:upnp-org:serviceId:ContentDirectory", service), failed);
 

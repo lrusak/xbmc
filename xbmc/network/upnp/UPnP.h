@@ -32,6 +32,14 @@ class CRendererReferenceHolder;
 class CUPnPRenderer;
 class CUPnPServer;
 
+static constexpr auto SETTING_SERVICES_UPNP = "services.upnp";
+static constexpr auto SETTING_SERVICES_UPNPSERVER = "services.upnpserver";
+static constexpr auto SETTING_SERVICES_UPNPANNOUNCE = "services.upnpannounce";
+static constexpr auto SETTING_SERVICES_UPNPLOOKFOREXTERNALSUBTITLES =
+    "services.upnplookforexternalsubtitles";
+static constexpr auto SETTING_SERVICES_UPNPCONTROLLER = "services.upnpcontroller";
+static constexpr auto SETTING_SERVICES_UPNPRENDERER = "services.upnprenderer";
+
 class CUPnP
 {
 public:

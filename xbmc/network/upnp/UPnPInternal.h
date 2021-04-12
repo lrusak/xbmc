@@ -16,7 +16,6 @@
 #include <Neptune/Source/Core/NptStrings.h>
 #include <Neptune/Source/Core/NptTypes.h>
 
-class CUPnPServer;
 class CFileItem;
 class CThumbLoader;
 class PLT_DeviceData;
@@ -31,21 +30,26 @@ class CVideoInfoTag;
 
 namespace UPNP
 {
-  enum UPnPService {
-    UPnPServiceNone = 0,
-    UPnPClient,
-    UPnPContentDirectory,
-    UPnPPlayer,
-    UPnPRenderer
-  };
+class CUPnPServer;
 
-  class CResourceFinder {
-  public:
-    CResourceFinder(const char* protocol, const char* content = NULL);
-    bool operator()(const PLT_MediaItemResource& resource) const;
-  private:
-    NPT_String m_Protocol;
-    NPT_String m_Content;
+enum UPnPService
+{
+  UPnPServiceNone = 0,
+  UPnPClient,
+  UPnPContentDirectory,
+  UPnPPlayer,
+  UPnPRenderer
+};
+
+class CResourceFinder
+{
+public:
+  CResourceFinder(const char* protocol, const char* content = NULL);
+  bool operator()(const PLT_MediaItemResource& resource) const;
+
+private:
+  NPT_String m_Protocol;
+  NPT_String m_Content;
   };
 
   enum EClientQuirks
