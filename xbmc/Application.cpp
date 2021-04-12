@@ -4814,11 +4814,6 @@ bool CApplication::IsMusicScanning() const
   return CMusicLibraryQueue::GetInstance().IsScanningLibrary();
 }
 
-void CApplication::StopVideoScan()
-{
-  CVideoLibraryQueue::GetInstance().StopLibraryScanning();
-}
-
 void CApplication::StopMusicScan()
 {
   CMusicLibraryQueue::GetInstance().StopLibraryScanning();
