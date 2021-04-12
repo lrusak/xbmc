@@ -170,7 +170,7 @@ void XBMCHelper::Configure()
   const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
   m_mode = settings->GetInt(CSettings::SETTING_INPUT_APPLEREMOTEMODE);
   m_sequenceDelay = settings->GetInt(CSettings::SETTING_INPUT_APPLEREMOTESEQUENCETIME);
-  m_port = settings->GetInt(CSettings::SETTING_SERVICES_ESPORT);
+  m_port = settings->GetInt(CEventServer::SETTING_SERVICES_ESPORT);
 
 
   // Don't let it enable if sofa control or remote buddy is around.

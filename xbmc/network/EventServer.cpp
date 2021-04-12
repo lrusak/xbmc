@@ -32,6 +32,14 @@ using namespace EVENTPACKET;
 using namespace EVENTCLIENT;
 using namespace SOCKETS;
 
+constexpr const char* CEventServer::SETTING_SERVICES_ESENABLED;
+constexpr const char* CEventServer::SETTING_SERVICES_ESPORT;
+constexpr const char* CEventServer::SETTING_SERVICES_ESPORTRANGE;
+constexpr const char* CEventServer::SETTING_SERVICES_ESMAXCLIENTS;
+constexpr const char* CEventServer::SETTING_SERVICES_ESALLINTERFACES;
+constexpr const char* CEventServer::SETTING_SERVICES_ESINITIALDELAY;
+constexpr const char* CEventServer::SETTING_SERVICES_ESCONTINUOUSDELAY;
+
 /************************************************************************/
 /* CEventServer                                                         */
 /************************************************************************/
@@ -74,11 +82,11 @@ void CEventServer::StartServer()
 
   // set default port
   const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
-  m_iPort = settings->GetInt(CSettings::SETTING_SERVICES_ESPORT);
+  m_iPort = settings->GetInt(CEventServer::SETTING_SERVICES_ESPORT);
   assert(m_iPort <= 65535 && m_iPort >= 1);
 
   // max clients
-  m_iMaxClients = settings->GetInt(CSettings::SETTING_SERVICES_ESMAXCLIENTS);
+  m_iMaxClients = settings->GetInt(CEventServer::SETTING_SERVICES_ESMAXCLIENTS);
   if (m_iMaxClients < 0)
   {
     CLog::Log(LOGERROR, "ES: Invalid maximum number of clients specified %d", m_iMaxClients);
@@ -164,13 +172,14 @@ void CEventServer::Run()
 
   // bind to IP and start listening on port
   const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
-  int port_range = settings->GetInt(CSettings::SETTING_SERVICES_ESPORTRANGE);
+  int port_range = settings->GetInt(CEventServer::SETTING_SERVICES_ESPORTRANGE);
   if (port_range < 1 || port_range > 100)
   {
     CLog::Log(LOGERROR, "ES: Invalid port range specified %d, defaulting to 10", port_range);
     port_range = 10;
   }
-  if (!m_pSocket->Bind(!settings->GetBool(CSettings::SETTING_SERVICES_ESALLINTERFACES), m_iPort, port_range))
+  if (!m_pSocket->Bind(!settings->GetBool(CEventServer::SETTING_SERVICES_ESALLINTERFACES), m_iPort,
+                       port_range))
   {
     CLog::Log(LOGERROR, "ES: Could not listen on port %d", m_iPort);
     return;

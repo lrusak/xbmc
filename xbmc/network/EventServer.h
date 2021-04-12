@@ -56,6 +56,14 @@ namespace EVENTSERVER
     bool GetMousePos(float &x, float &y);
     int GetNumberOfClients();
 
+    static constexpr auto SETTING_SERVICES_ESENABLED = "services.esenabled";
+    static constexpr auto SETTING_SERVICES_ESPORT = "services.esport";
+    static constexpr auto SETTING_SERVICES_ESPORTRANGE = "services.esportrange";
+    static constexpr auto SETTING_SERVICES_ESMAXCLIENTS = "services.esmaxclients";
+    static constexpr auto SETTING_SERVICES_ESALLINTERFACES = "services.esallinterfaces";
+    static constexpr auto SETTING_SERVICES_ESINITIALDELAY = "services.esinitialdelay";
+    static constexpr auto SETTING_SERVICES_ESCONTINUOUSDELAY = "services.escontinuousdelay";
+
   protected:
     CEventServer();
     void Cleanup();

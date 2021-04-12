@@ -309,13 +309,6 @@ public:
   static constexpr auto SETTING_SERVICES_UPNPCONTROLLER = "services.upnpcontroller";
   static constexpr auto SETTING_SERVICES_UPNPRENDERER = "services.upnprenderer";
   static constexpr auto SETTING_SERVICES_WEBSKIN = "services.webskin";
-  static constexpr auto SETTING_SERVICES_ESENABLED = "services.esenabled";
-  static constexpr auto SETTING_SERVICES_ESPORT = "services.esport";
-  static constexpr auto SETTING_SERVICES_ESPORTRANGE = "services.esportrange";
-  static constexpr auto SETTING_SERVICES_ESMAXCLIENTS = "services.esmaxclients";
-  static constexpr auto SETTING_SERVICES_ESALLINTERFACES = "services.esallinterfaces";
-  static constexpr auto SETTING_SERVICES_ESINITIALDELAY = "services.esinitialdelay";
-  static constexpr auto SETTING_SERVICES_ESCONTINUOUSDELAY = "services.escontinuousdelay";
   static constexpr auto SETTING_SERVICES_ZEROCONF = "services.zeroconf";
   static constexpr auto SETTING_SMB_WINSSERVER = "smb.winsserver";
   static constexpr auto SETTING_SMB_WORKGROUP = "smb.workgroup";

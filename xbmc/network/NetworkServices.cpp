@@ -127,11 +127,11 @@ CNetworkServices::CNetworkServices()
       CSettings::SETTING_SERVICES_UPNPSERVER,
       CSettings::SETTING_SERVICES_UPNPRENDERER,
       CSettings::SETTING_SERVICES_UPNPCONTROLLER,
-      CSettings::SETTING_SERVICES_ESENABLED,
-      CSettings::SETTING_SERVICES_ESPORT,
-      CSettings::SETTING_SERVICES_ESALLINTERFACES,
-      CSettings::SETTING_SERVICES_ESINITIALDELAY,
-      CSettings::SETTING_SERVICES_ESCONTINUOUSDELAY,
+      CEventServer::SETTING_SERVICES_ESENABLED,
+      CEventServer::SETTING_SERVICES_ESPORT,
+      CEventServer::SETTING_SERVICES_ESALLINTERFACES,
+      CEventServer::SETTING_SERVICES_ESINITIALDELAY,
+      CEventServer::SETTING_SERVICES_ESCONTINUOUSDELAY,
       CSettings::SETTING_SMB_WINSSERVER,
       CSettings::SETTING_SMB_WORKGROUP,
       CSettings::SETTING_SMB_MINPROTOCOL,
@@ -234,7 +234,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
       }
     }
   }
-  else if (settingId == CSettings::SETTING_SERVICES_ESPORT ||
+  else if (settingId == CEventServer::SETTING_SERVICES_ESPORT ||
            settingId == CWebServer::SETTING_SERVICES_WEBSERVERPORT)
     return ValidatePort(std::static_pointer_cast<const CSettingInt>(setting)->GetValue());
   else
@@ -387,7 +387,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
   else
 #endif // HAS_UPNP
 
-  if (settingId == CSettings::SETTING_SERVICES_ESENABLED)
+      if (settingId == CEventServer::SETTING_SERVICES_ESENABLED)
   {
     if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
     {
@@ -413,7 +413,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
       return result;
     }
   }
-  else if (settingId == CSettings::SETTING_SERVICES_ESPORT)
+  else if (settingId == CEventServer::SETTING_SERVICES_ESPORT)
   {
     // restart eventserver without asking user
     if (!StopEventServer(true, false))
@@ -430,16 +430,16 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
     XBMCHelper::GetInstance().Configure();
 #endif // TARGET_DARWIN_OSX
   }
-  else if (settingId == CSettings::SETTING_SERVICES_ESALLINTERFACES)
+  else if (settingId == CEventServer::SETTING_SERVICES_ESALLINTERFACES)
   {
-    if (m_settings->GetBool(CSettings::SETTING_SERVICES_ESALLINTERFACES) &&
+    if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESALLINTERFACES) &&
         HELPERS::ShowYesNoDialogText(19098, 36633) != DialogResponse::YES)
     {
       // Revert change, do not start server
       return false;
     }
 
-    if (m_settings->GetBool(CSettings::SETTING_SERVICES_ESENABLED))
+    if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED))
     {
       if (!StopEventServer(true, true))
         return false;
@@ -451,7 +451,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
       }
     }
 
-    if (m_settings->GetBool(CSettings::SETTING_SERVICES_ESENABLED))
+    if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED))
     {
       if (!StopJSONRPCServer(true))
         return false;
@@ -464,10 +464,10 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
     }
   }
 
-  else if (settingId == CSettings::SETTING_SERVICES_ESINITIALDELAY ||
-           settingId == CSettings::SETTING_SERVICES_ESCONTINUOUSDELAY)
+  else if (settingId == CEventServer::SETTING_SERVICES_ESINITIALDELAY ||
+           settingId == CEventServer::SETTING_SERVICES_ESCONTINUOUSDELAY)
   {
-    if (m_settings->GetBool(CSettings::SETTING_SERVICES_ESENABLED))
+    if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED))
       return RefreshEventServer();
   }
 
@@ -530,9 +530,9 @@ void CNetworkServices::Start()
   StartZeroconf();
   if (m_settings->GetBool(CSettings::SETTING_SERVICES_UPNP))
     StartUPnP();
-  if (m_settings->GetBool(CSettings::SETTING_SERVICES_ESENABLED) && !StartEventServer())
+  if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED) && !StartEventServer())
     CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33102), g_localizeStrings.Get(33100));
-  if (m_settings->GetBool(CSettings::SETTING_SERVICES_ESENABLED) && !StartJSONRPCServer())
+  if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED) && !StartJSONRPCServer())
     CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33103), g_localizeStrings.Get(33100));
 
 #ifdef HAS_WEB_SERVER
@@ -610,7 +610,7 @@ bool CNetworkServices::StartServer(enum ESERVERS server, bool start)
 #endif
     case ES_JSONRPCSERVER:
       // the callback will take care of starting/stopping jsonrpc server
-      ret = settings->SetBool(CSettings::SETTING_SERVICES_ESENABLED, start);
+      ret = settings->SetBool(CEventServer::SETTING_SERVICES_ESENABLED, start);
       break;
 
     case ES_UPNPSERVER:
@@ -625,7 +625,7 @@ bool CNetworkServices::StartServer(enum ESERVERS server, bool start)
 
     case ES_EVENTSERVER:
       // the callback will take care of starting/stopping event server
-      ret = settings->SetBool(CSettings::SETTING_SERVICES_ESENABLED, start);
+      ret = settings->SetBool(CEventServer::SETTING_SERVICES_ESENABLED, start);
       break;
 
     case ES_ZEROCONF:
@@ -843,13 +843,15 @@ bool CNetworkServices::StopAirTunesServer(bool bWait)
 
 bool CNetworkServices::StartJSONRPCServer()
 {
-  if (!m_settings->GetBool(CSettings::SETTING_SERVICES_ESENABLED))
+  if (!m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED))
     return false;
 
   if (IsJSONRPCServerRunning())
     return true;
 
-  if (!CTCPServer::StartServer(CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_jsonTcpPort, m_settings->GetBool(CSettings::SETTING_SERVICES_ESALLINTERFACES)))
+  if (!CTCPServer::StartServer(
+          CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_jsonTcpPort,
+          m_settings->GetBool(CEventServer::SETTING_SERVICES_ESALLINTERFACES)))
     return false;
 
 #ifdef HAS_ZEROCONF
@@ -885,7 +887,7 @@ bool CNetworkServices::StopJSONRPCServer(bool bWait)
 
 bool CNetworkServices::StartEventServer()
 {
-  if (!m_settings->GetBool(CSettings::SETTING_SERVICES_ESENABLED))
+  if (!m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED))
     return false;
 
   if (IsEventServerRunning())
@@ -948,7 +950,7 @@ bool CNetworkServices::StopEventServer(bool bWait, bool promptuser)
 
 bool CNetworkServices::RefreshEventServer()
 {
-  if (!m_settings->GetBool(CSettings::SETTING_SERVICES_ESENABLED))
+  if (!m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED))
     return false;
 
   if (!IsEventServerRunning())

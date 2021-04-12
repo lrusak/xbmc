@@ -144,12 +144,7 @@ namespace EVENTCLIENT
       return m_deviceName;
     }
 
-    void RefreshSettings()
-    {
-      const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
-      m_iRepeatDelay = settings->GetInt(CSettings::SETTING_SERVICES_ESINITIALDELAY);
-      m_iRepeatSpeed = settings->GetInt(CSettings::SETTING_SERVICES_ESCONTINUOUSDELAY);
-    }
+    void RefreshSettings();
 
     SOCKETS::CAddress& Address()
     {

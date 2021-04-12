@@ -18,6 +18,7 @@
 #include "input/IRTranslator.h"
 #include "input/Key.h"
 #include "input/KeyboardTranslator.h"
+#include "network/EventServer.h"
 #include "threads/SingleLock.h"
 #include "threads/SystemClock.h"
 #include "utils/StringUtils.h"
@@ -91,6 +92,13 @@ void CEventButtonState::Load()
 /************************************************************************/
 /* CEventClient                                                         */
 /************************************************************************/
+void CEventClient::RefreshSettings()
+{
+  const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
+  m_iRepeatDelay = settings->GetInt(EVENTSERVER::CEventServer::SETTING_SERVICES_ESINITIALDELAY);
+  m_iRepeatSpeed = settings->GetInt(EVENTSERVER::CEventServer::SETTING_SERVICES_ESCONTINUOUSDELAY);
+}
+
 bool CEventClient::AddPacket(CEventPacket *packet)
 {
   if (!packet)
@@ -369,7 +377,7 @@ bool CEventClient::OnPacketBUTTON(CEventPacket *packet)
 
   float famount = 0;
   bool active = (flags & PTB_DOWN) ? true : false;
-  
+
   if (flags & PTB_USE_NAME)
     CLog::Log(LOGDEBUG, "EventClient: button name \"%s\" map \"%s\" %s",
               button.c_str(), map.c_str(), active ? "pressed" : "released");
