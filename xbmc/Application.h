@@ -239,7 +239,6 @@ public:
   void ResetShutdownTimers();
 
   bool IsMusicScanning() const;
-  bool IsVideoScanning() const;
 
   /*!
    \brief Starts a video library cleanup.
