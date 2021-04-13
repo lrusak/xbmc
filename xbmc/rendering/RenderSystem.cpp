@@ -106,5 +106,7 @@ void CRenderSystemBase::ShowSplash(const std::string& message)
   EndRender();
   CServiceBroker::GetWinSystem()->GetGfxContext().unlock();
   CServiceBroker::GetWinSystem()->GetGfxContext().Flip(true, false);
+
+  m_splashImage.reset();
 }
 
