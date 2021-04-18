@@ -18,6 +18,7 @@
 #include "network/EventServer.h"
 #include "network/Network.h"
 #include "network/NetworkServices/INetworkService.h"
+#include "network/NetworkServices/RssService.h"
 #include "network/TCPServer.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
@@ -99,6 +100,8 @@ CNetworkServices::CNetworkServices()
 #if defined(HAS_AIRPLAY) || defined(HAS_AIRTUNES)
   CAirPlayService::Register(this);
 #endif
+
+  CRssService::Register(this);
 }
 
 CNetworkServices::~CNetworkServices()
@@ -290,8 +293,6 @@ void CNetworkServices::Start()
 
   for (const auto& service : m_services)
     service->Start();
-
-  StartRss();
 }
 
 void CNetworkServices::Stop(bool bWait)
@@ -299,7 +300,6 @@ void CNetworkServices::Stop(bool bWait)
   if (bWait)
   {
     StopUPnP(bWait);
-    StopRss();
   }
 
   for (const auto& service : m_services)
@@ -666,29 +666,6 @@ bool CNetworkServices::StopUPnPServer()
   return true;
 #endif // HAS_UPNP
   return false;
-}
-
-bool CNetworkServices::StartRss()
-{
-  if (IsRssRunning())
-    return true;
-
-  CRssManager::GetInstance().Start();
-  return true;
-}
-
-bool CNetworkServices::IsRssRunning()
-{
-  return CRssManager::GetInstance().IsActive();
-}
-
-bool CNetworkServices::StopRss()
-{
-  if (!IsRssRunning())
-    return true;
-
-  CRssManager::GetInstance().Stop();
-  return true;
 }
 
 bool CNetworkServices::ValidatePort(int port)

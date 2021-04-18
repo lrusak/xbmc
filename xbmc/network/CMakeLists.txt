@@ -11,6 +11,7 @@ set(SOURCES DNSNameCache.cpp
             WakeOnAccess.cpp
             ZeroconfBrowser.cpp
             Zeroconf.cpp
+            NetworkServices/RssService.cpp
             NetworkServices/ZeroconfService.cpp)
 
 set(HEADERS DNSNameCache.h
@@ -27,6 +28,7 @@ set(HEADERS DNSNameCache.h
             WakeOnAccess.h
             Zeroconf.h
             ZeroconfBrowser.h
+            NetworkServices/RssService.h
             NetworkServices/ZeroconfService.h)
 
 if(ENABLE_OPTICAL)
