@@ -458,7 +458,10 @@ void CProfileManager::LogOff()
   g_application.WakeUpScreenSaverAndDPMS();
   CServiceBroker::GetGUI()->GetWindowManager().ActivateWindow(WINDOW_LOGIN_SCREEN, {}, false);
 
-  if (!CServiceBroker::GetNetwork().GetServices().StartEventServer()) // event server could be needed in some situations
+  //! @todo: this doensn't actually give feedback that the server started or failed
+  if (!CServiceBroker::GetNetwork().GetServices().StartServer(
+          CNetworkServices::ES_EVENTSERVER,
+          true)) // event server could be needed in some situations
     CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33102), g_localizeStrings.Get(33100));
 }
 

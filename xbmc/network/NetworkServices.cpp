@@ -17,6 +17,7 @@
 #include "messaging/helpers/DialogOKHelper.h"
 #include "network/EventServer.h"
 #include "network/Network.h"
+#include "network/NetworkServices/EventServerService.h"
 #include "network/NetworkServices/INetworkService.h"
 #include "network/NetworkServices/RssService.h"
 #include "network/TCPServer.h"
@@ -73,14 +74,11 @@ CNetworkServices::CNetworkServices()
 {
   std::set<std::string> settingSet{
 #if HAS_FILESYSTEM_SMB
-        SMB::SETTING_SMB_WINSSERVER, SMB::SETTING_SMB_WORKGROUP, SMB::SETTING_SMB_MINPROTOCOL,
-        SMB::SETTING_SMB_MAXPROTOCOL, SMB::SETTING_SMB_LEGACYSECURITY,
+    SMB::SETTING_SMB_WINSSERVER, SMB::SETTING_SMB_WORKGROUP, SMB::SETTING_SMB_MINPROTOCOL,
+        SMB::SETTING_SMB_MAXPROTOCOL, SMB::SETTING_SMB_LEGACYSECURITY
 #endif
-        CEventServer::SETTING_SERVICES_ESENABLED, CEventServer::SETTING_SERVICES_ESPORT,
-        CEventServer::SETTING_SERVICES_ESALLINTERFACES,
-        CEventServer::SETTING_SERVICES_ESINITIALDELAY,
-        CEventServer::SETTING_SERVICES_ESCONTINUOUSDELAY
   };
+
   m_settings = CServiceBroker::GetSettingsComponent()->GetSettings();
   m_settings->GetSettingsManager()->RegisterCallback(this, settingSet);
 
@@ -98,6 +96,8 @@ CNetworkServices::CNetworkServices()
 #ifdef HAS_UPNP
   CUpnpService::Register(this);
 #endif
+
+  CEventServerService::Register(this);
 
   CRssService::Register(this);
 }
@@ -118,89 +118,6 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
 
   const std::string &settingId = setting->GetId();
 
-  if (settingId == CEventServer::SETTING_SERVICES_ESENABLED)
-  {
-    if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
-    {
-      bool result = true;
-      if (!StartEventServer())
-      {
-        HELPERS::ShowOKDialogText(CVariant{33102}, CVariant{33100});
-        result = false;
-      }
-
-      if (!StartJSONRPCServer())
-      {
-        HELPERS::ShowOKDialogText(CVariant{33103}, CVariant{33100});
-        result = false;
-      }
-      return result;
-    }
-    else
-    {
-      bool result = true;
-      result = StopEventServer(true, true);
-      result &= StopJSONRPCServer(false);
-      return result;
-    }
-  }
-  else if (settingId == CEventServer::SETTING_SERVICES_ESPORT)
-  {
-    // restart eventserver without asking user
-    if (!StopEventServer(true, false))
-      return false;
-
-    if (!StartEventServer())
-    {
-      HELPERS::ShowOKDialogText(CVariant{33102}, CVariant{33100});
-      return false;
-    }
-
-#if defined(TARGET_DARWIN_OSX)
-    // reconfigure XBMCHelper for port changes
-    XBMCHelper::GetInstance().Configure();
-#endif // TARGET_DARWIN_OSX
-  }
-  else if (settingId == CEventServer::SETTING_SERVICES_ESALLINTERFACES)
-  {
-    if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESALLINTERFACES) &&
-        HELPERS::ShowYesNoDialogText(19098, 36633) != DialogResponse::YES)
-    {
-      // Revert change, do not start server
-      return false;
-    }
-
-    if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED))
-    {
-      if (!StopEventServer(true, true))
-        return false;
-
-      if (!StartEventServer())
-      {
-        HELPERS::ShowOKDialogText(CVariant{33102}, CVariant{33100});
-        return false;
-      }
-    }
-
-    if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED))
-    {
-      if (!StopJSONRPCServer(true))
-        return false;
-
-      if (!StartJSONRPCServer())
-      {
-        HELPERS::ShowOKDialogText(CVariant{33103}, CVariant{33100});
-        return false;
-      }
-    }
-  }
-
-  else if (settingId == CEventServer::SETTING_SERVICES_ESINITIALDELAY ||
-           settingId == CEventServer::SETTING_SERVICES_ESCONTINUOUSDELAY)
-  {
-    if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED))
-      return RefreshEventServer();
-  }
 
   return true;
 }
@@ -229,12 +146,6 @@ void CNetworkServices::OnSettingChanged(const std::shared_ptr<const CSetting>& s
 
 void CNetworkServices::Start()
 {
-
-  if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED) && !StartEventServer())
-    CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33102), g_localizeStrings.Get(33100));
-  if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED) && !StartJSONRPCServer())
-    CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33103), g_localizeStrings.Get(33100));
-
   for (const auto& service : m_services)
     service->Start();
 }
@@ -244,7 +155,6 @@ void CNetworkServices::Stop(bool bWait)
   for (const auto& service : m_services)
     service->Stop(bWait);
 
-  StopEventServer(bWait, false);
   StopJSONRPCServer(bWait);
 }
 
@@ -348,81 +258,6 @@ bool CNetworkServices::StopJSONRPCServer(bool bWait)
   CZeroconf::GetInstance()->RemoveService("servers.jsonrpc-tcp");
 #endif // HAS_ZEROCONF
 
-  return true;
-}
-
-bool CNetworkServices::StartEventServer()
-{
-  if (!m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED))
-    return false;
-
-  if (IsEventServerRunning())
-    return true;
-
-  CEventServer* server = CEventServer::GetInstance();
-  if (!server)
-  {
-    CLog::Log(LOGERROR, "ES: Out of memory");
-    return false;
-  }
-
-  server->StartServer();
-
-  return true;
-}
-
-bool CNetworkServices::IsEventServerRunning()
-{
-  return CEventServer::GetInstance()->Running();
-}
-
-bool CNetworkServices::StopEventServer(bool bWait, bool promptuser)
-{
-  if (!IsEventServerRunning())
-    return true;
-
-  CEventServer* server = CEventServer::GetInstance();
-  if (!server)
-  {
-    CLog::Log(LOGERROR, "ES: Out of memory");
-    return false;
-  }
-
-  if (promptuser)
-  {
-    if (server->GetNumberOfClients() > 0)
-    {
-      if (HELPERS::ShowYesNoDialogText(CVariant{13140}, CVariant{13141}, CVariant{""}, CVariant{""}, 10000) !=
-        DialogResponse::YES)
-      {
-        CLog::Log(LOGINFO, "ES: Not stopping event server");
-        return false;
-      }
-    }
-    CLog::Log(LOGINFO, "ES: Stopping event server with confirmation");
-
-    CEventServer::GetInstance()->StopServer(true);
-  }
-  else
-  {
-    if (!bWait)
-      CLog::Log(LOGINFO, "ES: Stopping event server");
-
-    CEventServer::GetInstance()->StopServer(bWait);
-  }
-
-  return true;
-}
-
-bool CNetworkServices::RefreshEventServer()
-{
-  if (!m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED))
-    return false;
-
-  if (!IsEventServerRunning())
-    return false;
-
-  CEventServer::GetInstance()->RefreshSettings();
   return true;
 }
 

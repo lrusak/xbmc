@@ -47,11 +47,6 @@ public:
   bool IsJSONRPCServerRunning();
   bool StopJSONRPCServer(bool bWait);
 
-  bool StartEventServer();
-  bool IsEventServerRunning();
-  bool StopEventServer(bool bWait, bool promptuser);
-  bool RefreshEventServer();
-
   static bool ValidatePort(int port);
 
 private:
