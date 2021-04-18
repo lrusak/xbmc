@@ -43,10 +43,6 @@ public:
 
   bool StartServer(enum ESERVERS server, bool start);
 
-  bool StartJSONRPCServer();
-  bool IsJSONRPCServerRunning();
-  bool StopJSONRPCServer(bool bWait);
-
   static bool ValidatePort(int port);
 
 private:

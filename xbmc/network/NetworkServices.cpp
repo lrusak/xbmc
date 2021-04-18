@@ -19,6 +19,7 @@
 #include "network/Network.h"
 #include "network/NetworkServices/EventServerService.h"
 #include "network/NetworkServices/INetworkService.h"
+#include "network/NetworkServices/JsonServerService.h"
 #include "network/NetworkServices/RssService.h"
 #include "network/TCPServer.h"
 #include "settings/AdvancedSettings.h"
@@ -99,6 +100,8 @@ CNetworkServices::CNetworkServices()
 
   CEventServerService::Register(this);
 
+  CJsonServerService::Register(this);
+
   CRssService::Register(this);
 }
 
@@ -154,8 +157,6 @@ void CNetworkServices::Stop(bool bWait)
 {
   for (const auto& service : m_services)
     service->Stop(bWait);
-
-  StopJSONRPCServer(bWait);
 }
 
 bool CNetworkServices::StartServer(enum ESERVERS server, bool start)
@@ -215,50 +216,6 @@ bool CNetworkServices::StartServer(enum ESERVERS server, bool start)
   settings->Save();
 
   return ret;
-}
-
-bool CNetworkServices::StartJSONRPCServer()
-{
-  if (!m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED))
-    return false;
-
-  if (IsJSONRPCServerRunning())
-    return true;
-
-  if (!CTCPServer::StartServer(
-          CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_jsonTcpPort,
-          m_settings->GetBool(CEventServer::SETTING_SERVICES_ESALLINTERFACES)))
-    return false;
-
-#ifdef HAS_ZEROCONF
-  std::vector<std::pair<std::string, std::string> > txt;
-  txt.emplace_back("txtvers", "1");
-  txt.emplace_back("uuid", CServiceBroker::GetSettingsComponent()->GetSettings()->GetString(
-                             CSettings::SETTING_SERVICES_DEVICEUUID));
-
-  CZeroconf::GetInstance()->PublishService("servers.jsonrpc-tpc", "_xbmc-jsonrpc._tcp", CSysInfo::GetDeviceName(), CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_jsonTcpPort, txt);
-#endif // HAS_ZEROCONF
-
-  return true;
-}
-
-bool CNetworkServices::IsJSONRPCServerRunning()
-{
-  return CTCPServer::IsRunning();
-}
-
-bool CNetworkServices::StopJSONRPCServer(bool bWait)
-{
-  if (!IsJSONRPCServerRunning())
-    return true;
-
-  CTCPServer::StopServer(bWait);
-
-#ifdef HAS_ZEROCONF
-  CZeroconf::GetInstance()->RemoveService("servers.jsonrpc-tcp");
-#endif // HAS_ZEROCONF
-
-  return true;
 }
 
 bool CNetworkServices::ValidatePort(int port)

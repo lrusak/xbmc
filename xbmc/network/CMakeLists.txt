@@ -3,6 +3,7 @@ set(SOURCES DNSNameCache.cpp
             EventPacket.cpp
             EventServer.cpp
             NetworkServices/EventServerService.cpp
+            NetworkServices/JsonServerService.cpp
             GUIDialogNetworkSetup.cpp
             Network.cpp
             NetworkServices.cpp
@@ -20,6 +21,7 @@ set(HEADERS DNSNameCache.h
             EventPacket.h
             EventServer.h
             NetworkServices/EventServerService.h
+            NetworkServices/JsonServerService.h
             GUIDialogNetworkSetup.h
             NetworkServices/INetworkService.h
             Network.h

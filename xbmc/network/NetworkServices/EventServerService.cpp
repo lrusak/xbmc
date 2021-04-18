@@ -57,18 +57,12 @@ bool CEventServerService::OnSettingChanging(const std::shared_ptr<const CSetting
         result = false;
       }
 
-      if (!CServiceBroker::GetNetwork().GetServices().StartJSONRPCServer())
-      {
-        KODI::MESSAGING::HELPERS::ShowOKDialogText(CVariant{33103}, CVariant{33100});
-        result = false;
-      }
       return result;
     }
     else
     {
       bool result = true;
       result = StopEventServer(true, true);
-      result &= CServiceBroker::GetNetwork().GetServices().StopJSONRPCServer(false);
       return result;
     }
   }
@@ -110,18 +104,6 @@ bool CEventServerService::OnSettingChanging(const std::shared_ptr<const CSetting
         return false;
       }
     }
-
-    if (m_settings->GetBool(EVENTSERVER::CEventServer::SETTING_SERVICES_ESENABLED))
-    {
-      if (!CServiceBroker::GetNetwork().GetServices().StopJSONRPCServer(true))
-        return false;
-
-      if (!CServiceBroker::GetNetwork().GetServices().StartJSONRPCServer())
-      {
-        KODI::MESSAGING::HELPERS::ShowOKDialogText(CVariant{33103}, CVariant{33100});
-        return false;
-      }
-    }
   }
 
   else if (settingId == EVENTSERVER::CEventServer::SETTING_SERVICES_ESINITIALDELAY ||
@@ -139,10 +121,6 @@ void CEventServerService::Start()
   if (m_settings->GetBool(EVENTSERVER::CEventServer::SETTING_SERVICES_ESENABLED) &&
       !StartEventServer())
     CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33102),
-                                          g_localizeStrings.Get(33100));
-  if (m_settings->GetBool(EVENTSERVER::CEventServer::SETTING_SERVICES_ESENABLED) &&
-      !CServiceBroker::GetNetwork().GetServices().StartJSONRPCServer())
-    CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33103),
                                           g_localizeStrings.Get(33100));
 }
 
