@@ -10,7 +10,8 @@ set(SOURCES DNSNameCache.cpp
             UdpClient.cpp
             WakeOnAccess.cpp
             ZeroconfBrowser.cpp
-            Zeroconf.cpp)
+            Zeroconf.cpp
+            NetworkServices/ZeroconfService.cpp)
 
 set(HEADERS DNSNameCache.h
             EventClient.h
@@ -25,7 +26,8 @@ set(HEADERS DNSNameCache.h
             UdpClient.h
             WakeOnAccess.h
             Zeroconf.h
-            ZeroconfBrowser.h)
+            ZeroconfBrowser.h
+            NetworkServices/ZeroconfService.h)
 
 if(ENABLE_OPTICAL)
   list(APPEND SOURCES cddb.cpp)

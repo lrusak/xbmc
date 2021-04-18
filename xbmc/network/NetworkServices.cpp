@@ -44,6 +44,7 @@
 #endif // HAS_AIRPLAY
 
 #ifdef HAS_ZEROCONF
+#include "network/NetworkServices/ZeroconfService.h"
 #include "network/Zeroconf.h"
 #endif // HAS_ZEROCONF
 
@@ -72,9 +73,6 @@ using KODI::MESSAGING::HELPERS::DialogResponse;
 CNetworkServices::CNetworkServices()
 {
   std::set<std::string> settingSet{
-#ifdef HAS_ZEROCONF
-        CZeroconf::SETTING_SERVICES_ZEROCONF,
-#endif
 #ifdef HAS_UPNP
         UPNP::SETTING_SERVICES_UPNP, UPNP::SETTING_SERVICES_UPNPSERVER,
         UPNP::SETTING_SERVICES_UPNPRENDERER, UPNP::SETTING_SERVICES_UPNPCONTROLLER,
@@ -90,6 +88,10 @@ CNetworkServices::CNetworkServices()
   };
   m_settings = CServiceBroker::GetSettingsComponent()->GetSettings();
   m_settings->GetSettingsManager()->RegisterCallback(this, settingSet);
+
+#ifdef HAS_ZEROCONF
+  CZeroconfService::Register(this);
+#endif
 
 #ifdef HAS_WEB_SERVER
   CWebServerService::Register(this);
@@ -114,14 +116,6 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
     return false;
 
   const std::string &settingId = setting->GetId();
-#ifdef HAS_ZEROCONF
-      if (settingId == CZeroconf::SETTING_SERVICES_ZEROCONF)
-  {
-    if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
-      return StartZeroconf();
-  }
-  else
-#endif // HAS_ZEROCONF
 
 #ifdef HAS_UPNP
       if (settingId == UPNP::SETTING_SERVICES_UPNP)
@@ -285,7 +279,6 @@ void CNetworkServices::OnSettingChanged(const std::shared_ptr<const CSetting>& s
 
 void CNetworkServices::Start()
 {
-  StartZeroconf();
 #ifdef HAS_UPNP
   if (m_settings->GetBool(UPNP::SETTING_SERVICES_UPNP))
     StartUPnP();
@@ -306,7 +299,6 @@ void CNetworkServices::Stop(bool bWait)
   if (bWait)
   {
     StopUPnP(bWait);
-    StopZeroconf();
     StopRss();
   }
 
@@ -697,43 +689,6 @@ bool CNetworkServices::StopRss()
 
   CRssManager::GetInstance().Stop();
   return true;
-}
-
-bool CNetworkServices::StartZeroconf()
-{
-#ifdef HAS_ZEROCONF
-  if (!m_settings->GetBool(CZeroconf::SETTING_SERVICES_ZEROCONF))
-    return false;
-
-  if (IsZeroconfRunning())
-    return true;
-
-  CLog::Log(LOGINFO, "starting zeroconf publishing");
-  return CZeroconf::GetInstance()->Start();
-#endif // HAS_ZEROCONF
-  return false;
-}
-
-bool CNetworkServices::IsZeroconfRunning()
-{
-#ifdef HAS_ZEROCONF
-  return CZeroconf::GetInstance()->IsStarted();
-#endif // HAS_ZEROCONF
-  return false;
-}
-
-bool CNetworkServices::StopZeroconf()
-{
-#ifdef HAS_ZEROCONF
-  if (!IsZeroconfRunning())
-    return true;
-
-  CLog::Log(LOGINFO, "stopping zeroconf publishing");
-  CZeroconf::GetInstance()->Stop();
-
-  return true;
-#endif // HAS_ZEROCONF
-  return false;
 }
 
 bool CNetworkServices::ValidatePort(int port)

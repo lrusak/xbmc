@@ -71,10 +71,6 @@ public:
   bool IsRssRunning();
   bool StopRss();
 
-  bool StartZeroconf();
-  bool IsZeroconfRunning();
-  bool StopZeroconf();
-
   static bool ValidatePort(int port);
 
 private:
