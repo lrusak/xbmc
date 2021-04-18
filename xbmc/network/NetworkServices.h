@@ -52,21 +52,6 @@ public:
   bool StopEventServer(bool bWait, bool promptuser);
   bool RefreshEventServer();
 
-  bool StartUPnP();
-  bool StopUPnP(bool bWait);
-  bool StartUPnPClient();
-  bool IsUPnPClientRunning();
-  bool StopUPnPClient();
-  bool StartUPnPController();
-  bool IsUPnPControllerRunning();
-  bool StopUPnPController();
-  bool StartUPnPRenderer();
-  bool IsUPnPRendererRunning();
-  bool StopUPnPRenderer();
-  bool StartUPnPServer();
-  bool IsUPnPServerRunning();
-  bool StopUPnPServer();
-
   bool StartRss();
   bool IsRssRunning();
   bool StopRss();

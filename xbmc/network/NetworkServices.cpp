@@ -50,6 +50,7 @@
 #endif // HAS_ZEROCONF
 
 #ifdef HAS_UPNP
+#include "network/NetworkServices/UpnpService.h"
 #include "network/upnp/UPnP.h"
 #endif // HAS_UPNP
 
@@ -65,19 +66,12 @@
 using namespace KODI::MESSAGING;
 using namespace JSONRPC;
 using namespace EVENTSERVER;
-#ifdef HAS_UPNP
-using namespace UPNP;
-#endif // HAS_UPNP
 
 using KODI::MESSAGING::HELPERS::DialogResponse;
 
 CNetworkServices::CNetworkServices()
 {
   std::set<std::string> settingSet{
-#ifdef HAS_UPNP
-        UPNP::SETTING_SERVICES_UPNP, UPNP::SETTING_SERVICES_UPNPSERVER,
-        UPNP::SETTING_SERVICES_UPNPRENDERER, UPNP::SETTING_SERVICES_UPNPCONTROLLER,
-#endif
 #if HAS_FILESYSTEM_SMB
         SMB::SETTING_SMB_WINSSERVER, SMB::SETTING_SMB_WORKGROUP, SMB::SETTING_SMB_MINPROTOCOL,
         SMB::SETTING_SMB_MAXPROTOCOL, SMB::SETTING_SMB_LEGACYSECURITY,
@@ -101,6 +95,10 @@ CNetworkServices::CNetworkServices()
   CAirPlayService::Register(this);
 #endif
 
+#ifdef HAS_UPNP
+  CUpnpService::Register(this);
+#endif
+
   CRssService::Register(this);
 }
 
@@ -120,58 +118,7 @@ bool CNetworkServices::OnSettingChanging(const std::shared_ptr<const CSetting>& 
 
   const std::string &settingId = setting->GetId();
 
-#ifdef HAS_UPNP
-      if (settingId == UPNP::SETTING_SERVICES_UPNP)
-  {
-    if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
-    {
-      StartUPnPClient();
-      StartUPnPController();
-      StartUPnPServer();
-      StartUPnPRenderer();
-    }
-    else
-    {
-      StopUPnPRenderer();
-      StopUPnPServer();
-      StopUPnPController();
-      StopUPnPClient();
-    }
-  }
-  else if (settingId == UPNP::SETTING_SERVICES_UPNPSERVER)
-  {
-    if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
-    {
-      if (!StartUPnPServer())
-        return false;
-
-      // always stop and restart the client and controller if necessary
-      StopUPnPClient();
-      StopUPnPController();
-      StartUPnPClient();
-      StartUPnPController();
-    }
-    else
-      return StopUPnPServer();
-  }
-  else if (settingId == UPNP::SETTING_SERVICES_UPNPRENDERER)
-  {
-    if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
-      return StartUPnPRenderer();
-    else
-      return StopUPnPRenderer();
-  }
-  else if (settingId == UPNP::SETTING_SERVICES_UPNPCONTROLLER)
-  {
-    // always stop and restart
-    StopUPnPController();
-    if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
-      return StartUPnPController();
-  }
-  else
-#endif // HAS_UPNP
-
-      if (settingId == CEventServer::SETTING_SERVICES_ESENABLED)
+  if (settingId == CEventServer::SETTING_SERVICES_ESENABLED)
   {
     if (std::static_pointer_cast<const CSettingBool>(setting)->GetValue())
     {
@@ -282,10 +229,7 @@ void CNetworkServices::OnSettingChanged(const std::shared_ptr<const CSetting>& s
 
 void CNetworkServices::Start()
 {
-#ifdef HAS_UPNP
-  if (m_settings->GetBool(UPNP::SETTING_SERVICES_UPNP))
-    StartUPnP();
-#endif
+
   if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED) && !StartEventServer())
     CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33102), g_localizeStrings.Get(33100));
   if (m_settings->GetBool(CEventServer::SETTING_SERVICES_ESENABLED) && !StartJSONRPCServer())
@@ -297,11 +241,6 @@ void CNetworkServices::Start()
 
 void CNetworkServices::Stop(bool bWait)
 {
-  if (bWait)
-  {
-    StopUPnP(bWait);
-  }
-
   for (const auto& service : m_services)
     service->Stop(bWait);
 
@@ -485,187 +424,6 @@ bool CNetworkServices::RefreshEventServer()
 
   CEventServer::GetInstance()->RefreshSettings();
   return true;
-}
-
-bool CNetworkServices::StartUPnP()
-{
-  bool ret = false;
-#ifdef HAS_UPNP
-  ret |= StartUPnPClient();
-  if (m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPSERVER))
-  {
-   ret |= StartUPnPServer();
-  }
-
-  if (m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPCONTROLLER))
-  {
-    ret |= StartUPnPController();
-  }
-
-  if (m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPRENDERER))
-  {
-    ret |= StartUPnPRenderer();
-  }
-#endif // HAS_UPNP
-  return ret;
-}
-
-bool CNetworkServices::StopUPnP(bool bWait)
-{
-#ifdef HAS_UPNP
-  if (!CUPnP::IsInstantiated())
-    return true;
-
-  CLog::Log(LOGINFO, "stopping upnp");
-  CUPnP::ReleaseInstance(bWait);
-
-  return true;
-#endif // HAS_UPNP
-  return false;
-}
-
-bool CNetworkServices::StartUPnPClient()
-{
-#ifdef HAS_UPNP
-  if (!m_settings->GetBool(UPNP::SETTING_SERVICES_UPNP))
-    return false;
-
-  CLog::Log(LOGINFO, "starting upnp client");
-  CUPnP::GetInstance()->StartClient();
-  return IsUPnPClientRunning();
-#endif // HAS_UPNP
-  return false;
-}
-
-bool CNetworkServices::IsUPnPClientRunning()
-{
-#ifdef HAS_UPNP
-  return CUPnP::GetInstance()->IsClientStarted();
-#endif // HAS_UPNP
-  return false;
-}
-
-bool CNetworkServices::StopUPnPClient()
-{
-#ifdef HAS_UPNP
-  if (!IsUPnPClientRunning())
-    return true;
-
-  CLog::Log(LOGINFO, "stopping upnp client");
-  CUPnP::GetInstance()->StopClient();
-
-  return true;
-#endif // HAS_UPNP
-  return false;
-}
-
-bool CNetworkServices::StartUPnPController()
-{
-#ifdef HAS_UPNP
-  if (!m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPCONTROLLER) ||
-      !m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPSERVER) ||
-      !m_settings->GetBool(UPNP::SETTING_SERVICES_UPNP))
-    return false;
-
-  CLog::Log(LOGINFO, "starting upnp controller");
-  CUPnP::GetInstance()->StartController();
-  return IsUPnPControllerRunning();
-#endif // HAS_UPNP
-  return false;
-}
-
-bool CNetworkServices::IsUPnPControllerRunning()
-{
-#ifdef HAS_UPNP
-  return CUPnP::GetInstance()->IsControllerStarted();
-#endif // HAS_UPNP
-  return false;
-}
-
-bool CNetworkServices::StopUPnPController()
-{
-#ifdef HAS_UPNP
-  if (!IsUPnPControllerRunning())
-    return true;
-
-  CLog::Log(LOGINFO, "stopping upnp controller");
-  CUPnP::GetInstance()->StopController();
-
-  return true;
-#endif // HAS_UPNP
-  return false;
-}
-
-bool CNetworkServices::StartUPnPRenderer()
-{
-#ifdef HAS_UPNP
-  if (!m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPRENDERER) ||
-      !m_settings->GetBool(UPNP::SETTING_SERVICES_UPNP))
-    return false;
-
-  CLog::Log(LOGINFO, "starting upnp renderer");
-  return CUPnP::GetInstance()->StartRenderer();
-#endif // HAS_UPNP
-  return false;
-}
-
-bool CNetworkServices::IsUPnPRendererRunning()
-{
-#ifdef HAS_UPNP
-  return CUPnP::GetInstance()->IsInstantiated();
-#endif // HAS_UPNP
-  return false;
-}
-
-bool CNetworkServices::StopUPnPRenderer()
-{
-#ifdef HAS_UPNP
-  if (!IsUPnPRendererRunning())
-    return true;
-
-  CLog::Log(LOGINFO, "stopping upnp renderer");
-  CUPnP::GetInstance()->StopRenderer();
-
-  return true;
-#endif // HAS_UPNP
-  return false;
-}
-
-bool CNetworkServices::StartUPnPServer()
-{
-#ifdef HAS_UPNP
-  if (!m_settings->GetBool(UPNP::SETTING_SERVICES_UPNPSERVER) ||
-      !m_settings->GetBool(UPNP::SETTING_SERVICES_UPNP))
-    return false;
-
-  CLog::Log(LOGINFO, "starting upnp server");
-  return CUPnP::GetInstance()->StartServer();
-#endif // HAS_UPNP
-  return false;
-}
-
-bool CNetworkServices::IsUPnPServerRunning()
-{
-#ifdef HAS_UPNP
-  return CUPnP::GetInstance()->IsInstantiated();
-#endif // HAS_UPNP
-  return false;
-}
-
-bool CNetworkServices::StopUPnPServer()
-{
-#ifdef HAS_UPNP
-  if (!IsUPnPServerRunning())
-    return true;
-
-  StopUPnPController();
-
-  CLog::Log(LOGINFO, "stopping upnp server");
-  CUPnP::GetInstance()->StopServer();
-
-  return true;
-#endif // HAS_UPNP
-  return false;
 }
 
 bool CNetworkServices::ValidatePort(int port)

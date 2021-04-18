@@ -58,6 +58,11 @@ if(MICROHTTPD_FOUND)
                       WebServer.h)
 endif()
 
+if(ENABLE_UPNP)
+  list(APPEND SOURCES NetworkServices/UpnpService.cpp)
+  list(APPEND HEADERS NetworkServices/UpnpService.h)
+endif()
+
 core_add_library(network)
 if(BLUETOOTH_FOUND)
   target_compile_definitions(${CORE_LIBRARY} PRIVATE -DHAVE_LIBBLUETOOTH=1)
