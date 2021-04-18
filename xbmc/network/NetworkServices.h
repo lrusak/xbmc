@@ -52,10 +52,6 @@ public:
   bool StopEventServer(bool bWait, bool promptuser);
   bool RefreshEventServer();
 
-  bool StartRss();
-  bool IsRssRunning();
-  bool StopRss();
-
   static bool ValidatePort(int port);
 
 private:
