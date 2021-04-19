@@ -17,7 +17,7 @@ public:
   virtual ~CPosixInterfaceForCLog() override = default;
 
   spdlog_filename_t GetLogFilename(const std::string& filename) const override { return filename; }
-  void AddSinks(
+  virtual void AddSinks(
       std::shared_ptr<spdlog::sinks::dist_sink<std::mutex>> distributionSink) const override
   {
   }
