@@ -44,7 +44,6 @@
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
 #include "storage/MediaManager.h"
-#include "threads/SystemClock.h"
 #include "utils/FileUtils.h"
 #include "utils/GroupUtils.h"
 #include "utils/LabelFormatter.h"
@@ -707,7 +706,7 @@ bool CVideoDatabase::GetPathsForTvShow(int idShow, std::set<int>& paths)
 
 int CVideoDatabase::RunQuery(const std::string &sql)
 {
-  unsigned int time = XbmcThreads::SystemClockMillis();
+  auto time = std::chrono::steady_clock::now();
   int rows = -1;
   if (m_pDS->query(sql))
   {
@@ -715,7 +714,11 @@ int CVideoDatabase::RunQuery(const std::string &sql)
     if (rows == 0)
       m_pDS->close();
   }
-  CLog::Log(LOGDEBUG, LOGDATABASE, "%s took %d ms for %d items query: %s", __FUNCTION__, XbmcThreads::SystemClockMillis() - time, rows, sql.c_str());
+  CLog::Log(
+      LOGDEBUG, LOGDATABASE, "{} took {} ms for {} items query: {}", __FUNCTION__,
+      std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - time)
+          .count(),
+      rows, sql);
   return rows;
 }
 
@@ -6763,10 +6766,13 @@ bool CVideoDatabase::GetPeopleNav(const std::string& strBaseDir, CFileItemList& 
       return false;
 
     // run query
-    unsigned int time = XbmcThreads::SystemClockMillis();
+    auto time = std::chrono::steady_clock::now();
     if (!m_pDS->query(strSQL)) return false;
-    CLog::Log(LOGDEBUG, LOGDATABASE, "%s -  query took %i ms",
-              __FUNCTION__, XbmcThreads::SystemClockMillis() - time); time = XbmcThreads::SystemClockMillis();
+    CLog::Log(LOGDEBUG, LOGDATABASE, "{} -  query took {} ms", __FUNCTION__,
+              std::chrono::duration_cast<std::chrono::milliseconds>(
+                  std::chrono::steady_clock::now() - time)
+                  .count());
+    time = std::chrono::steady_clock::now();
     int iRowsFound = m_pDS->num_rows();
     if (iRowsFound == 0)
     {
@@ -6879,8 +6885,10 @@ bool CVideoDatabase::GetPeopleNav(const std::string& strBaseDir, CFileItemList& 
       }
       m_pDS->close();
     }
-    CLog::Log(LOGDEBUG, LOGDATABASE, "%s item retrieval took %i ms",
-              __FUNCTION__, XbmcThreads::SystemClockMillis() - time); time = XbmcThreads::SystemClockMillis();
+    CLog::Log(LOGDEBUG, LOGDATABASE, "{} item retrieval took {} ms", __FUNCTION__,
+              std::chrono::duration_cast<std::chrono::milliseconds>(
+                  std::chrono::steady_clock::now() - time)
+                  .count());
 
     return true;
   }
@@ -9125,7 +9133,7 @@ void CVideoDatabase::CleanDatabase(CGUIDialogProgressBarHandle* handle, const st
     if (nullptr == m_pDS2)
       return;
 
-    unsigned int time = XbmcThreads::SystemClockMillis();
+    auto time = std::chrono::steady_clock::now();
     CLog::Log(LOGINFO, "%s: Starting videodatabase cleanup ..", __FUNCTION__);
     CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::VideoLibrary,
                                                        "OnCleanStarted");
@@ -9458,9 +9466,10 @@ void CVideoDatabase::CleanDatabase(CGUIDialogProgressBarHandle* handle, const st
 
     CUtil::DeleteVideoDatabaseDirectoryCache();
 
-    time = XbmcThreads::SystemClockMillis() - time;
-    CLog::Log(LOGINFO, "%s: Cleaning videodatabase done. Operation took %s", __FUNCTION__,
-              StringUtils::SecondsToTimeString(time / 1000).c_str());
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now() - time);
+    CLog::Log(LOGINFO, "{}: Cleaning videodatabase done. Operation took {} ms", __FUNCTION__,
+              duration.count());
 
     for (const auto &i : movieIDs)
       AnnounceRemove(MediaTypeMovie, i, true);
