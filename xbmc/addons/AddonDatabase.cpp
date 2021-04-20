@@ -504,11 +504,14 @@ bool CAddonDatabase::SetLastUsed(const std::string& addonId, const CDateTime& da
     if (!m_pDS)
       return false;
 
-    auto start = XbmcThreads::SystemClockMillis();
+    auto start = std::chrono::steady_clock::now();
     m_pDS->exec(PrepareSQL("UPDATE installed SET lastUsed='%s' WHERE addonID='%s'",
         dateTime.GetAsDBDateTime().c_str(), addonId.c_str()));
 
-    CLog::Log(LOGDEBUG, "CAddonDatabase::SetLastUsed[%s] took %i ms", addonId.c_str(), XbmcThreads::SystemClockMillis() - start);
+    CLog::Log(LOGDEBUG, "CAddonDatabase::SetLastUsed[{}] took {} ms", addonId,
+              std::chrono::duration_cast<std::chrono::milliseconds>(
+                  std::chrono::steady_clock::now() - start)
+                  .count());
     return true;
   }
   catch (...)
@@ -744,7 +747,7 @@ bool CAddonDatabase::GetRepositoryContent(const std::string& id, VECADDONS& addo
     if (!m_pDS)
       return false;
 
-    auto start = XbmcThreads::SystemClockMillis();
+    auto start = std::chrono::steady_clock::now();
 
     // Ensure that the repositories we fetch from are enabled and valid.
     std::vector<std::string> repoIds;
@@ -766,7 +769,10 @@ bool CAddonDatabase::GetRepositoryContent(const std::string& id, VECADDONS& addo
       }
     }
 
-    CLog::Log(LOGDEBUG, "CAddonDatabase: SELECT repo.id FROM repo .. took %d ms", XbmcThreads::SystemClockMillis() - start);
+    CLog::Log(LOGDEBUG, "CAddonDatabase: SELECT repo.id FROM repo .. took {} ms",
+              std::chrono::duration_cast<std::chrono::milliseconds>(
+                  std::chrono::steady_clock::now() - start)
+                  .count());
 
     if (repoIds.empty())
     {
@@ -782,10 +788,13 @@ bool CAddonDatabase::GetRepositoryContent(const std::string& id, VECADDONS& addo
                                    " ORDER BY repo.addonID, addons.addonID",
                                    StringUtils::Join(repoIds, ",").c_str());
 
-      auto start = XbmcThreads::SystemClockMillis();
+      auto start = std::chrono::steady_clock::now();
       m_pDS->query(sql);
-      CLog::Log(LOGDEBUG, "CAddonDatabase: query %s returned %d rows in %d ms", sql.c_str(),
-          m_pDS->num_rows(), XbmcThreads::SystemClockMillis() - start);
+      CLog::Log(LOGDEBUG, "CAddonDatabase: query {} returned {} rows in {} ms", sql,
+                m_pDS->num_rows(),
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now() - start)
+                    .count());
     }
 
     VECADDONS result;
@@ -815,7 +824,10 @@ bool CAddonDatabase::GetRepositoryContent(const std::string& id, VECADDONS& addo
     m_pDS->close();
     addons = std::move(result);
 
-    CLog::Log(LOGDEBUG, "CAddonDatabase::GetAddons took %i ms", XbmcThreads::SystemClockMillis() - start);
+    CLog::Log(LOGDEBUG, "CAddonDatabase::GetAddons took {} ms",
+              std::chrono::duration_cast<std::chrono::milliseconds>(
+                  std::chrono::steady_clock::now() - start)
+                  .count());
     return true;
   }
   catch (...)
