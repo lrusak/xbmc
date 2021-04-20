@@ -6,17 +6,17 @@
  *  See LICENSES/README.md for more information.
  */
 
-#include "threads/SystemClock.h"
 #include "UdpClient.h"
 #ifdef TARGET_POSIX
 #include <sys/ioctl.h>
 #endif
 #include "Network.h"
-#include "windowing/GraphicContext.h"
-#include "utils/log.h"
-#include "utils/TimeUtils.h"
-
 #include "threads/SingleLock.h"
+#include "utils/TimeUtils.h"
+#include "utils/log.h"
+#include "windowing/GraphicContext.h"
+
+#include <chrono>
 
 #include <arpa/inet.h>
 
@@ -177,8 +177,11 @@ void CUdpClient::Process()
 
         std::string message = messageBuffer;
 
-        CLog::Log(UDPCLIENT_DEBUG_LEVEL, "UDPCLIENT RX: %u\t\t<- '%s'",
-                  XbmcThreads::SystemClockMillis(), message.c_str() );
+        CLog::Log(UDPCLIENT_DEBUG_LEVEL, "UDPCLIENT RX: {}\t\t<- '{}'",
+                  std::chrono::duration_cast<std::chrono::milliseconds>(
+                      std::chrono::steady_clock::now().time_since_epoch())
+                      .count(),
+                  message.c_str());
 
         OnMessage(remoteAddress, message, reinterpret_cast<unsigned char*>(messageBuffer), messageLength);
       }
@@ -220,9 +223,13 @@ bool CUdpClient::DispatchNextCommand()
   if (command.binarySize > 0)
   {
     // only perform the following if logging level at debug
-    CLog::Log(UDPCLIENT_DEBUG_LEVEL, "UDPCLIENT TX: %u\t\t-> "
-                                     "<binary payload %u bytes>",
-              XbmcThreads::SystemClockMillis(), command.binarySize );
+    CLog::Log(UDPCLIENT_DEBUG_LEVEL,
+              "UDPCLIENT TX: {}\t\t-> "
+              "<binary payload {} bytes>",
+              std::chrono::duration_cast<std::chrono::milliseconds>(
+                  std::chrono::steady_clock::now().time_since_epoch())
+                  .count(),
+              command.binarySize);
 
     do
     {
@@ -235,8 +242,11 @@ bool CUdpClient::DispatchNextCommand()
   else
   {
     // only perform the following if logging level at debug
-    CLog::Log(UDPCLIENT_DEBUG_LEVEL, "UDPCLIENT TX: %u\t\t-> '%s'",
-              XbmcThreads::SystemClockMillis(), command.message.c_str() );
+    CLog::Log(UDPCLIENT_DEBUG_LEVEL, "UDPCLIENT TX: {}\t\t-> '{}'",
+              std::chrono::duration_cast<std::chrono::milliseconds>(
+                  std::chrono::steady_clock::now().time_since_epoch())
+                  .count(),
+              command.message.c_str());
 
     do
     {
