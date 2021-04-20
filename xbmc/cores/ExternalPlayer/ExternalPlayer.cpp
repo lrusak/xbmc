@@ -55,7 +55,7 @@ CExternalPlayer::CExternalPlayer(IPlayerCallback& callback)
 {
   m_bAbortRequest = false;
   m_bIsPlaying = false;
-  m_playbackStartTime = 0;
+  m_playbackStartTime = {};
   m_speed = 1;
   m_time = 0;
 
@@ -87,7 +87,7 @@ bool CExternalPlayer::OpenFile(const CFileItem& file, const CPlayerOptions &opti
     m_file = file;
     m_bIsPlaying = true;
     m_time = 0;
-    m_playbackStartTime = XbmcThreads::SystemClockMillis();
+    m_playbackStartTime = std::chrono::steady_clock::now();
     m_launchFilename = file.GetDynPath();
     CLog::Log(LOGINFO, "%s: %s", __FUNCTION__, m_launchFilename.c_str());
     Create();
@@ -286,7 +286,7 @@ void CExternalPlayer::Process()
   LockSetForegroundWindow(LSFW_UNLOCK);
 #endif
 
-  m_playbackStartTime = XbmcThreads::SystemClockMillis();
+  m_playbackStartTime = std::chrono::steady_clock::now();
 
   /* Suspend AE temporarily so exclusive or hog-mode sinks */
   /* don't block external player's access to audio device  */
@@ -313,7 +313,9 @@ void CExternalPlayer::Process()
 #elif defined(TARGET_POSIX) && !defined(TARGET_DARWIN_EMBEDDED)
   ret = ExecuteAppLinux(strFArgs.c_str());
 #endif
-  int64_t elapsedMillis = XbmcThreads::SystemClockMillis() - m_playbackStartTime;
+  int64_t elapsedMillis = std::chrono::duration_cast<std::chrono::milliseconds>(
+                              std::chrono::steady_clock::now() - m_playbackStartTime)
+                              .count();
 
   if (ret && (m_islauncher || elapsedMillis < LAUNCHER_PROCESS_TIME))
   {
