@@ -8,7 +8,6 @@
 
 #include <limits.h>
 
-#include "threads/SystemClock.h"
 #include "SystemInfo.h"
 #ifndef TARGET_POSIX
 #include <conio.h>
@@ -78,6 +77,11 @@ using namespace winrt::Windows::System::Profile;
 /* Expand macro before stringify */
 #define STR_MACRO(x) #x
 #define XSTR_MACRO(x) STR_MACRO(x)
+
+namespace
+{
+auto startTime = std::chrono::steady_clock::now();
+}
 
 using namespace XFILE;
 
@@ -339,12 +343,16 @@ std::string CSysInfoJob::GetSystemUpTime(bool bTotalUptime)
   if(bTotalUptime)
   {
     //Total Uptime
-    iInputMinutes = g_sysinfo.GetTotalUptime() + ((int)(XbmcThreads::SystemClockMillis() / 60000));
+    iInputMinutes = g_sysinfo.GetTotalUptime() + std::chrono::duration_cast<std::chrono::minutes>(
+                                                     std::chrono::steady_clock::now() - startTime)
+                                                     .count();
   }
   else
   {
     //Current UpTime
-    iInputMinutes = (int)(XbmcThreads::SystemClockMillis() / 60000);
+    iInputMinutes = std::chrono::duration_cast<std::chrono::minutes>(
+                        std::chrono::steady_clock::now() - startTime)
+                        .count();
   }
 
   SystemUpTime(iInputMinutes,iMinutes, iHours, iDays);
