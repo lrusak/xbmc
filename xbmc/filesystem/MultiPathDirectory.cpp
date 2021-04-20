@@ -234,7 +234,7 @@ std::string CMultiPathDirectory::ConstructMultiPath(const std::set<std::string> 
 void CMultiPathDirectory::MergeItems(CFileItemList &items)
 {
   CLog::Log(LOGDEBUG, "CMultiPathDirectory::MergeItems, items = %i", items.Size());
-  unsigned int time = XbmcThreads::SystemClockMillis();
+  auto time = std::chrono::steady_clock::now();
   if (items.Size() == 0)
     return;
   // sort items by label
@@ -289,9 +289,10 @@ void CMultiPathDirectory::MergeItems(CFileItemList &items)
     i++;
   }
 
-  CLog::Log(LOGDEBUG,
-            "CMultiPathDirectory::MergeItems, items = %i,  took %d ms",
-            items.Size(), XbmcThreads::SystemClockMillis() - time);
+  CLog::Log(
+      LOGDEBUG, "CMultiPathDirectory::MergeItems, items = {},  took {} ms", items.Size(),
+      std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - time)
+          .count());
 }
 
 bool CMultiPathDirectory::SupportsWriteFileOperations(const std::string &strPath)
