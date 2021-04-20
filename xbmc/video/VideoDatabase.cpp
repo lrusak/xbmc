@@ -447,7 +447,7 @@ void CVideoDatabase::CreateViews()
                                      "    uniqueid.uniqueid_id=tvshow.c%02d ",
                                      VIDEODB_ID_TV_RATING_ID, VIDEODB_ID_TV_IDENT_ID);
   m_pDS->exec(tvshowview);
-  
+
   CLog::Log(LOGINFO, "create season_view");
   std::string seasonview = PrepareSQL("CREATE VIEW season_view AS SELECT "
                                      "  seasons.idSeason AS idSeason,"
@@ -3785,9 +3785,6 @@ void CVideoDatabase::GetDetailsFromDB(const dbiplus::sql_record* const record, i
   }
 }
 
-DWORD movieTime = 0;
-DWORD castTime = 0;
-
 CVideoInfoTag CVideoDatabase::GetDetailsByTypeAndId(VIDEODB_CONTENT_TYPE type, int id)
 {
   CVideoInfoTag details;
@@ -3968,7 +3965,6 @@ CVideoInfoTag CVideoDatabase::GetDetailsForMovie(const dbiplus::sql_record* cons
   if (record == NULL)
     return details;
 
-  DWORD time = XbmcThreads::SystemClockMillis();
   int idMovie = record->at(0).get_asInt();
 
   GetDetailsFromDB(record, VIDEODB_ID_MIN, VIDEODB_ID_MAX, DbMovieOffsets, details);
@@ -3999,12 +3995,10 @@ CVideoInfoTag CVideoDatabase::GetDetailsForMovie(const dbiplus::sql_record* cons
     details.SetYear(record->at(VIDEODB_DETAILS_MOVIE_PREMIERED).get_asInt());
   else
     details.SetPremieredFromDBDate(premieredString);
-  movieTime += XbmcThreads::SystemClockMillis() - time; time = XbmcThreads::SystemClockMillis();
 
   if (getDetails)
   {
-      GetCast(details.m_iDbId, MediaTypeMovie, details.m_cast);
-      castTime += XbmcThreads::SystemClockMillis() - time; time = XbmcThreads::SystemClockMillis();
+    GetCast(details.m_iDbId, MediaTypeMovie, details.m_cast);
 
     if (getDetails & VideoDbDetailsTag)
       GetTags(details.m_iDbId, MediaTypeMovie, details.m_tags);
@@ -4051,7 +4045,6 @@ CVideoInfoTag CVideoDatabase::GetDetailsForTvShow(const dbiplus::sql_record* con
   if (record == NULL)
     return details;
 
-  DWORD time = XbmcThreads::SystemClockMillis();
   int idTvShow = record->at(0).get_asInt();
 
   GetDetailsFromDB(record, VIDEODB_ID_TV_MIN, VIDEODB_ID_TV_MAX, DbTvShowOffsets, details, 1);
@@ -4074,14 +4067,11 @@ CVideoInfoTag CVideoDatabase::GetDetailsForTvShow(const dbiplus::sql_record* con
   details.SetUniqueID(record->at(VIDEODB_DETAILS_TVSHOW_UNIQUEID_VALUE).get_asString(), record->at(VIDEODB_DETAILS_TVSHOW_UNIQUEID_TYPE).get_asString(), true);
   details.SetDuration(record->at(VIDEODB_DETAILS_TVSHOW_DURATION).get_asInt());
 
-  movieTime += XbmcThreads::SystemClockMillis() - time; time = XbmcThreads::SystemClockMillis();
-
   if (getDetails)
   {
     if (getDetails & VideoDbDetailsCast)
     {
       GetCast(details.m_iDbId, "tvshow", details.m_cast);
-      castTime += XbmcThreads::SystemClockMillis() - time; time = XbmcThreads::SystemClockMillis();
     }
 
     if (getDetails & VideoDbDetailsTag)
@@ -4122,7 +4112,6 @@ CVideoInfoTag CVideoDatabase::GetBasicDetailsForEpisode(const dbiplus::sql_recor
   if (record == nullptr)
     return details;
 
-  unsigned int time = XbmcThreads::SystemClockMillis();
   int idEpisode = record->at(0).get_asInt();
 
   GetDetailsFromDB(record, VIDEODB_ID_EPISODE_MIN, VIDEODB_ID_EPISODE_MAX, DbEpisodeOffsets, details);
@@ -4133,7 +4122,6 @@ CVideoInfoTag CVideoDatabase::GetBasicDetailsForEpisode(const dbiplus::sql_recor
   details.m_iIdSeason = record->at(VIDEODB_DETAILS_EPISODE_SEASON_ID).get_asInt();
   details.m_iUserRating = record->at(VIDEODB_DETAILS_EPISODE_USER_RATING).get_asInt();
 
-  movieTime += XbmcThreads::SystemClockMillis() - time;
   return details;
 }
 
@@ -4150,8 +4138,6 @@ CVideoInfoTag CVideoDatabase::GetDetailsForEpisode(const dbiplus::sql_record* co
     return details;
 
   details = GetBasicDetailsForEpisode(record);
-  
-  unsigned int time = XbmcThreads::SystemClockMillis();
 
   details.m_strPath = record->at(VIDEODB_DETAILS_EPISODE_PATH).get_asString();
   std::string strFileName = record->at(VIDEODB_DETAILS_EPISODE_FILE).get_asString();
@@ -4164,7 +4150,7 @@ CVideoInfoTag CVideoDatabase::GetDetailsForEpisode(const dbiplus::sql_record* co
   details.m_genre = StringUtils::Split(record->at(VIDEODB_DETAILS_EPISODE_TVSHOW_GENRE).get_asString(), CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_videoItemSeparator);
   details.m_studio = StringUtils::Split(record->at(VIDEODB_DETAILS_EPISODE_TVSHOW_STUDIO).get_asString(), CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_videoItemSeparator);
   details.SetPremieredFromDBDate(record->at(VIDEODB_DETAILS_EPISODE_TVSHOW_AIRED).get_asString());
-  
+
   details.SetResumePoint(record->at(VIDEODB_DETAILS_EPISODE_RESUME_TIME).get_asInt(),
                          record->at(VIDEODB_DETAILS_EPISODE_TOTAL_TIME).get_asInt(),
                          record->at(VIDEODB_DETAILS_EPISODE_PLAYER_STATE).get_asString());
@@ -4173,7 +4159,6 @@ CVideoInfoTag CVideoDatabase::GetDetailsForEpisode(const dbiplus::sql_record* co
                     record->at(VIDEODB_DETAILS_EPISODE_VOTES).get_asInt(),
                     record->at(VIDEODB_DETAILS_EPISODE_RATING_TYPE).get_asString(), true);
   details.SetUniqueID(record->at(VIDEODB_DETAILS_EPISODE_UNIQUEID_VALUE).get_asString(), record->at(VIDEODB_DETAILS_EPISODE_UNIQUEID_TYPE).get_asString(), true);
-  movieTime += XbmcThreads::SystemClockMillis() - time; time = XbmcThreads::SystemClockMillis();
 
   if (getDetails)
   {
@@ -4181,7 +4166,6 @@ CVideoInfoTag CVideoDatabase::GetDetailsForEpisode(const dbiplus::sql_record* co
     {
       GetCast(details.m_iDbId, MediaTypeEpisode, details.m_cast);
       GetCast(details.m_iIdShow, MediaTypeTvShow, details.m_cast);
-      castTime += XbmcThreads::SystemClockMillis() - time; time = XbmcThreads::SystemClockMillis();
     }
 
     if (getDetails & VideoDbDetailsRating)
@@ -4214,7 +4198,6 @@ CVideoInfoTag CVideoDatabase::GetDetailsForMusicVideo(const dbiplus::sql_record*
   if (record == nullptr)
     return details;
 
-  unsigned int time = XbmcThreads::SystemClockMillis();
   int idMVideo = record->at(0).get_asInt();
 
   GetDetailsFromDB(record, VIDEODB_ID_MUSICVIDEO_MIN, VIDEODB_ID_MUSICVIDEO_MAX, DbMusicVideoOffsets, details);
@@ -4238,8 +4221,6 @@ CVideoInfoTag CVideoDatabase::GetDetailsForMusicVideo(const dbiplus::sql_record*
   else
     details.SetPremieredFromDBDate(premieredString);
 
-  movieTime += XbmcThreads::SystemClockMillis() - time; time = XbmcThreads::SystemClockMillis();
-
   if (getDetails)
   {
     if (getDetails & VideoDbDetailsTag)
@@ -4251,7 +4232,6 @@ CVideoInfoTag CVideoDatabase::GetDetailsForMusicVideo(const dbiplus::sql_record*
     if (getDetails & VideoDbDetailsAll)
     {
       GetCast(details.m_iDbId, "musicvideo", details.m_cast);
-      castTime += XbmcThreads::SystemClockMillis() - time; time = XbmcThreads::SystemClockMillis();
     }
 
     details.m_parsedDetails = getDetails;
@@ -6470,7 +6450,7 @@ bool CVideoDatabase::GetMusicVideoAlbumsNav(const std::string& strBaseDir, CFile
     extFilter.AppendJoin(PrepareSQL("JOIN actor ON actor.actor_id = actor_link.actor_id"));
     extFilter.fields += ", path.strPath";
     extFilter.AppendJoin("join files on files.idFile = musicvideo_view.idFile join path on path.idPath = files.idPath");
-    
+
     if (StringUtils::EndsWith(strBaseDir,"albums/"))
       extFilter.AppendWhere(PrepareSQL("musicvideo_view.c%02d != ''", VIDEODB_ID_MUSICVIDEO_ALBUM));
 
@@ -6503,7 +6483,7 @@ bool CVideoDatabase::GetMusicVideoAlbumsNav(const std::string& strBaseDir, CFile
     */
     if (iRowsFound <= 0)
       return iRowsFound == 0;
-    
+
     std::string strArtist;
     if (idArtist> -1)
       strArtist = m_pDS->fv("actor.name").get_asString();
@@ -6602,7 +6582,7 @@ bool CVideoDatabase::GetMusicVideoAlbumsNav(const std::string& strBaseDir, CFile
 
     if (!strArtist.empty())
       items.SetProperty("customtitle",strArtist); // change displayed path from eg /23 to /Artist
-//    CLog::Log(LOGDEBUG, __FUNCTION__" Time: %d ms", XbmcThreads::SystemClockMillis() - time);
+
     return true;
   }
   catch (...)
@@ -7414,9 +7394,6 @@ bool CVideoDatabase::GetMoviesByWhere(const std::string& strBaseDir, const Filte
 {
   try
   {
-    movieTime = 0;
-    castTime = 0;
-
     if (nullptr == m_pDB)
       return false;
     if (nullptr == m_pDS)
@@ -7531,8 +7508,6 @@ bool CVideoDatabase::GetTvShowsByWhere(const std::string& strBaseDir, const Filt
 {
   try
   {
-    movieTime = 0;
-
     if (nullptr == m_pDB)
       return false;
     if (nullptr == m_pDS)
@@ -7659,9 +7634,6 @@ bool CVideoDatabase::GetEpisodesByWhere(const std::string& strBaseDir, const Fil
 {
   try
   {
-    movieTime = 0;
-    castTime = 0;
-
     if (nullptr == m_pDB)
       return false;
     if (nullptr == m_pDS)
@@ -8555,8 +8527,6 @@ bool CVideoDatabase::GetMusicVideosByWhere(const std::string &baseDir, const Fil
 {
   try
   {
-    movieTime = 0;
-    castTime = 0;
 
     if (nullptr == m_pDB)
       return false;
@@ -8751,7 +8721,7 @@ void CVideoDatabase::GetMoviesByName(const std::string& strSearch, CFileItemList
     if (m_profileManager.GetMasterProfile().getLockMode() != LOCK_MODE_EVERYONE && !g_passwordManager.bMasterUser)
       strSQL = PrepareSQL("SELECT movie.idMovie, movie.c%02d, path.strPath, movie.idSet FROM movie "
                           "INNER JOIN files ON files.idFile=movie.idFile INNER JOIN path ON "
-                          "path.idPath=files.idPath " 
+                          "path.idPath=files.idPath "
                           "WHERE movie.c%02d LIKE '%%%s%%' OR movie.c%02d LIKE '%%%s%%'",
                           VIDEODB_ID_TITLE, VIDEODB_ID_TITLE, strSearch.c_str(),
                           VIDEODB_ID_ORIGINALTITLE, strSearch.c_str());
