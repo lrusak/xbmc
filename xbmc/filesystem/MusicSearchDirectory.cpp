@@ -12,7 +12,6 @@
 #include "URL.h"
 #include "guilib/LocalizeStrings.h"
 #include "music/MusicDatabase.h"
-#include "threads/SystemClock.h"
 #include "utils/log.h"
 
 using namespace XFILE;
@@ -32,13 +31,15 @@ bool CMusicSearchDirectory::GetDirectory(const CURL& url, CFileItemList &items)
 
   // and retrieve the search details
   items.SetURL(url);
-  unsigned int time = XbmcThreads::SystemClockMillis();
+  auto time = std::chrono::steady_clock::now();
   CMusicDatabase db;
   db.Open();
   db.Search(search, items);
   db.Close();
-  CLog::Log(LOGDEBUG, "%s (%s) took %u ms",
-            __FUNCTION__, url.GetRedacted().c_str(), XbmcThreads::SystemClockMillis() - time);
+  CLog::Log(
+      LOGDEBUG, "{} ({}) took {} ms", __FUNCTION__, url.GetRedacted(),
+      std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - time)
+          .count());
   items.SetLabel(g_localizeStrings.Get(137)); // Search
   return true;
 }
