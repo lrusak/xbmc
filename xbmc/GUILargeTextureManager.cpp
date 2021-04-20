@@ -11,7 +11,6 @@
 #include "TextureCache.h"
 #include "guilib/Texture.h"
 #include "threads/SingleLock.h"
-#include "threads/SystemClock.h"
 #include "utils/JobManager.h"
 #include "utils/TimeUtils.h"
 #include "utils/log.h"
@@ -48,13 +47,16 @@ bool CImageLoader::DoWork()
   if (!loadPath.empty())
   {
     // direct route - load the image
-    unsigned int start = XbmcThreads::SystemClockMillis();
+    auto start = std::chrono::steady_clock::now();
     m_texture =
         CTexture::LoadFromFile(loadPath, CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth(),
                                CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight());
 
-    if (XbmcThreads::SystemClockMillis() - start > 100)
-      CLog::Log(LOGDEBUG, "%s - took %u ms to load %s", __FUNCTION__, XbmcThreads::SystemClockMillis() - start, loadPath.c_str());
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::steady_clock::now() - start)
+                        .count();
+    if (duration > 100)
+      CLog::Log(LOGDEBUG, "{} - took {} ms to load {}", __FUNCTION__, duration, loadPath);
 
     if (m_texture)
     {
