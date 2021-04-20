@@ -6,7 +6,6 @@
  *  See LICENSES/README.md for more information.
  */
 
-#include "threads/SystemClock.h"
 #include "GUIUserMessages.h"
 #include "GUIWindowMusicBase.h"
 #include "dialogs/GUIDialogMediaSource.h"
@@ -321,7 +320,7 @@ void CGUIWindowMusicBase::RefreshContent(const std::string& strContent)
 /// \brief Retrieve tag information for \e m_vecItems
 void CGUIWindowMusicBase::RetrieveMusicInfo()
 {
-  unsigned int startTick = XbmcThreads::SystemClockMillis();
+  auto startTick = std::chrono::steady_clock::now();
 
   OnRetrieveMusicInfo(*m_vecItems);
 
@@ -357,8 +356,10 @@ void CGUIWindowMusicBase::RetrieveMusicInfo()
   }
   m_vecItems->Append(itemsForAdd);
 
-  CLog::Log(LOGDEBUG, "RetrieveMusicInfo() took %u msec",
-            XbmcThreads::SystemClockMillis() - startTick);
+  CLog::Log(LOGDEBUG, "RetrieveMusicInfo() took {} msec",
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
+                                                                  startTick)
+                .count());
 }
 
 /// \brief Add selected list/thumb control item to playlist and start playing
@@ -901,15 +902,16 @@ void CGUIWindowMusicBase::OnRetrieveMusicInfo(CFileItemList& items)
   bool bShowProgress = !CServiceBroker::GetGUI()->GetWindowManager().HasModalDialog(true);
   bool bProgressVisible = false;
 
-  unsigned int tick=XbmcThreads::SystemClockMillis();
+  auto tick = std::chrono::steady_clock::now();
 
   while (m_musicInfoLoader.IsLoading())
   {
     if (bShowProgress)
     { // Do we have to init a progress dialog?
-      unsigned int elapsed=XbmcThreads::SystemClockMillis()-tick;
+      auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::steady_clock::now() - tick);
 
-      if (!bProgressVisible && elapsed>1500 && m_dlgProgress)
+      if (!bProgressVisible && elapsed.count() > 1500 && m_dlgProgress)
       { // tag loading takes more then 1.5 secs, show a progress dialog
         CURL url(items.GetPath());
         m_dlgProgress->SetHeading(CVariant{189});
