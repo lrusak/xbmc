@@ -16,7 +16,6 @@
 #include "windowing/GraphicContext.h"
 #include "Texture.h"
 #include "threads/SingleLock.h"
-#include "threads/SystemClock.h"
 #include "URL.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
@@ -318,10 +317,12 @@ const CTextureArray& CGUITextureManager::Load(const std::string& strTextureName,
     return emptyTexture;
   }
 
-  for (ilistUnused i = m_unusedTextures.begin(); i != m_unusedTextures.end(); ++i)
+  for (auto i = m_unusedTextures.begin(); i != m_unusedTextures.end(); ++i)
   {
     CTextureMap* pMap = i->first;
-    if (pMap->GetName() == strTextureName && i->second > 0)
+    if (pMap->GetName() == strTextureName &&
+        std::chrono::duration_cast<std::chrono::milliseconds>(i->second.time_since_epoch())
+                .count() > 0)
     {
       m_vecTextures.push_back(pMap);
       m_unusedTextures.erase(i);
@@ -485,7 +486,9 @@ void CGUITextureManager::ReleaseTexture(const std::string& strTextureName, bool 
       {
         //CLog::Log(LOGINFO, "  cleanup:%s", strTextureName.c_str());
         // add to our textures to free
-        m_unusedTextures.emplace_back(pMap, immediately ? 0 : XbmcThreads::SystemClockMillis());
+        m_unusedTextures.emplace_back(
+            pMap, immediately ? std::chrono::time_point<std::chrono::steady_clock>()
+                              : std::chrono::steady_clock::now());
         i = m_vecTextures.erase(i);
       }
       return;
@@ -497,11 +500,12 @@ void CGUITextureManager::ReleaseTexture(const std::string& strTextureName, bool 
 
 void CGUITextureManager::FreeUnusedTextures(unsigned int timeDelay)
 {
-  unsigned int currFrameTime = XbmcThreads::SystemClockMillis();
+  auto currFrameTime = std::chrono::steady_clock::now();
   CSingleLock lock(CServiceBroker::GetWinSystem()->GetGfxContext());
-  for (ilistUnused i = m_unusedTextures.begin(); i != m_unusedTextures.end();)
+  for (auto i = m_unusedTextures.begin(); i != m_unusedTextures.end();)
   {
-    if (currFrameTime - i->second >= timeDelay)
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(currFrameTime - i->second).count() >=
+        timeDelay)
     {
       delete i->first;
       i = m_unusedTextures.erase(i);
