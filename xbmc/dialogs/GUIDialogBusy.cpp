@@ -32,11 +32,13 @@ public:
     std::shared_ptr<CEvent> e_done(m_done);
 
     Create();
-    unsigned int start = XbmcThreads::SystemClockMillis();
+    auto start = std::chrono::steady_clock::now();
     if (!CGUIDialogBusy::WaitOnEvent(*e_done, displaytime, allowCancel))
     {
       m_runnable->Cancel();
-      unsigned int elapsed = XbmcThreads::SystemClockMillis() - start;
+      unsigned int elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                 std::chrono::steady_clock::now() - start)
+                                 .count();
       unsigned int remaining = (elapsed >= displaytime) ? 0 : displaytime - elapsed;
       CGUIDialogBusy::WaitOnEvent(*e_done, remaining, false);
       return false;
