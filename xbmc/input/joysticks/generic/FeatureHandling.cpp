@@ -14,7 +14,6 @@
 #include "input/joysticks/DriverPrimitive.h"
 #include "input/joysticks/interfaces/IButtonMap.h"
 #include "input/joysticks/interfaces/IInputHandler.h"
-#include "threads/SystemClock.h"
 #include "utils/log.h"
 
 #include <vector>
@@ -53,17 +52,17 @@ bool CJoystickFeature::AcceptsInput(bool bActivation)
 
 void CJoystickFeature::ResetMotion()
 {
-  m_motionStartTimeMs = 0;
+  m_motionStartTimeMs = {};
 }
 
 void CJoystickFeature::StartMotion()
 {
-  m_motionStartTimeMs = XbmcThreads::SystemClockMillis();
+  m_motionStartTimeMs = std::chrono::steady_clock::now();
 }
 
 bool CJoystickFeature::InMotion() const
 {
-  return m_motionStartTimeMs > 0;
+  return m_motionStartTimeMs.time_since_epoch().count() > 0;
 }
 
 unsigned int CJoystickFeature::MotionTimeMs() const
@@ -71,7 +70,9 @@ unsigned int CJoystickFeature::MotionTimeMs() const
   if (!InMotion())
     return 0;
 
-  return XbmcThreads::SystemClockMillis() - m_motionStartTimeMs;
+  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
+                                                               m_motionStartTimeMs)
+      .count();
 }
 
 // --- CScalarFeature ----------------------------------------------------------
