@@ -21,8 +21,6 @@
 
 #include <utility>
 
-#include "system.h"
-
 class CPlayerCoreConfig
 {
 public:
@@ -37,7 +35,7 @@ public:
 
     if (pConfig)
     {
-      m_config = static_cast<TiXmlElement*>(pConfig->Clone());
+      m_config.reset(static_cast<TiXmlElement*>(pConfig->Clone()));
       const char *sAudio = pConfig->Attribute("audio");
       const char *sVideo = pConfig->Attribute("video");
       m_bPlaysAudio = sAudio && StringUtils::CompareNoCase(sAudio, "true") == 0;
@@ -50,10 +48,7 @@ public:
     CLog::Log(LOGDEBUG, "CPlayerCoreConfig::<ctor>: created player %s", m_name.c_str());
   }
 
-  virtual ~CPlayerCoreConfig()
-  {
-    SAFE_DELETE(m_config);
-  }
+  ~CPlayerCoreConfig() = default;
 
   const std::string& GetName() const
   {
@@ -107,13 +102,13 @@ public:
     pPlayer->m_name = m_name;
     pPlayer->m_type = m_type;
 
-    if (pPlayer->Initialize(m_config))
+    if (pPlayer->Initialize(m_config.get()))
     {
       return pPlayer;
     }
     else
     {
-      SAFE_DELETE(pPlayer);
+      delete pPlayer;
       return nullptr;
     }
   }
@@ -123,5 +118,5 @@ public:
   std::string m_type;
   bool m_bPlaysAudio;
   bool m_bPlaysVideo;
-  TiXmlElement* m_config;
+  std::unique_ptr<TiXmlElement> m_config;
 };
