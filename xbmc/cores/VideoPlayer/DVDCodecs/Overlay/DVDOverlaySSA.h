@@ -11,33 +11,25 @@
 #include "../../DVDSubtitles/DVDSubtitlesLibass.h"
 #include "DVDOverlay.h"
 
-#include "system.h" // for SAFE_RELEASE
-
 class CDVDOverlaySSA : public CDVDOverlay
 {
 public:
+  std::shared_ptr<CDVDSubtitlesLibass> m_libass;
 
-  CDVDSubtitlesLibass* m_libass;
-
-  explicit CDVDOverlaySSA(CDVDSubtitlesLibass* libass) : CDVDOverlay(DVDOVERLAY_TYPE_SSA)
+  explicit CDVDOverlaySSA(std::shared_ptr<CDVDSubtitlesLibass> libass)
+    : CDVDOverlay(DVDOVERLAY_TYPE_SSA)
   {
     replace = true;
     m_libass = libass;
-    libass->Acquire();
   }
 
   CDVDOverlaySSA(CDVDOverlaySSA& src)
     : CDVDOverlay(src)
     , m_libass(src.m_libass)
   {
-    m_libass->Acquire();
   }
 
-  ~CDVDOverlaySSA() override
-  {
-    if(m_libass)
-      SAFE_RELEASE(m_libass);
-  }
+  ~CDVDOverlaySSA() override = default;
 
   CDVDOverlaySSA* Clone() override
   {
