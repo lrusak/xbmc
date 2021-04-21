@@ -379,7 +379,7 @@ public:
   bool GetPicture(AVCodecContext* avctx, VideoPicture* picture) override;
   void Reset() override;
   virtual void Close();
-  void Release() override;
+  long Release() override;
   bool CanSkipDeint() override;
   unsigned GetAllowedReferences() override { return 4; }
 
@@ -390,9 +390,7 @@ public:
   void FFReleaseBuffer(uint8_t *data);
   static int FFGetBuffer(AVCodecContext *avctx, AVFrame *pic, int flags);
 
-  static std::shared_ptr<IHardwareDecoder> Create(CDVDStreamInfo& hint,
-                                                  CProcessInfo& processInfo,
-                                                  AVPixelFormat fmt);
+  static IHardwareDecoder* Create(CDVDStreamInfo &hint, CProcessInfo &processInfo, AVPixelFormat fmt);
   static void Register(IVaapiWinSystem *winSystem, bool deepColor);
 
   static IVaapiWinSystem* m_pWinSystem;
@@ -403,6 +401,7 @@ protected:
   bool CheckStatus(VAStatus vdp_st, int line);
   void FiniVAAPIOutput();
   void ReturnRenderPicture(CVaapiRenderPicture *renderPic);
+  long ReleasePicReference();
   bool CheckSuccess(VAStatus status, const std::string& function);
 
   enum EDisplayState

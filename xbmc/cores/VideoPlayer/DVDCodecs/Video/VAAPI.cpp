@@ -746,7 +746,7 @@ void CDecoder::Close()
   m_vaapiConfig.context = 0;
 }
 
-void CDecoder::Release()
+long CDecoder::Release()
 {
   // if ffmpeg holds any references, flush buffers
   if (m_avctx && m_videoSurfaces.HasRefs())
@@ -792,12 +792,18 @@ void CDecoder::Release()
       CheckSuccess(vaDestroySurfaces(m_vaapiConfig.dpy, &surf, 1), "vaDestroySurfaces");
     }
   }
+  return IHardwareDecoder::Release();
+}
+
+long CDecoder::ReleasePicReference()
+{
+  return IHardwareDecoder::Release();
 }
 
 int CDecoder::FFGetBuffer(AVCodecContext *avctx, AVFrame *pic, int flags)
 {
   ICallbackHWAccel* cb = static_cast<ICallbackHWAccel*>(avctx->opaque);
-  auto va = std::static_pointer_cast<CDecoder>(cb->GetHWAccel());
+  CDecoder* va = static_cast<CDecoder*>(cb->GetHWAccel());
 
   // while we are waiting to recover we can't do anything
   CSingleLock lock(va->m_DecoderSection);
@@ -828,8 +834,7 @@ int CDecoder::FFGetBuffer(AVCodecContext *avctx, AVFrame *pic, int flags)
   pic->data[0] = (uint8_t*)(uintptr_t)surf;
   pic->data[3] = (uint8_t*)(uintptr_t)surf;
   pic->linesize[0] = pic->linesize[1] =  pic->linesize[2] = 0;
-  AVBufferRef* buffer =
-      av_buffer_create(pic->data[3], 0, CVAAPIContext::FFReleaseBuffer, va.get(), 0);
+  AVBufferRef *buffer = av_buffer_create(pic->data[3], 0, CVAAPIContext::FFReleaseBuffer, va, 0);
   if (!buffer)
   {
     CLog::Log(LOGERROR, "VAAPI::%s - error creating buffer", __FUNCTION__);
@@ -838,6 +843,7 @@ int CDecoder::FFGetBuffer(AVCodecContext *avctx, AVFrame *pic, int flags)
   pic->buf[0] = buffer;
 
   pic->reordered_opaque = avctx->reordered_opaque;
+  va->Acquire();
   return 0;
 }
 
@@ -851,6 +857,8 @@ void CDecoder::FFReleaseBuffer(uint8_t *data)
     surf = (VASurfaceID)(uintptr_t)data;
     m_videoSurfaces.ClearReference(surf);
   }
+
+  IHardwareDecoder::Release();
 }
 
 void CDecoder::SetCodecControl(int flags)
@@ -1214,12 +1222,10 @@ void CDecoder::ReturnRenderPicture(CVaapiRenderPicture *renderPic)
   m_vaapiOutput.m_dataPort.SendOutMessage(COutputDataProtocol::RETURNPIC, &renderPic, sizeof(renderPic));
 }
 
-std::shared_ptr<IHardwareDecoder> CDecoder::Create(CDVDStreamInfo& hint,
-                                                   CProcessInfo& processInfo,
-                                                   AVPixelFormat fmt)
+IHardwareDecoder* CDecoder::Create(CDVDStreamInfo &hint, CProcessInfo &processInfo, AVPixelFormat fmt)
 {
   if (fmt == AV_PIX_FMT_VAAPI_VLD && CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(SETTING_VIDEOPLAYER_USEVAAPI))
-    return std::make_shared<VAAPI::CDecoder>(processInfo);
+    return new VAAPI::CDecoder(processInfo);
 
   return nullptr;
 }
@@ -1335,6 +1341,8 @@ CVideoBuffer* CVaapiBufferPool::Get()
   CVideoBuffer *retPic = allRenderPics[idx];
   retPic->Acquire(GetPtr());
 
+  m_vaapi.Acquire();
+
   return retPic;
 }
 
@@ -1343,6 +1351,7 @@ void CVaapiBufferPool::Return(int id)
   CVaapiRenderPicture *pic = allRenderPics[id];
 
   m_vaapi.ReturnRenderPicture(pic);
+  m_vaapi.ReleasePicReference();
 }
 
 CVaapiRenderPicture* CVaapiBufferPool::GetVaapi()

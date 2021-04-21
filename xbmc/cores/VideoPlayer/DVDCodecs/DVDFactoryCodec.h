@@ -30,9 +30,7 @@ class CDVDCodecOption;
 class CDVDCodecOptions;
 
 typedef CDVDVideoCodec* (*CreateHWVideoCodec)(CProcessInfo &processInfo);
-typedef std::shared_ptr<IHardwareDecoder> (*CreateHWAccel)(CDVDStreamInfo& hint,
-                                                           CProcessInfo& processInfo,
-                                                           AVPixelFormat fmt);
+typedef IHardwareDecoder* (*CreateHWAccel)(CDVDStreamInfo &hint, CProcessInfo &processInfo, AVPixelFormat fmt);
 typedef CDVDAudioCodec* (*CreateHWAudioCodec)(CProcessInfo &processInfo);
 
 class CDVDFactoryCodec
@@ -41,10 +39,10 @@ public:
   static CDVDVideoCodec* CreateVideoCodec(CDVDStreamInfo &hint,
                                           CProcessInfo &processInfo);
 
-  static std::shared_ptr<IHardwareDecoder> CreateVideoCodecHWAccel(const std::string& id,
-                                                                   CDVDStreamInfo& hint,
-                                                                   CProcessInfo& processInfo,
-                                                                   AVPixelFormat fmt);
+  static IHardwareDecoder* CreateVideoCodecHWAccel(const std::string& id,
+                                                   CDVDStreamInfo& hint,
+                                                   CProcessInfo& processInfo,
+                                                   AVPixelFormat fmt);
 
   static CDVDAudioCodec* CreateAudioCodec(CDVDStreamInfo &hint, CProcessInfo &processInfo,
                                           bool allowpassthrough, bool allowdtshddecode,

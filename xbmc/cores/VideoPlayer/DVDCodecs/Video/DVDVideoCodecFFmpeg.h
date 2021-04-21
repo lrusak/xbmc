@@ -42,7 +42,7 @@ public:
   bool GetCodecStats(double &pts, int &droppedFrames, int &skippedPics) override;
   void SetCodecControl(int flags) override;
 
-  std::shared_ptr<IHardwareDecoder> GetHWAccel() override;
+  IHardwareDecoder* GetHWAccel() override;
   bool GetPictureCommon(VideoPicture* pVideoPicture) override;
 
 protected:
@@ -57,7 +57,7 @@ protected:
   bool SetPictureParams(VideoPicture* pVideoPicture);
 
   bool HasHardware() { return m_pHardware != nullptr; };
-  void SetHardware(std::shared_ptr<IHardwareDecoder> hardware);
+  void SetHardware(IHardwareDecoder *hardware);
 
   AVFrame* m_pFrame = nullptr;;
   AVFrame* m_pDecodedFrame = nullptr;;
@@ -83,8 +83,7 @@ protected:
 
   std::string m_name;
   int m_decoderState;
-
-  std::shared_ptr<IHardwareDecoder> m_pHardware = nullptr;
+  IHardwareDecoder *m_pHardware = nullptr;
   int m_iLastKeyframe = 0;
   double m_dts = DVD_NOPTS_VALUE;
   bool m_started = false;

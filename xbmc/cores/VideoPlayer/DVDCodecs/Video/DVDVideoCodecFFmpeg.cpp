@@ -283,8 +283,8 @@ enum AVPixelFormat CDVDVideoCodecFFmpeg::GetFormat(struct AVCodecContext * avctx
     auto hwaccels = CDVDFactoryCodec::GetHWAccels();
     for (auto &hwaccel : hwaccels)
     {
-      auto pDecoder = CDVDFactoryCodec::CreateVideoCodecHWAccel(hwaccel, ctx->m_hints,
-                                                                ctx->m_processInfo, *cur);
+      IHardwareDecoder *pDecoder(CDVDFactoryCodec::CreateVideoCodecHWAccel(hwaccel, ctx->m_hints,
+                                                                           ctx->m_processInfo, *cur));
       if (pDecoder)
       {
         if (pDecoder->Open(avctx, ctx->m_pCodecContext, *cur))
@@ -294,9 +294,7 @@ enum AVPixelFormat CDVDVideoCodecFFmpeg::GetFormat(struct AVCodecContext * avctx
           return *cur;
         }
       }
-
-      if (pDecoder)
-        pDecoder->Release();
+      SAFE_RELEASE(pDecoder);
     }
     cur++;
   }
@@ -455,9 +453,7 @@ void CDVDVideoCodecFFmpeg::Dispose()
   av_frame_free(&m_pDecodedFrame);
   av_frame_free(&m_pFilterFrame);
   avcodec_free_context(&m_pCodecContext);
-
-  if (m_pHardware)
-    m_pHardware->Release();
+  SAFE_RELEASE(m_pHardware);
 
   FilterClose();
 }
@@ -1305,16 +1301,14 @@ void CDVDVideoCodecFFmpeg::SetCodecControl(int flags)
     m_pHardware->SetCodecControl(flags);
 }
 
-void CDVDVideoCodecFFmpeg::SetHardware(std::shared_ptr<IHardwareDecoder> hardware)
+void CDVDVideoCodecFFmpeg::SetHardware(IHardwareDecoder* hardware)
 {
-  if (m_pHardware)
-    m_pHardware->Release();
-
+  SAFE_RELEASE(m_pHardware);
   m_pHardware = hardware;
   UpdateName();
 }
 
-std::shared_ptr<IHardwareDecoder> CDVDVideoCodecFFmpeg::GetHWAccel()
+IHardwareDecoder* CDVDVideoCodecFFmpeg::GetHWAccel()
 {
   return m_pHardware;
 }
