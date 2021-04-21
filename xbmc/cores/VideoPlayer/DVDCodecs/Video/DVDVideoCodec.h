@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "DVDResource.h"
 #include "cores/VideoPlayer/Buffers/VideoBuffer.h"
 #include "cores/VideoPlayer/Interface/DemuxPacket.h"
 #include "cores/VideoPlayer/Process/ProcessInfo.h"
@@ -242,16 +241,17 @@ protected:
 };
 
 // callback interface for ffmpeg hw accelerators
-class IHardwareDecoder : public IDVDResourceCounted<IHardwareDecoder>
+class IHardwareDecoder
 {
 public:
   IHardwareDecoder() = default;
-  ~IHardwareDecoder() override = default;
+  virtual ~IHardwareDecoder() = default;
   virtual bool Open(AVCodecContext* avctx, AVCodecContext* mainctx, const enum AVPixelFormat) = 0;
   virtual CDVDVideoCodec::VCReturn Decode(AVCodecContext* avctx, AVFrame* frame) = 0;
   virtual bool GetPicture(AVCodecContext* avctx, VideoPicture* picture) = 0;
   virtual CDVDVideoCodec::VCReturn Check(AVCodecContext* avctx) = 0;
   virtual void Reset() {}
+  virtual void Release() = 0;
   virtual unsigned GetAllowedReferences() { return 0; }
   virtual bool CanSkipDeint() {return false; }
   virtual const std::string Name() = 0;
@@ -262,6 +262,6 @@ class ICallbackHWAccel
 {
 public:
   virtual ~ICallbackHWAccel() = default;
-  virtual IHardwareDecoder* GetHWAccel() = 0;
+  virtual std::shared_ptr<IHardwareDecoder> GetHWAccel() = 0;
   virtual bool GetPictureCommon(VideoPicture* pVideoPicture) = 0;
 };

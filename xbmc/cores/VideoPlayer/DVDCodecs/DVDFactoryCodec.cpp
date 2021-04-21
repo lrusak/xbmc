@@ -101,10 +101,8 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodecHW(const std::string& id,
   return nullptr;
 }
 
-IHardwareDecoder* CDVDFactoryCodec::CreateVideoCodecHWAccel(const std::string& id,
-                                                            CDVDStreamInfo& hint,
-                                                            CProcessInfo& processInfo,
-                                                            AVPixelFormat fmt)
+std::shared_ptr<IHardwareDecoder> CDVDFactoryCodec::CreateVideoCodecHWAccel(
+    const std::string& id, CDVDStreamInfo& hint, CProcessInfo& processInfo, AVPixelFormat fmt)
 {
   CSingleLock lock(videoCodecSection);
 
