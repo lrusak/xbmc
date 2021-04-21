@@ -54,8 +54,7 @@ bool CDVDSubtitleParserSubrip::Open(CDVDStreamInfo &hints)
       }
       else if (c == 14) // time info
       {
-        CDVDOverlayText* pOverlay = new CDVDOverlayText();
-        pOverlay->Acquire(); // increase ref count with one so that we can hold a handle to this overlay
+        auto pOverlay = std::make_shared<CDVDOverlayText>();
 
         pOverlay->iPTSStartTime = ((double)(((hh1 * 60 + mm1) * 60) + ss1) * 1000 + ms1) * (DVD_TIME_BASE / 1000);
         pOverlay->iPTSStopTime  = ((double)(((hh2 * 60 + mm2) * 60) + ss2) * 1000 + ms2) * (DVD_TIME_BASE / 1000);
@@ -68,9 +67,9 @@ bool CDVDSubtitleParserSubrip::Open(CDVDStreamInfo &hints)
           // empty line, next subtitle is about to start
           if (strLine.length() <= 0) break;
 
-          TagConv.ConvertLine(pOverlay, strLine.c_str(), strLine.length());
+          TagConv.ConvertLine(pOverlay.get(), strLine.c_str(), strLine.length());
         }
-        TagConv.CloseTag(pOverlay);
+        TagConv.CloseTag(pOverlay.get());
         m_collection.Add(pOverlay);
       }
     }

@@ -56,23 +56,21 @@ void CVideoPlayerSubtitle::SendMessage(std::shared_ptr<CDVDMsg> pMsg, int priori
 
       if(result == OC_OVERLAY)
       {
-        CDVDOverlay* overlay;
+        std::shared_ptr<CDVDOverlay> overlay;
 
         while((overlay = m_pOverlayCodec->GetOverlay()) != NULL)
         {
           m_pOverlayContainer->ProcessAndAddOverlayIfValid(overlay);
-          overlay->Release();
         }
       }
     }
     else if (m_streaminfo.codec == AV_CODEC_ID_DVD_SUBTITLE)
     {
-      CDVDOverlaySpu* pSPUInfo = m_dvdspus.AddData(pPacket->pData, pPacket->iSize, pPacket->pts);
+      auto pSPUInfo = m_dvdspus.AddData(pPacket->pData, pPacket->iSize, pPacket->pts);
       if (pSPUInfo)
       {
         CLog::Log(LOGDEBUG, "CVideoPlayer::ProcessSubData: Got complete SPU packet");
         m_pOverlayContainer->ProcessAndAddOverlayIfValid(pSPUInfo);
-        pSPUInfo->Release();
       }
     }
 
@@ -189,7 +187,7 @@ void CVideoPlayerSubtitle::Process(double pts, double offset)
     if(m_pOverlayContainer->GetSize() >= 5)
       return;
 
-    CDVDOverlay* pOverlay = m_pSubtitleFileParser->Parse(pts);
+    auto pOverlay = m_pSubtitleFileParser->Parse(pts);
     // add all overlays which fit the pts
     while(pOverlay)
     {
@@ -198,7 +196,6 @@ void CVideoPlayerSubtitle::Process(double pts, double offset)
         pOverlay->iPTSStopTime -= offset;
 
       m_pOverlayContainer->ProcessAndAddOverlayIfValid(pOverlay);
-      pOverlay->Release();
       pOverlay = m_pSubtitleFileParser->Parse(pts);
     }
 

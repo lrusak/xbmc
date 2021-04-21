@@ -35,6 +35,6 @@ protected:
   };
 
   std::string m_strDebug[6];
-  CDVDOverlayText* m_overlay[6];
+  std::shared_ptr<CDVDOverlayText> m_overlay[6];
   CRenderer m_overlayRenderer;
 };

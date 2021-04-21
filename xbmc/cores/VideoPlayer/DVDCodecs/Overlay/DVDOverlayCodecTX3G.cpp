@@ -68,8 +68,6 @@ CDVDOverlayCodecTX3G::CDVDOverlayCodecTX3G() : CDVDOverlayCodec("TX3G Subtitle D
 
 CDVDOverlayCodecTX3G::~CDVDOverlayCodecTX3G()
 {
-  if (m_pOverlay)
-    SAFE_RELEASE(m_pOverlay);
 }
 
 bool CDVDOverlayCodecTX3G::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
@@ -81,16 +79,11 @@ bool CDVDOverlayCodecTX3G::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options
 
 void CDVDOverlayCodecTX3G::Dispose()
 {
-  if (m_pOverlay)
-    SAFE_RELEASE(m_pOverlay);
 }
 
 int CDVDOverlayCodecTX3G::Decode(DemuxPacket *pPacket)
 {
-  if (m_pOverlay)
-    SAFE_RELEASE(m_pOverlay);
-
-  m_pOverlay = new CDVDOverlayText();
+  m_pOverlay = std::make_shared<CDVDOverlayText>();
   CDVDOverlayCodec::GetAbsoluteTimes(m_pOverlay->iPTSStartTime, m_pOverlay->iPTSStopTime, pPacket, m_pOverlay->replace);
 
   // do not move this. READ_XXXX macros modify pos.
@@ -262,23 +255,13 @@ int CDVDOverlayCodecTX3G::Decode(DemuxPacket *pPacket)
 
 void CDVDOverlayCodecTX3G::Reset()
 {
-  if (m_pOverlay)
-    SAFE_RELEASE(m_pOverlay);
 }
 
 void CDVDOverlayCodecTX3G::Flush()
 {
-  if (m_pOverlay)
-    SAFE_RELEASE(m_pOverlay);
 }
 
-CDVDOverlay* CDVDOverlayCodecTX3G::GetOverlay()
+std::shared_ptr<CDVDOverlay> CDVDOverlayCodecTX3G::GetOverlay()
 {
-  if (m_pOverlay)
-  {
-    CDVDOverlay* overlay = m_pOverlay;
-    m_pOverlay = NULL;
-    return overlay;
-  }
-  return NULL;
+  return m_pOverlay;
 }

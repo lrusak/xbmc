@@ -43,7 +43,7 @@ bool CDVDSubtitleParserSSA::Open(CDVDStreamInfo &hints)
     ASS_Event* curEvent =  (assEvent+i);
     if (curEvent)
     {
-      CDVDOverlaySSA* overlay = new CDVDOverlaySSA(m_libass);
+      auto overlay = std::make_shared<CDVDOverlaySSA>(m_libass);
 
       overlay->iPTSStartTime = (double)curEvent->Start * (DVD_TIME_BASE / 1000);
       overlay->iPTSStopTime  = (double)(curEvent->Start + curEvent->Duration) * (DVD_TIME_BASE / 1000);

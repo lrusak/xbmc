@@ -52,8 +52,6 @@ bool CDVDOverlayCodecSSA::InitLibass()
 
 void CDVDOverlayCodecSSA::Dispose()
 {
-  if(m_pOverlay)
-    SAFE_RELEASE(m_pOverlay);
 }
 
 int CDVDOverlayCodecSSA::Decode(DemuxPacket *pPacket)
@@ -133,10 +131,9 @@ int CDVDOverlayCodecSSA::Decode(DemuxPacket *pPacket)
      * include the full duration of the old one */
     if(m_pOverlay->iPTSStopTime > pts + duration)
       duration = m_pOverlay->iPTSStopTime - pts;
-    SAFE_RELEASE(m_pOverlay);
   }
 
-  m_pOverlay = new CDVDOverlaySSA(m_libass);
+  m_pOverlay = std::make_shared<CDVDOverlaySSA>(m_libass);
   m_pOverlay->iPTSStartTime = pts;
   m_pOverlay->iPTSStopTime  = pts + duration;
   m_output = true;
@@ -155,12 +152,7 @@ void CDVDOverlayCodecSSA::Flush()
   InitLibass();
 }
 
-CDVDOverlay* CDVDOverlayCodecSSA::GetOverlay()
+std::shared_ptr<CDVDOverlay> CDVDOverlayCodecSSA::GetOverlay()
 {
-  if(m_output)
-  {
-    m_output = false;
-    return m_pOverlay->Acquire();
-  }
-  return NULL;
+  return m_pOverlay;
 }

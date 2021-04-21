@@ -62,7 +62,7 @@ bool CDVDSubtitleParserSami::Open(CDVDStreamInfo &hints)
   if (!strClassID.empty())
     lang = strClassID.c_str();
 
-  CDVDOverlayText* pOverlay = NULL;
+  std::shared_ptr<CDVDOverlayText> pOverlay = NULL;
   while (m_pStream->ReadLine(line, sizeof(line)))
   {
     if ((strlen(line) > 0) && (line[strlen(line) - 1] == '\r'))
@@ -75,14 +75,12 @@ bool CDVDSubtitleParserSami::Open(CDVDStreamInfo &hints)
       std::string start = reg.GetMatch(1);
       if(pOverlay)
       {
-        TagConv.ConvertLine(pOverlay, text, pos, lang);
+        TagConv.ConvertLine(pOverlay.get(), text, pos, lang);
         pOverlay->iPTSStopTime  = (double)atoi(start.c_str()) * DVD_TIME_BASE / 1000;
-        pOverlay->Release();
-        TagConv.CloseTag(pOverlay);
+        TagConv.CloseTag(pOverlay.get());
       }
 
-      pOverlay = new CDVDOverlayText();
-      pOverlay->Acquire(); // increase ref count with one so that we can hold a handle to this overlay
+      pOverlay = std::make_shared<CDVDOverlayText>();
 
       pOverlay->iPTSStartTime = (double)atoi(start.c_str()) * DVD_TIME_BASE / 1000;
       pOverlay->iPTSStopTime  = DVD_NOPTS_VALUE;
@@ -90,7 +88,7 @@ bool CDVDSubtitleParserSami::Open(CDVDStreamInfo &hints)
       text += pos + reg.GetFindLen();
     }
     if(pOverlay)
-      TagConv.ConvertLine(pOverlay, text, strlen(text), lang);
+      TagConv.ConvertLine(pOverlay.get(), text, strlen(text), lang);
   }
   m_collection.Sort();
   return true;

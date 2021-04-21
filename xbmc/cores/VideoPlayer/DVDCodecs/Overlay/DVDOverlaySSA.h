@@ -30,9 +30,4 @@ public:
   }
 
   ~CDVDOverlaySSA() override = default;
-
-  CDVDOverlaySSA* Clone() override
-  {
-    return new CDVDOverlaySSA(*this);
-  }
 };

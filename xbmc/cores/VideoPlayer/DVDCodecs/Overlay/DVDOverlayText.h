@@ -130,11 +130,6 @@ public:
     }
   }
 
-  CDVDOverlayText* Clone() override
-  {
-    return new CDVDOverlayText(*this);
-  }
-
   void AddElement(CDVDOverlayText::CElement* pElement)
   {
     pElement->pNext = NULL;

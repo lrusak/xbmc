@@ -67,13 +67,13 @@ CRenderer::~CRenderer()
   Flush();
 }
 
-void CRenderer::AddOverlay(CDVDOverlay* o, double pts, int index)
+void CRenderer::AddOverlay(std::shared_ptr<CDVDOverlay> o, double pts, int index)
 {
   CSingleLock lock(m_section);
 
   SElement   e;
   e.pts = pts;
-  e.overlay_dvd = o->Acquire();
+  e.overlay_dvd = o;
   m_buffers[index].push_back(e);
 }
 
@@ -81,12 +81,6 @@ void CRenderer::Release(std::vector<SElement>& list)
 {
   std::vector<SElement> l = list;
   list.clear();
-
-  for (auto &elem : l)
-  {
-    if (elem.overlay_dvd)
-      elem.overlay_dvd->Release();
-  }
 }
 
 void CRenderer::Flush()
@@ -110,10 +104,6 @@ void CRenderer::Release(int idx)
 
 void CRenderer::ReleaseCache()
 {
-  for (auto& overlay : m_textureCache)
-  {
-    delete overlay.second;
-  }
   m_textureCache.clear();
   m_textureid++;
 }
@@ -138,7 +128,6 @@ void CRenderer::ReleaseUnused()
     }
     if (!found)
     {
-      delete it->second;
       it = m_textureCache.erase(it);
     }
     else
@@ -150,11 +139,11 @@ void CRenderer::Render(int idx)
 {
   CSingleLock lock(m_section);
 
-  std::vector<COverlay*> render;
+  std::vector<std::shared_ptr<COverlay>> render;
   std::vector<SElement>& list = m_buffers[idx];
   for(std::vector<SElement>::iterator it = list.begin(); it != list.end(); ++it)
   {
-    COverlay* o = NULL;
+    std::shared_ptr<COverlay> o = NULL;
 
     if(it->overlay_dvd)
       o = Convert(it->overlay_dvd, it->pts);
@@ -170,13 +159,14 @@ void CRenderer::Render(int idx)
   float total_height = 0.0f;
   float cur_height = 0.0f;
   int subalign = settings->GetInt(CSettings::SETTING_SUBTITLES_ALIGN);
-  for (std::vector<COverlay*>::iterator it = render.begin(); it != render.end(); ++it)
+  for (std::vector<std::shared_ptr<COverlay>>::iterator it = render.begin(); it != render.end();
+       ++it)
   {
-    COverlay* o = nullptr;
-    COverlayText *text = dynamic_cast<COverlayText*>(*it);
+    std::shared_ptr<COverlay> o = nullptr;
+    auto text = std::dynamic_pointer_cast<COverlayText>(*it);
     if (text)
     {
-      
+
       // Compute the color to be used for the overlay background (depending on the opacity)
       UTILS::Color bgcolor = bgcolors[settings->GetInt(CSettings::SETTING_SUBTITLES_BGCOLOR)];
       int bgopacity = settings->GetInt(CSettings::SETTING_SUBTITLES_BGOPACITY);
@@ -188,7 +178,7 @@ void CRenderer::Render(int idx)
       {
         bgcolor = UTILS::COLOR::NONE;
       }
-      
+
       text->PrepareRender(settings->GetString(CSettings::SETTING_SUBTITLES_FONT),
                           settings->GetInt(CSettings::SETTING_SUBTITLES_COLOR),
                           settings->GetInt(SETTING_SUBTITLES_OPACITY),
@@ -205,9 +195,10 @@ void CRenderer::Render(int idx)
     total_height += o->m_height;
   }
 
-  for (std::vector<COverlay*>::iterator it = render.begin(); it != render.end(); ++it)
+  for (std::vector<std::shared_ptr<COverlay>>::iterator it = render.begin(); it != render.end();
+       ++it)
   {
-    COverlay* o = *it;
+    auto o = *it;
 
     float adjust_height = 0.0f;
 
@@ -226,7 +217,7 @@ void CRenderer::Render(int idx)
       }
     }
 
-    Render(o, adjust_height);
+    Render(o.get(), adjust_height);
   }
 
   ReleaseUnused();
@@ -339,7 +330,7 @@ void CRenderer::SetStereoMode(const std::string &stereomode)
   m_stereomode = stereomode;
 }
 
-COverlay* CRenderer::Convert(CDVDOverlaySSA* o, double pts)
+std::shared_ptr<COverlay> CRenderer::Convert(std::shared_ptr<CDVDOverlaySSA> o, double pts)
 {
   // libass render in a target area which named as frame. the frame size may bigger than video size,
   // and including margins between video to frame edge. libass allow to render subtitles into the margins.
@@ -393,17 +384,18 @@ COverlay* CRenderer::Convert(CDVDOverlaySSA* o, double pts)
   {
     if(changes == 0)
     {
-      std::map<unsigned int, COverlay*>::iterator it = m_textureCache.find(o->m_textureid);
+      std::map<unsigned int, std::shared_ptr<COverlay>>::iterator it =
+          m_textureCache.find(o->m_textureid);
       if (it != m_textureCache.end())
         return it->second;
     }
   }
 
-  COverlay *overlay = NULL;
+  std::shared_ptr<COverlay> overlay = NULL;
 #if defined(HAS_GL) || defined(HAS_GLES)
-  overlay = new COverlayGlyphGL(images, targetWidth, targetHeight);
+  overlay = std::make_shared<COverlayGlyphGL>(images, targetWidth, targetHeight);
 #elif defined(HAS_DX)
-  overlay = new COverlayQuadsDX(images, targetWidth, targetHeight);
+  overlay = std::make_shared<COverlayQuadsDX>(images, targetWidth, targetHeight);
 #endif
   // scale to video dimensions
   if (overlay)
@@ -420,15 +412,16 @@ COverlay* CRenderer::Convert(CDVDOverlaySSA* o, double pts)
 }
 
 
-COverlay* CRenderer::Convert(CDVDOverlay* o, double pts)
+std::shared_ptr<COverlay> CRenderer::Convert(std::shared_ptr<CDVDOverlay> o, double pts)
 {
-  COverlay* r = NULL;
+  std::shared_ptr<COverlay> r = NULL;
 
   if(o->IsOverlayType(DVDOVERLAY_TYPE_SSA))
-    r = Convert(static_cast<CDVDOverlaySSA*>(o), pts);
+    r = Convert(std::static_pointer_cast<CDVDOverlaySSA>(o), pts);
   else if(o->m_textureid)
   {
-    std::map<unsigned int, COverlay*>::iterator it = m_textureCache.find(o->m_textureid);
+    std::map<unsigned int, std::shared_ptr<COverlay>>::iterator it =
+        m_textureCache.find(o->m_textureid);
     if (it != m_textureCache.end())
       r = it->second;
   }
@@ -440,18 +433,18 @@ COverlay* CRenderer::Convert(CDVDOverlay* o, double pts)
 
 #if defined(HAS_GL) || defined(HAS_GLES)
   if (o->IsOverlayType(DVDOVERLAY_TYPE_IMAGE))
-    r = new COverlayTextureGL(static_cast<CDVDOverlayImage*>(o));
+    r = std::make_shared<COverlayTextureGL>(static_cast<CDVDOverlayImage*>(o.get()));
   else if(o->IsOverlayType(DVDOVERLAY_TYPE_SPU))
-    r = new COverlayTextureGL(static_cast<CDVDOverlaySpu*>(o));
+    r = std::make_shared<COverlayTextureGL>(static_cast<CDVDOverlaySpu*>(o.get()));
 #elif defined(HAS_DX)
   if (o->IsOverlayType(DVDOVERLAY_TYPE_IMAGE))
-    r = new COverlayImageDX(static_cast<CDVDOverlayImage*>(o));
+    r = std::make_shared<COverlayImageDX>(static_cast<CDVDOverlayImage*>(o.get()));
   else if(o->IsOverlayType(DVDOVERLAY_TYPE_SPU))
-    r = new COverlayImageDX(static_cast<CDVDOverlaySpu*>(o));
+    r = std::make_shared<COverlayImageDX>(static_cast<CDVDOverlaySpu*>(o.get()));
 #endif
 
   if(!r && o->IsOverlayType(DVDOVERLAY_TYPE_TEXT))
-    r = new COverlayText(static_cast<CDVDOverlayText*>(o));
+    r = std::make_shared<COverlayText>(static_cast<CDVDOverlayText*>(o.get()));
 
   m_textureCache[m_textureid] = r;
   o->m_textureid = m_textureid;

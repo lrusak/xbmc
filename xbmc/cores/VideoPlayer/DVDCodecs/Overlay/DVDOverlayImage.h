@@ -103,11 +103,6 @@ public:
     if(palette) free(palette);
   }
 
-  CDVDOverlayImage* Clone() override
-  {
-    return new CDVDOverlayImage(*this);
-  }
-
   uint8_t* data_at(int sub_x, int sub_y) const
   {
     int bpp;
