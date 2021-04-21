@@ -58,13 +58,12 @@ bool CDVDSubtitleParserMicroDVD::Open(CDVDStreamInfo &hints)
       const char* text = line + pos + reg.GetFindLen();
       std::string startFrame(reg.GetMatch(1));
       std::string endFrame  (reg.GetMatch(2));
-      CDVDOverlayText* pOverlay = new CDVDOverlayText();
-      pOverlay->Acquire(); // increase ref count with one so that we can hold a handle to this overlay
+      auto pOverlay = std::shared_ptr<CDVDOverlayText>();
 
       pOverlay->iPTSStartTime = m_framerate * atoi(startFrame.c_str());
       pOverlay->iPTSStopTime  = m_framerate * atoi(endFrame.c_str());
 
-      TagConv.ConvertLine(pOverlay, text, strlen(text));
+      TagConv.ConvertLine(pOverlay.get(), text, strlen(text));
       m_collection.Add(pOverlay);
     }
   }

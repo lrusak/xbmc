@@ -69,7 +69,7 @@ namespace OVERLAY {
     CRenderer();
     virtual ~CRenderer();
 
-    void AddOverlay(CDVDOverlay* o, double pts, int index);
+    void AddOverlay(std::shared_ptr<CDVDOverlay> o, double pts, int index);
     virtual void Render(int idx);
     void Flush();
     void Release(int idx);
@@ -87,12 +87,12 @@ namespace OVERLAY {
         pts = 0.0;
       }
       double pts;
-      CDVDOverlay* overlay_dvd;
+      std::shared_ptr<CDVDOverlay> overlay_dvd;
     };
 
     void Render(COverlay* o, float adjust_height);
-    COverlay* Convert(CDVDOverlay* o, double pts);
-    COverlay* Convert(CDVDOverlaySSA* o, double pts);
+    std::shared_ptr<COverlay> Convert(std::shared_ptr<CDVDOverlay> o, double pts);
+    std::shared_ptr<COverlay> Convert(std::shared_ptr<CDVDOverlaySSA> o, double pts);
 
     void Release(std::vector<SElement>& list);
     void ReleaseCache();
@@ -100,7 +100,7 @@ namespace OVERLAY {
 
     CCriticalSection m_section;
     std::vector<SElement> m_buffers[NUM_BUFFERS];
-    std::map<unsigned int, COverlay*> m_textureCache;
+    std::map<unsigned int, std::shared_ptr<COverlay>> m_textureCache;
     static unsigned int m_textureid;
     CRect m_rv, m_rs, m_rd;
     std::string m_font, m_fontBorder;

@@ -64,7 +64,7 @@ public:
    * returns a valid overlay or NULL
    * the data is valid until the next Decode call
    */
-  virtual CDVDOverlay* GetOverlay() = 0;
+  virtual std::shared_ptr<CDVDOverlay> GetOverlay() = 0;
 
   /*
    * return codecs name

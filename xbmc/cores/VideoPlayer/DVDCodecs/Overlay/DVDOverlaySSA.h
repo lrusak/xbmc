@@ -29,11 +29,6 @@ public:
 
   ~CDVDOverlaySSA() override = default;
 
-  CDVDOverlaySSA* Clone() override
-  {
-    return new CDVDOverlaySSA(*this);
-  }
-
   /*!
    \brief Getter for the libass handler
    \return The libass handler.

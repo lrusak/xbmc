@@ -198,7 +198,7 @@ void CDVDOverlayCodecFFmpeg::Flush()
   avcodec_flush_buffers(m_pCodecContext);
 }
 
-CDVDOverlay* CDVDOverlayCodecFFmpeg::GetOverlay()
+std::shared_ptr<CDVDOverlay> CDVDOverlayCodecFFmpeg::GetOverlay()
 {
   if(m_SubtitleIndex<0)
     return NULL;
@@ -206,7 +206,7 @@ CDVDOverlay* CDVDOverlayCodecFFmpeg::GetOverlay()
   if(m_Subtitle.num_rects == 0 && m_SubtitleIndex == 0)
   {
     // we must add an empty overlay to replace the previous one
-    CDVDOverlay* o = new CDVDOverlay(DVDOVERLAY_TYPE_NONE);
+    auto o = std::make_shared<CDVDOverlay>(DVDOVERLAY_TYPE_NONE);
     o->iPTSStartTime = m_StartTime;
     o->iPTSStopTime  = 0;
     o->replace  = true;
@@ -257,7 +257,7 @@ CDVDOverlay* CDVDOverlayCodecFFmpeg::GetOverlay()
       }
     }
 
-    CDVDOverlayImage* overlay = new CDVDOverlayImage();
+    auto overlay = std::make_shared<CDVDOverlayImage>();
 
     overlay->iPTSStartTime = m_StartTime;
     overlay->iPTSStopTime  = m_StopTime;

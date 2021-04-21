@@ -41,7 +41,7 @@ bool CDVDSubtitleParserVplayer::Open(CDVDStreamInfo &hints)
   if (!reg.RegComp("([0-9]+):([0-9]+):([0-9]+):([^|]*?)(\\|([^|]*?))?$"))
     return false;
 
-  CDVDOverlayText* pPrevOverlay = NULL;
+  std::shared_ptr<CDVDOverlayText> pPrevOverlay = NULL;
 
   while (m_pStream->ReadLine(line, sizeof(line)))
   {
@@ -55,8 +55,7 @@ bool CDVDSubtitleParserVplayer::Open(CDVDStreamInfo &hints)
       lines[1] = reg.GetMatch(6);
       lines[2] = reg.GetMatch(8);
 
-      CDVDOverlayText* pOverlay = new CDVDOverlayText();
-      pOverlay->Acquire(); // increase ref count with one so that we can hold a handle to this overlay
+      auto pOverlay = std::make_shared<CDVDOverlayText>();
 
       pOverlay->iPTSStartTime = m_framerate * (3600*atoi(hour.c_str()) + 60*atoi(min.c_str()) + atoi(sec.c_str()));
 

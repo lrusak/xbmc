@@ -700,10 +700,9 @@ void CDVDInputStreamBluray::OverlayClose()
 #if(BD_OVERLAY_INTERFACE_VERSION >= 2)
   for(SPlane& plane : m_planes)
     plane.o.clear();
-  CDVDOverlayGroup* group   = new CDVDOverlayGroup();
+  auto group = std::make_shared<CDVDOverlayGroup>();
   group->bForced = true;
-  m_player->OnDiscNavResult(static_cast<void*>(group), BD_EVENT_MENU_OVERLAY);
-  group->Release();
+  m_player->OnDiscNavResult(static_cast<void*>(group.get()), BD_EVENT_MENU_OVERLAY);
   m_hasOverlay = false;
 #endif
 }
@@ -745,12 +744,8 @@ void CDVDInputStreamBluray::OverlayClear(SPlane& plane, int x, int y, int w, int
     SOverlays add;
     for(std::vector<CRectInt>::iterator itr = rem.begin(); itr != rem.end(); ++itr)
     {
-      SOverlay overlay(new CDVDOverlayImage(*(*it)
-                                            , itr->x1
-                                            , itr->y1
-                                            , itr->Width()
-                                            , itr->Height())
-                    , [](CDVDOverlay* ov) { ov->Release(); });
+      auto overlay =
+          std::make_shared<CDVDOverlayImage>(*(*it), itr->x1, itr->y1, itr->Width(), itr->Height());
       add.push_back(overlay);
     }
 
@@ -763,7 +758,7 @@ void CDVDInputStreamBluray::OverlayClear(SPlane& plane, int x, int y, int w, int
 void CDVDInputStreamBluray::OverlayFlush(int64_t pts)
 {
 #if(BD_OVERLAY_INTERFACE_VERSION >= 2)
-  CDVDOverlayGroup* group   = new CDVDOverlayGroup();
+  auto group = std::make_shared<CDVDOverlayGroup>();
   group->bForced       = true;
   group->iPTSStartTime = static_cast<double>(pts);
   group->iPTSStopTime  = 0;
@@ -771,11 +766,10 @@ void CDVDInputStreamBluray::OverlayFlush(int64_t pts)
   for(SPlane& plane : m_planes)
   {
     for(SOverlays::iterator it = plane.o.begin(); it != plane.o.end(); ++it)
-      group->m_overlays.push_back((*it)->Acquire());
+      group->m_overlays.push_back(*it);
   }
 
-  m_player->OnDiscNavResult(static_cast<void*>(group), BD_EVENT_MENU_OVERLAY);
-  group->Release();
+  m_player->OnDiscNavResult(static_cast<void*>(group.get()), BD_EVENT_MENU_OVERLAY);
   m_hasOverlay = true;
 #endif
 }
@@ -817,7 +811,7 @@ void CDVDInputStreamBluray::OverlayCallback(const BD_OVERLAY * const ov)
   /* uncompress and draw bitmap */
   if (ov->img && ov->cmd == BD_OVERLAY_DRAW)
   {
-    SOverlay overlay(new CDVDOverlayImage(), [](CDVDOverlay* ov) { ov->Release(); });
+    auto overlay = std::make_shared<CDVDOverlayImage>();
 
     if (ov->palette)
     {
@@ -883,7 +877,7 @@ void CDVDInputStreamBluray::OverlayCallbackARGB(const struct bd_argb_overlay_s *
   /* uncompress and draw bitmap */
   if (ov->argb && ov->cmd == BD_ARGB_OVERLAY_DRAW)
   {
-    SOverlay overlay(new CDVDOverlayImage(), std::ptr_fun(CDVDOverlay::Release));
+    auto overlay = std::make_shared<CDVDOverlayImage>();
 
     overlay->palette_colors = 0;
     overlay->palette        = nullptr;

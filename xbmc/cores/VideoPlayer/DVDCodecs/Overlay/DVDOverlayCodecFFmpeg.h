@@ -28,7 +28,7 @@ public:
   int Decode(DemuxPacket *pPacket) override;
   void Reset() override;
   void Flush() override;
-  CDVDOverlay* GetOverlay() override;
+  std::shared_ptr<CDVDOverlay> GetOverlay() override;
 
 private:
   AVCodecContext* m_pCodecContext;

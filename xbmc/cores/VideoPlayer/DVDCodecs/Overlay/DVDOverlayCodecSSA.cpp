@@ -23,16 +23,10 @@
 CDVDOverlayCodecSSA::CDVDOverlayCodecSSA()
   : CDVDOverlayCodec("SSA Subtitle Decoder"), m_libass(std::make_shared<CDVDSubtitlesLibass>())
 {
-  m_pOverlay = NULL;
   m_order    = 0;
   m_output   = false;
 
   m_libass->Configure();
-}
-
-CDVDOverlayCodecSSA::~CDVDOverlayCodecSSA()
-{
-  Dispose();
 }
 
 bool CDVDOverlayCodecSSA::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
@@ -41,15 +35,7 @@ bool CDVDOverlayCodecSSA::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
      hints.codec != AV_CODEC_ID_ASS)
     return false;
 
-  Dispose();
-
   return m_libass->DecodeHeader(static_cast<char*>(hints.extradata), hints.extrasize);
-}
-
-void CDVDOverlayCodecSSA::Dispose()
-{
-  if(m_pOverlay)
-    SAFE_RELEASE(m_pOverlay);
 }
 
 int CDVDOverlayCodecSSA::Decode(DemuxPacket *pPacket)
@@ -129,10 +115,9 @@ int CDVDOverlayCodecSSA::Decode(DemuxPacket *pPacket)
      * include the full duration of the old one */
     if(m_pOverlay->iPTSStopTime > pts + duration)
       duration = m_pOverlay->iPTSStopTime - pts;
-    SAFE_RELEASE(m_pOverlay);
   }
 
-  m_pOverlay = new CDVDOverlaySSA(m_libass);
+  m_pOverlay = std::make_shared<CDVDOverlaySSA>(m_libass);
   m_pOverlay->iPTSStartTime = pts;
   m_pOverlay->iPTSStopTime  = pts + duration;
   m_output = true;
@@ -140,7 +125,6 @@ int CDVDOverlayCodecSSA::Decode(DemuxPacket *pPacket)
 }
 void CDVDOverlayCodecSSA::Reset()
 {
-  Dispose();
   Flush();
 }
 
@@ -150,12 +134,13 @@ void CDVDOverlayCodecSSA::Flush()
   m_output = false;
 }
 
-CDVDOverlay* CDVDOverlayCodecSSA::GetOverlay()
+std::shared_ptr<CDVDOverlay> CDVDOverlayCodecSSA::GetOverlay()
 {
-  if(m_output)
+  if (m_output)
   {
     m_output = false;
-    return m_pOverlay->Acquire();
+    return m_pOverlay;
   }
-  return NULL;
+
+  return nullptr;
 }

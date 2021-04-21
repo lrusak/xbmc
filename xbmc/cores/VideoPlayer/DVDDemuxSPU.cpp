@@ -64,7 +64,7 @@ void CDVDDemuxSPU::FlushCurrentPacket()
   memset(&m_spuData, 0, sizeof(m_spuData));
 }
 
-CDVDOverlaySpu* CDVDDemuxSPU::AddData(uint8_t* data, int iSize, double pts)
+std::shared_ptr<CDVDOverlaySpu> CDVDDemuxSPU::AddData(uint8_t* data, int iSize, double pts)
 {
   SPUData* pSPUData = &m_spuData;
 
@@ -148,7 +148,7 @@ CDVDOverlaySpu* CDVDDemuxSPU::AddData(uint8_t* data, int iSize, double pts)
 #define SET_DSPXA   0x06
 #define CHG_COLCON  0x07
 
-CDVDOverlaySpu* CDVDDemuxSPU::ParsePacket(SPUData* pSPUData)
+std::shared_ptr<CDVDOverlaySpu> CDVDDemuxSPU::ParsePacket(SPUData* pSPUData)
 {
   unsigned int alpha[4];
   uint8_t* pUnparsedData = NULL;
@@ -163,7 +163,7 @@ CDVDOverlaySpu* CDVDDemuxSPU::ParsePacket(SPUData* pSPUData)
     DebugLog("GetPacket, missing end of data 0xff");
   }
 
-  CDVDOverlaySpu* pSPUInfo = new CDVDOverlaySpu();
+  auto pSPUInfo = std::make_shared<CDVDOverlaySpu>();
   uint8_t* p = pSPUData->data; // pointer to walk through all data
 
   // get data length
@@ -307,7 +307,6 @@ CDVDOverlaySpu* CDVDDemuxSPU::ParsePacket(SPUData* pSPUData)
 
       default:
         DebugLog("GetPacket, error parsing control sequence");
-        delete pSPUInfo;
         return NULL;
         break;
       }
@@ -347,7 +346,8 @@ inline unsigned int AddNibble( unsigned int i_code, uint8_t* p_src, unsigned int
  * convenient structure for later decoding. For more information on the
  * subtitles format, see http://sam.zoy.org/doc/dvd/subtitles/index.html
  *****************************************************************************/
-CDVDOverlaySpu* CDVDDemuxSPU::ParseRLE(CDVDOverlaySpu* pSPU, uint8_t* pUnparsedData)
+std::shared_ptr<CDVDOverlaySpu> CDVDDemuxSPU::ParseRLE(std::shared_ptr<CDVDOverlaySpu> pSPU,
+                                                       uint8_t* pUnparsedData)
 {
   uint8_t* p_src = pUnparsedData;
 
@@ -403,7 +403,6 @@ CDVDOverlaySpu* CDVDDemuxSPU::ParseRLE(CDVDOverlaySpu* pSPU, uint8_t* pUnparsedD
               {
                 /* We have a boo boo ! */
                 CLog::Log(LOGERROR, "ParseRLE: unknown RLE code {:#4x}", i_code);
-                pSPU->Release();
                 return NULL;
               }
             }
@@ -415,7 +414,6 @@ CDVDOverlaySpu* CDVDDemuxSPU::ParseRLE(CDVDOverlaySpu* pSPU, uint8_t* pUnparsedD
       {
         CLog::Log(LOGERROR, "ParseRLE: out of bounds, {} at ({},{}) is out of {}x{}", i_code >> 2,
                   i_x, i_y, i_width, i_height);
-        pSPU->Release();
         return NULL;
       }
 
@@ -437,7 +435,6 @@ CDVDOverlaySpu* CDVDDemuxSPU::ParseRLE(CDVDOverlaySpu* pSPU, uint8_t* pUnparsedD
       {
         CLog::Log(LOGERROR, "ParseRLE: Overrunning our data range.  Need {} bytes",
                   (long)((uint8_t*)p_dest - pSPU->result));
-        pSPU->Release();
         return NULL;
       }
       *p_dest++ = i_code;
@@ -447,7 +444,6 @@ CDVDOverlaySpu* CDVDDemuxSPU::ParseRLE(CDVDOverlaySpu* pSPU, uint8_t* pUnparsedD
     if ( i_x > i_width )
     {
       CLog::Log(LOGERROR, "ParseRLE: i_x overflowed, {} > {}", i_x, i_width);
-      pSPU->Release();
       return NULL;
     }
 
@@ -477,14 +473,12 @@ CDVDOverlaySpu* CDVDDemuxSPU::ParseRLE(CDVDOverlaySpu* pSPU, uint8_t* pUnparsedD
       {
         CLog::Log(LOGERROR, "ParseRLE: Overrunning our data range.  Need {} bytes",
                   (long)((uint8_t*)p_dest - pSPU->result));
-        pSPU->Release();
         return NULL;
       }
       *p_dest++ = i_width << 2;
       i_y++;
     }
 
-    pSPU->Release();
     return NULL;
   }
 
@@ -502,7 +496,7 @@ CDVDOverlaySpu* CDVDDemuxSPU::ParseRLE(CDVDOverlaySpu* pSPU, uint8_t* pUnparsedD
     if (!pSPU->bHasColor)
     {
       CLog::Log(LOGINFO, "{} - no color palette found, using default", __FUNCTION__);
-      FindSubtitleColor(i_border, stats, pSPU);
+      FindSubtitleColor(i_border, stats, pSPU.get());
     }
 
     // check alpha values, for non forced spu's we use a default value

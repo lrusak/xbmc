@@ -16,14 +16,14 @@ class CDVDOverlayCodecText : public CDVDOverlayCodec
 {
 public:
   CDVDOverlayCodecText();
-  ~CDVDOverlayCodecText() override;
+  ~CDVDOverlayCodecText() override = default;
   bool Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) override;
-  void Dispose() override;
+  void Dispose() override {}
   int Decode(DemuxPacket *pPacket) override;
   void Reset() override;
   void Flush() override;
-  CDVDOverlay* GetOverlay() override;
+  std::shared_ptr<CDVDOverlay> GetOverlay() override;
 
 private:
-  CDVDOverlayText* m_pOverlay;
+  std::shared_ptr<CDVDOverlayText> m_pOverlay;
 };

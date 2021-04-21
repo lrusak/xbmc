@@ -60,16 +60,9 @@ typedef struct {
 
 CDVDOverlayCodecTX3G::CDVDOverlayCodecTX3G() : CDVDOverlayCodec("TX3G Subtitle Decoder")
 {
-  m_pOverlay = NULL;
   // stupid, this comes from a static global in GUIWindowFullScreen.cpp
   uint32_t colormap[9] = { 0xFFFFFF00, 0xFFFFFFFF, 0xFF0099FF, 0xFF00FF00, 0xFFCCFF00, 0xFF00FFFF, 0xFFE5E5E5, 0xFFC0C0C0, 0xFF808080 };
   m_textColor = colormap[CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_SUBTITLES_COLOR)];
-}
-
-CDVDOverlayCodecTX3G::~CDVDOverlayCodecTX3G()
-{
-  if (m_pOverlay)
-    SAFE_RELEASE(m_pOverlay);
 }
 
 bool CDVDOverlayCodecTX3G::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
@@ -79,18 +72,9 @@ bool CDVDOverlayCodecTX3G::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options
   return false;
 }
 
-void CDVDOverlayCodecTX3G::Dispose()
-{
-  if (m_pOverlay)
-    SAFE_RELEASE(m_pOverlay);
-}
-
 int CDVDOverlayCodecTX3G::Decode(DemuxPacket *pPacket)
 {
-  if (m_pOverlay)
-    SAFE_RELEASE(m_pOverlay);
-
-  m_pOverlay = new CDVDOverlayText();
+  m_pOverlay = std::make_shared<CDVDOverlayText>();
   CDVDOverlayCodec::GetAbsoluteTimes(m_pOverlay->iPTSStartTime, m_pOverlay->iPTSStopTime, pPacket, m_pOverlay->replace);
 
   // do not move this. READ_XXXX macros modify pos.
@@ -262,23 +246,20 @@ int CDVDOverlayCodecTX3G::Decode(DemuxPacket *pPacket)
 
 void CDVDOverlayCodecTX3G::Reset()
 {
-  if (m_pOverlay)
-    SAFE_RELEASE(m_pOverlay);
 }
 
 void CDVDOverlayCodecTX3G::Flush()
 {
-  if (m_pOverlay)
-    SAFE_RELEASE(m_pOverlay);
 }
 
-CDVDOverlay* CDVDOverlayCodecTX3G::GetOverlay()
+std::shared_ptr<CDVDOverlay> CDVDOverlayCodecTX3G::GetOverlay()
 {
   if (m_pOverlay)
   {
-    CDVDOverlay* overlay = m_pOverlay;
-    m_pOverlay = NULL;
+    std::shared_ptr<CDVDOverlay> overlay = m_pOverlay;
+    m_pOverlay = nullptr;
     return overlay;
   }
-  return NULL;
+
+  return nullptr;
 }
