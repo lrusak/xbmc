@@ -218,7 +218,7 @@ bool CDVDFileInfo::ExtractThumb(const CFileItem& fileItem,
           if (!pPacket)
             break;
 
-          if (pPacket->iStreamId != nVideoStream)
+          if (pPacket->packet->stream_index != nVideoStream)
           {
             CDVDDemuxUtils::FreeDemuxPacket(pPacket);
             continue;

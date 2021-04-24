@@ -1053,7 +1053,7 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
         CreateStreams(m_program);
 
         pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
-        pPacket->iStreamId = DMX_SPECIALID_STREAMCHANGE;
+        pPacket->packet->stream_index = DMX_SPECIALID_STREAMCHANGE;
         pPacket->demuxerId = m_demuxerId;
 
         return pPacket;
@@ -1094,15 +1094,18 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
         }
 
         // copy contents into our own packet
-        pPacket->iSize = m_pkt.pkt.size;
+        pPacket->packet->size = m_pkt.pkt.size;
 
         // maybe we can avoid a memcpy here by detecting where pkt.destruct is pointing too?
         if (m_pkt.pkt.data)
-          memcpy(pPacket->pData, m_pkt.pkt.data, pPacket->iSize);
+          memcpy(pPacket->packet->data, m_pkt.pkt.data, pPacket->packet->size);
 
-        pPacket->pts = ConvertTimestamp(m_pkt.pkt.pts, stream->time_base.den, stream->time_base.num);
-        pPacket->dts = ConvertTimestamp(m_pkt.pkt.dts, stream->time_base.den, stream->time_base.num);
-        pPacket->duration =  DVD_SEC_TO_TIME((double)m_pkt.pkt.duration * stream->time_base.num / stream->time_base.den);
+        pPacket->packet->pts =
+            ConvertTimestamp(m_pkt.pkt.pts, stream->time_base.den, stream->time_base.num);
+        pPacket->packet->dts =
+            ConvertTimestamp(m_pkt.pkt.dts, stream->time_base.den, stream->time_base.num);
+        pPacket->packet->duration = DVD_SEC_TO_TIME((double)m_pkt.pkt.duration *
+                                                    stream->time_base.num / stream->time_base.den);
 
         CDVDDemuxUtils::StoreSideData(pPacket, &m_pkt.pkt);
 
@@ -1113,25 +1116,26 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
           if (m_displayTime != dispTime)
           {
             m_displayTime = dispTime;
-            if (pPacket->dts != DVD_NOPTS_VALUE)
+            if (pPacket->packet->dts != DVD_NOPTS_VALUE)
             {
-              m_dtsAtDisplayTime = pPacket->dts;
+              m_dtsAtDisplayTime = pPacket->packet->dts;
             }
           }
-          if (m_dtsAtDisplayTime != DVD_NOPTS_VALUE && pPacket->dts != DVD_NOPTS_VALUE)
+          if (m_dtsAtDisplayTime != DVD_NOPTS_VALUE && pPacket->packet->dts != DVD_NOPTS_VALUE)
           {
             pPacket->dispTime = m_displayTime;
-            pPacket->dispTime += DVD_TIME_TO_MSEC(pPacket->dts - m_dtsAtDisplayTime);
+            pPacket->dispTime += DVD_TIME_TO_MSEC(pPacket->packet->dts - m_dtsAtDisplayTime);
           }
         }
 
         // used to guess streamlength
-        if (pPacket->dts != DVD_NOPTS_VALUE && (pPacket->dts > m_currentPts || m_currentPts == DVD_NOPTS_VALUE))
-          m_currentPts = pPacket->dts;
+        if (pPacket->packet->dts != DVD_NOPTS_VALUE &&
+            (pPacket->packet->dts > m_currentPts || m_currentPts == DVD_NOPTS_VALUE))
+          m_currentPts = pPacket->packet->dts;
 
         // store internal id until we know the continuous id presented to player
         // the stream might not have been created yet
-        pPacket->iStreamId = m_pkt.pkt.stream_index;
+        pPacket->packet->stream_index = m_pkt.pkt.stream_index;
       }
       m_pkt.result = -1;
       av_packet_unref(&m_pkt.pkt);
@@ -1145,34 +1149,39 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
     return nullptr;
 
   // check streams, can we make this a bit more simple?
-  if (pPacket && pPacket->iStreamId >= 0)
+  if (pPacket && pPacket->packet->stream_index >= 0)
   {
-    CDemuxStream* stream = GetStream(pPacket->iStreamId);
-    if (!stream ||
-        stream->pPrivate != m_pFormatContext->streams[pPacket->iStreamId] ||
-        stream->codec != m_pFormatContext->streams[pPacket->iStreamId]->codecpar->codec_id)
+    CDemuxStream* stream = GetStream(pPacket->packet->stream_index);
+    if (!stream || stream->pPrivate != m_pFormatContext->streams[pPacket->packet->stream_index] ||
+        stream->codec !=
+            m_pFormatContext->streams[pPacket->packet->stream_index]->codecpar->codec_id)
     {
       // content has changed, or stream did not yet exist
-      stream = AddStream(pPacket->iStreamId);
+      stream = AddStream(pPacket->packet->stream_index);
     }
-    // we already check for a valid m_streams[pPacket->iStreamId] above
+    // we already check for a valid m_streams[pPacket->packet->stream_index] above
     else if (stream->type == STREAM_AUDIO)
     {
       CDemuxStreamAudioFFmpeg* audiostream = dynamic_cast<CDemuxStreamAudioFFmpeg*>(stream);
-      if (audiostream && (audiostream->iChannels != m_pFormatContext->streams[pPacket->iStreamId]->codecpar->channels ||
-          audiostream->iSampleRate != m_pFormatContext->streams[pPacket->iStreamId]->codecpar->sample_rate))
+      if (audiostream &&
+          (audiostream->iChannels !=
+               m_pFormatContext->streams[pPacket->packet->stream_index]->codecpar->channels ||
+           audiostream->iSampleRate !=
+               m_pFormatContext->streams[pPacket->packet->stream_index]->codecpar->sample_rate))
       {
         // content has changed
-        stream = AddStream(pPacket->iStreamId);
+        stream = AddStream(pPacket->packet->stream_index);
       }
     }
     else if (stream->type == STREAM_VIDEO)
     {
-      if (static_cast<CDemuxStreamVideo*>(stream)->iWidth != m_pFormatContext->streams[pPacket->iStreamId]->codecpar->width ||
-          static_cast<CDemuxStreamVideo*>(stream)->iHeight != m_pFormatContext->streams[pPacket->iStreamId]->codecpar->height)
+      if (static_cast<CDemuxStreamVideo*>(stream)->iWidth !=
+              m_pFormatContext->streams[pPacket->packet->stream_index]->codecpar->width ||
+          static_cast<CDemuxStreamVideo*>(stream)->iHeight !=
+              m_pFormatContext->streams[pPacket->packet->stream_index]->codecpar->height)
       {
         // content has changed
-        stream = AddStream(pPacket->iStreamId);
+        stream = AddStream(pPacket->packet->stream_index);
       }
       if (stream && stream->codec == AV_CODEC_ID_H264)
         pPacket->recoveryPoint = m_seekToKeyFrame;
@@ -1185,7 +1194,7 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
       return pPacket;
     }
 
-    pPacket->iStreamId = stream->uniqueId;
+    pPacket->packet->stream_index = stream->uniqueId;
     pPacket->demuxerId = m_demuxerId;
   }
   return pPacket;

@@ -406,7 +406,7 @@ void CVideoPlayerAudio::Process()
         continue;
       }
 
-      m_audioStats.AddSampleBytes(pPacket->iSize);
+      m_audioStats.AddSampleBytes(pPacket->packet->size);
       UpdatePlayerInfo();
 
       if (ProcessDecoderOutput(audioframe))

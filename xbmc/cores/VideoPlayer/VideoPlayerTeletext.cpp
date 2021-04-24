@@ -248,8 +248,8 @@ void CDVDTeletextData::Process()
       CSingleLock lock(m_critSection);
 
       DemuxPacket* pPacket = static_cast<CDVDMsgDemuxerPacket*>(pMsg)->GetPacket();
-      uint8_t *Datai       = pPacket->pData;
-      int rows             = (pPacket->iSize - 1) / 46;
+      uint8_t* Datai = pPacket->packet->data;
+      int rows = (pPacket->packet->size - 1) / 46;
 
       /* Is it a ITU-R System B Teletext stream in acc. to EN 300 472 */
       if (Datai[0] >= 0x10 && Datai[0] <= 0x1F) /* Check we have a valid data identifier */

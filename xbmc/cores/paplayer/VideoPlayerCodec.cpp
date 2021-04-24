@@ -361,15 +361,15 @@ int VideoPlayerCodec::ReadPCM(unsigned char *pBuffer, int size, int *actualsize)
     do
     {
       pPacket = m_pDemuxer->Read();
-    } while (pPacket && pPacket->iStreamId != m_nAudioStream);
+    } while (pPacket && pPacket->packet->stream_index != m_nAudioStream);
 
     if (!pPacket)
     {
       return READ_EOF;
     }
 
-    pPacket->pts = DVD_NOPTS_VALUE;
-    pPacket->dts = DVD_NOPTS_VALUE;
+    pPacket->packet->pts = DVD_NOPTS_VALUE;
+    pPacket->packet->dts = DVD_NOPTS_VALUE;
 
     int ret = m_pAudioCodec->AddData(*pPacket);
     CDVDDemuxUtils::FreeDemuxPacket(pPacket);
@@ -427,14 +427,14 @@ int VideoPlayerCodec::ReadRaw(uint8_t **pBuffer, int *bufferSize)
   do
   {
     pPacket = m_pDemuxer->Read();
-  } while (pPacket && pPacket->iStreamId != m_nAudioStream);
+  } while (pPacket && pPacket->packet->stream_index != m_nAudioStream);
 
   if (!pPacket)
   {
     return READ_EOF;
   }
-  pPacket->pts = DVD_NOPTS_VALUE;
-  pPacket->dts = DVD_NOPTS_VALUE;
+  pPacket->packet->pts = DVD_NOPTS_VALUE;
+  pPacket->packet->dts = DVD_NOPTS_VALUE;
   int ret = m_pAudioCodec->AddData(*pPacket);
   CDVDDemuxUtils::FreeDemuxPacket(pPacket);
   if (ret < 0)

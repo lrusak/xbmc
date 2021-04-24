@@ -141,7 +141,7 @@ DemuxPacket* CDVDDemuxCC::Read(DemuxPacket *pSrcPacket)
     pPacket = Decode();
     return pPacket;
   }
-  if (pSrcPacket->pts == DVD_NOPTS_VALUE)
+  if (pSrcPacket->packet->pts == DVD_NOPTS_VALUE)
   {
     return pPacket;
   }
@@ -152,7 +152,7 @@ DemuxPacket* CDVDDemuxCC::Read(DemuxPacket *pSrcPacket)
     m_ccTempBuffer.pop_back();
   }
 
-  while ((len = pSrcPacket->iSize - p) > 3)
+  while ((len = pSrcPacket->packet->size - p) > 3)
   {
     if ((startcode & 0xffffff00) == 0x00000100)
     {
@@ -163,13 +163,13 @@ DemuxPacket* CDVDDemuxCC::Read(DemuxPacket *pSrcPacket)
         {
           if (len > 4)
           {
-            uint8_t *buf = pSrcPacket->pData + p;
+            uint8_t* buf = pSrcPacket->packet->data + p;
             picType = (buf[1] & 0x38) >> 3;
           }
         }
         else if (scode == 0xb2) // user data
         {
-          uint8_t *buf = pSrcPacket->pData + p;
+          uint8_t* buf = pSrcPacket->packet->data + p;
           if (len >= 6 &&
             buf[0] == 'G' && buf[1] == 'A' && buf[2] == '9' && buf[3] == '4' &&
             buf[4] == 3 && (buf[5] & 0x40))
@@ -179,7 +179,7 @@ DemuxPacket* CDVDDemuxCC::Read(DemuxPacket *pSrcPacket)
             {
               CCaptionBlock *cc = new CCaptionBlock(cc_count * 3);
               memcpy(cc->m_data, buf + 7, cc_count * 3);
-              cc->m_pts = pSrcPacket->pts;
+              cc->m_pts = pSrcPacket->packet->pts;
               if (picType == 1 || picType == 2)
                 m_ccTempBuffer.push_back(cc);
               else
@@ -218,7 +218,7 @@ DemuxPacket* CDVDDemuxCC::Read(DemuxPacket *pSrcPacket)
                   src += 3;
                 }
               }
-              cc->m_pts = pSrcPacket->pts;
+              cc->m_pts = pSrcPacket->packet->pts;
               m_ccReorderBuffer.push_back(cc);
               picType = 1;
             }
@@ -231,7 +231,7 @@ DemuxPacket* CDVDDemuxCC::Read(DemuxPacket *pSrcPacket)
         // slice data comes after SEI
         if (scode >= 1 && scode <= 5)
         {
-          uint8_t *buf = pSrcPacket->pData + p;
+          uint8_t* buf = pSrcPacket->packet->data + p;
           CBitstream bs(buf, len * 8);
           bs.readGolombUE();
           int sliceType = bs.readGolombUE();
@@ -250,7 +250,7 @@ DemuxPacket* CDVDDemuxCC::Read(DemuxPacket *pSrcPacket)
         }
         if (scode == 0x06) // SEI
         {
-          uint8_t *buf = pSrcPacket->pData + p;
+          uint8_t* buf = pSrcPacket->packet->data + p;
           if (len >= 12 &&
             buf[3] == 0 && buf[4] == 49 &&
             buf[5] == 'G' && buf[6] == 'A' && buf[7] == '9' && buf[8] == '4' && buf[9] == 3)
@@ -261,14 +261,14 @@ DemuxPacket* CDVDDemuxCC::Read(DemuxPacket *pSrcPacket)
             {
               CCaptionBlock *cc = new CCaptionBlock(cc_count * 3);
               memcpy(cc->m_data, userdata + 2, cc_count * 3);
-              cc->m_pts = pSrcPacket->pts;
+              cc->m_pts = pSrcPacket->packet->pts;
               m_ccTempBuffer.push_back(cc);
             }
           }
         }
       }
     }
-    startcode = startcode << 8 | pSrcPacket->pData[p++];
+    startcode = startcode << 8 | pSrcPacket->packet->data[p++];
   }
 
   if ((picType == 1 || picType == 2) && !m_ccReorderBuffer.empty())
@@ -398,12 +398,12 @@ DemuxPacket* CDVDDemuxCC::Decode()
         }
 
         pPacket = CDVDDemuxUtils::AllocateDemuxPacket(len);
-        pPacket->iSize = len;
-        memcpy(pPacket->pData, data, pPacket->iSize);
+        pPacket->packet->size = len;
+        memcpy(pPacket->packet->data, data, pPacket->packet->size);
 
-        pPacket->iStreamId = service;
-        pPacket->pts = m_streamdata[i].pts;
-        pPacket->duration = 0;
+        pPacket->packet->stream_index = service;
+        pPacket->packet->pts = m_streamdata[i].pts;
+        pPacket->packet->duration = 0;
         m_streamdata[i].hasData = false;
         break;
       }

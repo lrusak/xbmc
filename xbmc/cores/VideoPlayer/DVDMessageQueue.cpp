@@ -142,7 +142,7 @@ MsgQueueReturnCode CDVDMessageQueue::Put(CDVDMsg* pMsg, int priority, bool front
     DemuxPacket* packet = static_cast<CDVDMsgDemuxerPacket*>(pMsg)->GetPacket();
     if (packet)
     {
-      m_iDataSize += packet->iSize;
+      m_iDataSize += packet->packet->size;
       if (front)
         UpdateTimeFront();
       else
@@ -186,7 +186,7 @@ MsgQueueReturnCode CDVDMessageQueue::Get(CDVDMsg** pMsg, unsigned int iTimeoutIn
         DemuxPacket* packet = static_cast<CDVDMsgDemuxerPacket*>(item.message)->GetPacket();
         if (packet)
         {
-          m_iDataSize -= packet->iSize;
+          m_iDataSize -= packet->packet->size;
         }
       }
 
@@ -230,10 +230,10 @@ void CDVDMessageQueue::UpdateTimeFront()
       DemuxPacket* packet = static_cast<CDVDMsgDemuxerPacket*>(item.message)->GetPacket();
       if (packet)
       {
-        if (packet->dts != DVD_NOPTS_VALUE)
-          m_TimeFront = packet->dts;
-        else if (packet->pts != DVD_NOPTS_VALUE)
-          m_TimeFront = packet->pts;
+        if (packet->packet->dts != DVD_NOPTS_VALUE)
+          m_TimeFront = packet->packet->dts;
+        else if (packet->packet->pts != DVD_NOPTS_VALUE)
+          m_TimeFront = packet->packet->pts;
 
         if (m_TimeBack == DVD_NOPTS_VALUE)
           m_TimeBack = m_TimeFront;
@@ -252,10 +252,10 @@ void CDVDMessageQueue::UpdateTimeBack()
       DemuxPacket* packet = static_cast<CDVDMsgDemuxerPacket*>(item.message)->GetPacket();
       if (packet)
       {
-        if (packet->dts != DVD_NOPTS_VALUE)
-          m_TimeBack = packet->dts;
-        else if (packet->pts != DVD_NOPTS_VALUE)
-          m_TimeBack = packet->pts;
+        if (packet->packet->dts != DVD_NOPTS_VALUE)
+          m_TimeBack = packet->packet->dts;
+        else if (packet->packet->pts != DVD_NOPTS_VALUE)
+          m_TimeBack = packet->packet->pts;
 
         if (m_TimeFront == DVD_NOPTS_VALUE)
           m_TimeFront = m_TimeBack;

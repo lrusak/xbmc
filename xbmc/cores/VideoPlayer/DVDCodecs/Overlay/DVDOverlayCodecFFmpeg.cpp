@@ -127,24 +127,14 @@ int CDVDOverlayCodecFFmpeg::Decode(DemuxPacket *pPacket)
 
   avsubtitle_free(&m_Subtitle);
 
-  AVPacket* avpkt = av_packet_alloc();
-  if (!avpkt)
-  {
-    CLog::Log(LOGERROR, "CDVDOverlayCodecFFmpeg::{} - av_packet_alloc failed: {}", __FUNCTION__,
-              strerror(errno));
-    return OC_ERROR;
-  }
+  pPacket->packet->pts =
+      pPacket->packet->pts == DVD_NOPTS_VALUE ? AV_NOPTS_VALUE : (int64_t)pPacket->packet->pts;
+  pPacket->packet->dts =
+      pPacket->packet->dts == DVD_NOPTS_VALUE ? AV_NOPTS_VALUE : (int64_t)pPacket->packet->dts;
 
-  avpkt->data = pPacket->pData;
-  avpkt->size = pPacket->iSize;
-  avpkt->pts = pPacket->pts == DVD_NOPTS_VALUE ? AV_NOPTS_VALUE : (int64_t)pPacket->pts;
-  avpkt->dts = pPacket->dts == DVD_NOPTS_VALUE ? AV_NOPTS_VALUE : (int64_t)pPacket->dts;
+  len = avcodec_decode_subtitle2(m_pCodecContext, &m_Subtitle, &gotsub, pPacket->packet);
 
-  len = avcodec_decode_subtitle2(m_pCodecContext, &m_Subtitle, &gotsub, avpkt);
-
-  int size = avpkt->size;
-
-  av_packet_free(&avpkt);
+  int size = pPacket->packet->size;
 
   if (len < 0)
   {
@@ -167,9 +157,9 @@ int CDVDOverlayCodecFFmpeg::Decode(DemuxPacket *pPacket)
     // instead use the subtitle pts to calc the offset here
     // see http://git.videolan.org/?p=ffmpeg.git;a=commit;h=2939e258f9d1fff89b3b68536beb931b54611585
 
-    if (m_Subtitle.pts != AV_NOPTS_VALUE && pPacket->pts != DVD_NOPTS_VALUE)
+    if (m_Subtitle.pts != AV_NOPTS_VALUE && pPacket->packet->pts != DVD_NOPTS_VALUE)
     {
-      pts_offset = m_Subtitle.pts - pPacket->pts ;
+      pts_offset = m_Subtitle.pts - pPacket->packet->pts;
     }
   }
 

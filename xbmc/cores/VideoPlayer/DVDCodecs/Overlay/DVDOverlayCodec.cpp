@@ -23,13 +23,13 @@ void CDVDOverlayCodec::GetAbsoluteTimes(double &starttime, double &stoptime, Dem
   // from decoder if available
   if(stoptime > starttime)
     duration = stoptime - starttime;
-  else if(pkt->duration != DVD_NOPTS_VALUE)
-    duration = pkt->duration;
+  else if (pkt->packet->duration != DVD_NOPTS_VALUE)
+    duration = pkt->packet->duration;
 
-  if     (pkt->pts != DVD_NOPTS_VALUE)
-    pts = pkt->pts;
-  else if(pkt->dts != DVD_NOPTS_VALUE)
-    pts = pkt->dts;
+  if (pkt->packet->pts != DVD_NOPTS_VALUE)
+    pts = pkt->packet->pts;
+  else if (pkt->packet->dts != DVD_NOPTS_VALUE)
+    pts = pkt->packet->dts;
 
   starttime = pts + offset;
   if(duration)

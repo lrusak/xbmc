@@ -53,8 +53,8 @@ int CDVDOverlayCodecText::Decode(DemuxPacket *pPacket)
   if(!pPacket)
     return OC_ERROR;
 
-  uint8_t *data = pPacket->pData;
-  int      size = pPacket->iSize;
+  uint8_t* data = pPacket->packet->data;
+  int size = pPacket->packet->size;
 
   m_pOverlay = new CDVDOverlayText();
   CDVDOverlayCodec::GetAbsoluteTimes(m_pOverlay->iPTSStartTime, m_pOverlay->iPTSStopTime, pPacket, m_pOverlay->replace);

@@ -65,7 +65,8 @@ int CDVDOverlayCodecSSA::Decode(DemuxPacket *pPacket)
   if(!pPacket)
     return OC_ERROR;
 
-  double pts = pPacket->dts != DVD_NOPTS_VALUE ? pPacket->dts : pPacket->pts;
+  double pts =
+      pPacket->packet->dts != DVD_NOPTS_VALUE ? pPacket->packet->dts : pPacket->packet->pts;
   if (pts == DVD_NOPTS_VALUE)
   {
     pts = 0;
@@ -76,9 +77,9 @@ int CDVDOverlayCodecSSA::Decode(DemuxPacket *pPacket)
     pts = round(pts / 1000) * 1000;
   }
 
-  uint8_t *data = pPacket->pData;
-  int size = pPacket->iSize;
-  double duration = pPacket->duration;
+  uint8_t* data = pPacket->packet->data;
+  int size = pPacket->packet->size;
+  double duration = pPacket->packet->duration;
   if(duration == DVD_NOPTS_VALUE)
     duration = 0.0;
 

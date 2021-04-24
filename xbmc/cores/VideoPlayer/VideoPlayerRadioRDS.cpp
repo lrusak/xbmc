@@ -650,7 +650,7 @@ void CDVDRadioRDSData::Process()
 
       DemuxPacket* pPacket = static_cast<CDVDMsgDemuxerPacket*>(pMsg)->GetPacket();
 
-      ProcessUECP(pPacket->pData, pPacket->iSize);
+      ProcessUECP(pPacket->packet->data, pPacket->packet->size);
     }
     else if (pMsg->IsType(CDVDMsg::PLAYER_SETSPEED))
     {

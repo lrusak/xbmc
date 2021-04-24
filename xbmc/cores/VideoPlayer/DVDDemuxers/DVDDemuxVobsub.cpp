@@ -161,9 +161,9 @@ DemuxPacket* CDVDDemuxVobsub::Read()
   if(!packet)
     return NULL;
 
-  packet->iStreamId = current->id;
-  packet->pts = current->pts;
-  packet->dts = current->pts;
+  packet->packet->stream_index = current->id;
+  packet->packet->pts = current->pts;
+  packet->packet->dts = current->pts;
 
   return packet;
 }

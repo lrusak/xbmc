@@ -111,7 +111,7 @@ CDVDMsgDemuxerPacket::~CDVDMsgDemuxerPacket()
 unsigned int CDVDMsgDemuxerPacket::GetPacketSize()
 {
   if (m_packet)
-    return m_packet->iSize;
+    return m_packet->packet->size;
   else
     return 0;
 }

@@ -841,18 +841,21 @@ bool CDVDVideoCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
   if (!m_opened || m_state == MEDIACODEC_STATE_STOPPED)
     return false;
 
-  double pts(packet.pts), dts(packet.dts);
+  double pts(packet.packet->pts), dts(packet.packet->dts);
 
   if (CServiceBroker::GetLogging().CanLogComponent(LOGVIDEO))
-    CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::AddData dts:%0.2lf pts:%0.2lf sz:%d indexBuffer:%d current state (%d)", dts, pts, packet.iSize, m_indexInputBuffer, m_state);
+    CLog::Log(LOGDEBUG,
+              "CDVDVideoCodecAndroidMediaCodec::AddData dts:%0.2lf pts:%0.2lf sz:%d indexBuffer:%d "
+              "current state (%d)",
+              dts, pts, packet.packet->size, m_indexInputBuffer, m_state);
   else if (m_state != MEDIACODEC_STATE_RUNNING)
     CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::AddData current state (%d)", m_state);
 
   if (m_hints.ptsinvalid)
     pts = DVD_NOPTS_VALUE;
 
-  uint8_t *pData(packet.pData);
-  size_t iSize(packet.iSize);
+  uint8_t* pData(packet.packet->data);
+  size_t iSize(packet.packet->size);
 
   if (m_state == MEDIACODEC_STATE_ENDOFSTREAM || m_state == MEDIACODEC_STATE_ERROR)
   {

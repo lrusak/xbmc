@@ -173,12 +173,12 @@ DemuxPacket* CInputStreamPVRBase::ReadDemux()
   {
     return nullptr;
   }
-  else if (pPacket->iStreamId == DMX_SPECIALID_STREAMINFO)
+  else if (pPacket->packet->stream_index == DMX_SPECIALID_STREAMINFO)
   {
     m_client->GetStreamProperties(m_StreamProps.get());
     return pPacket;
   }
-  else if (pPacket->iStreamId == DMX_SPECIALID_STREAMCHANGE)
+  else if (pPacket->packet->stream_index == DMX_SPECIALID_STREAMCHANGE)
   {
     m_client->GetStreamProperties(m_StreamProps.get());
     UpdateStreamMap();

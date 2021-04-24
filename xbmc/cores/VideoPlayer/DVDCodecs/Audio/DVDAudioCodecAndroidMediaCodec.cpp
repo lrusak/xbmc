@@ -345,9 +345,11 @@ void CDVDAudioCodecAndroidMediaCodec::Dispose()
 
 bool CDVDAudioCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
 {
-  CLog::Log(LOGDEBUG, LOGAUDIO, "CDVDAudioCodecAndroidMediaCodec::AddData dts:%0.4lf pts:%0.4lf size(%d)", packet.dts, packet.pts, packet.iSize);
+  CLog::Log(LOGDEBUG, LOGAUDIO,
+            "CDVDAudioCodecAndroidMediaCodec::AddData dts:%0.4lf pts:%0.4lf size(%d)",
+            packet.packet->dts, packet.packet->pts, packet.packet->size);
 
-  if (packet.pData)
+  if (packet.packet->data)
   {
     // try to fetch an input buffer
     int64_t timeout_us = 5000;
@@ -369,10 +371,11 @@ bool CDVDAudioCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
         xbmc_jnienv()->ExceptionClear();
       }
 
-      if (packet.iSize > size)
+      if (packet.packet->size > size)
       {
-        CLog::Log(LOGERROR, "CDVDAudioCodecAndroidMediaCodec::AddData, iSize(%d) > size(%d)", packet.iSize, size);
-        return packet.iSize;
+        CLog::Log(LOGERROR, "CDVDAudioCodecAndroidMediaCodec::AddData, iSize(%d) > size(%d)",
+                  packet.packet->size, size);
+        return packet.packet->size;
       }
       // fetch a pointer to the ByteBuffer backing store
       uint8_t *dst_ptr = (uint8_t*)xbmc_jnienv()->GetDirectBufferAddress(buffer.get_raw());
@@ -383,7 +386,7 @@ bool CDVDAudioCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
         switch(m_hints.codec)
         {
           default:
-            memcpy(dst_ptr, packet.pData, packet.iSize);
+            memcpy(dst_ptr, packet.packet->data, packet.packet->size);
             break;
         }
       }
@@ -405,10 +408,10 @@ bool CDVDAudioCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
 
       int flags = 0;
       int offset = 0;
-      int64_t presentationTimeUs = static_cast<int64_t>(packet.pts);
+      int64_t presentationTimeUs = static_cast<int64_t>(packet.packet->pts);
 
       if (!cryptoInfo)
-        m_codec->queueInputBuffer(index, offset, packet.iSize, presentationTimeUs, flags);
+        m_codec->queueInputBuffer(index, offset, packet.packet->size, presentationTimeUs, flags);
       else
       {
         m_codec->queueSecureInputBuffer(index, offset, *cryptoInfo, presentationTimeUs, flags);
@@ -429,16 +432,16 @@ bool CDVDAudioCodecAndroidMediaCodec::AddData(const DemuxPacket &packet)
   if (m_decryptCodec)
   {
     DemuxPacket newPkt;
-    newPkt.iSize = GetData(&newPkt.pData);
-    newPkt.pts = m_currentPts;
-    newPkt.iStreamId = packet.iStreamId;
+    newPkt.packet->size = GetData(&newPkt.packet->data);
+    newPkt.packet->pts = m_currentPts;
+    newPkt.packet->stream_index = packet.packet->stream_index;
     newPkt.demuxerId = packet.demuxerId;
     newPkt.iGroupId = packet.iGroupId;
-    newPkt.pSideData = packet.pSideData;
-    newPkt.duration = packet.duration;
+    newPkt.packet->side_data = packet.packet->side_data;
+    newPkt.packet->duration = packet.packet->duration;
     newPkt.dispTime = packet.dispTime;
     newPkt.recoveryPoint = packet.recoveryPoint;
-    if (!packet.pData || newPkt.iSize)
+    if (!packet.packet->data || newPkt.packet->size)
       m_decryptCodec->AddData(newPkt);
   }
   else

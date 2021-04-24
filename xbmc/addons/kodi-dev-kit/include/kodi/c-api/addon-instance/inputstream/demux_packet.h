@@ -20,6 +20,9 @@
 #ifdef __cplusplus
 extern "C"
 {
+
+#include <libavcodec/packet.h>
+
 #endif /* __cplusplus */
 
   struct DEMUX_CRYPTO_INFO;
@@ -44,18 +47,21 @@ extern "C"
   ///@{
   struct DEMUX_PACKET
   {
+    AVPacket* packet;
+
+
     /// @brief Stream package which is given for decoding.
     ///
     /// @note Associated storage from here is created using
     /// @ref kodi::addon::CInstanceInputStream::AllocateDemuxPacket()
     /// or @ref kodi::addon::CInstanceInputStream::AllocateEncryptedDemuxPacket().
-    uint8_t* pData;
+    // uint8_t* pData;
 
     /// @brief Size of the package given at @ref pData.
-    int iSize;
+    // int iSize;
 
     /// @brief Identification of the stream.
-    int iStreamId;
+    // int iStreamId;
 
     /// @brief Identification of the associated demuxer, this can be identical
     /// on several streams.
@@ -73,21 +79,21 @@ extern "C"
     ///
     /// This is usually based on that of ffmpeg, see
     /// [AVPacketSideData](https://ffmpeg.org/doxygen/trunk/structAVPacketSideData.html).
-    void* pSideData;
+    // void* pSideData;
 
     /// @brief Data elements stored at @ref pSideData.
-    int iSideDataElems;
+    // int iSideDataElems;
 
     //------------------------------------------
 
     /// @brief Presentation time stamp (PTS).
-    double pts;
+    // double pts;
 
     /// @brief Decoding time stamp (DTS).
-    double dts;
+    // double dts;
 
     /// @brief Duration in @ref STREAM_TIME_BASE if available
-    double duration;
+    // double duration;
 
     /// @brief Display time from input stream
     int dispTime;

@@ -561,8 +561,8 @@ int CSelectionStreams::CountTypeOfSource(StreamType type, StreamSource source) c
 
 int CSelectionStreams::CountType(StreamType type) const
 {
-  return std::count_if(m_Streams.begin(), m_Streams.end(), 
-    [&](const SelectionStream& stream) {return stream.type == type;});
+  return std::count_if(m_Streams.begin(), m_Streams.end(),
+                       [&](const SelectionStream& stream) { return stream.type == type; });
 }
 
 //------------------------------------------------------------------------------
@@ -1005,10 +1005,10 @@ bool CVideoPlayer::ReadPacket(DemuxPacket*& packet, CDemuxStream*& stream)
     if(packet)
     {
       UpdateCorrection(packet, m_offset_pts);
-      if(packet->iStreamId < 0)
+      if (packet->packet->stream_index < 0)
         return true;
 
-      stream = m_pSubtitleDemuxer->GetStream(packet->demuxerId, packet->iStreamId);
+      stream = m_pSubtitleDemuxer->GetStream(packet->demuxerId, packet->packet->stream_index);
       if (!stream)
       {
         CLog::Log(LOGERROR, "%s - Error demux packet doesn't belong to a valid stream", __FUNCTION__);
@@ -1031,7 +1031,7 @@ bool CVideoPlayer::ReadPacket(DemuxPacket*& packet, CDemuxStream*& stream)
   if (packet)
   {
     // stream changed, update and open defaults
-    if (packet->iStreamId == DMX_SPECIALID_STREAMCHANGE)
+    if (packet->packet->stream_index == DMX_SPECIALID_STREAMCHANGE)
     {
       m_SelectionStreams.Clear(STREAM_NONE, STREAM_SOURCE_DEMUX);
       m_SelectionStreams.Update(m_pInputStream, m_pDemuxer);
@@ -1050,12 +1050,12 @@ bool CVideoPlayer::ReadPacket(DemuxPacket*& packet, CDemuxStream*& stream)
 
     UpdateCorrection(packet, m_offset_pts);
 
-    if(packet->iStreamId < 0)
+    if (packet->packet->stream_index < 0)
       return true;
 
     if(m_pDemuxer)
     {
-      stream = m_pDemuxer->GetStream(packet->demuxerId, packet->iStreamId);
+      stream = m_pDemuxer->GetStream(packet->demuxerId, packet->packet->stream_index);
       if (!stream)
       {
         CLog::Log(LOGERROR, "%s - Error demux packet doesn't belong to a valid stream", __FUNCTION__);
@@ -1533,8 +1533,9 @@ void CVideoPlayer::Process()
             UpdateContent();
             OpenDefaultStreams(false);
           }
-          CDemuxStream *pSubStream = m_pCCDemuxer->GetStream(pkt->iStreamId);
-          if (pSubStream && m_CurrentSubtitle.id == pkt->iStreamId && m_CurrentSubtitle.source == STREAM_SOURCE_VIDEOMUX)
+          CDemuxStream* pSubStream = m_pCCDemuxer->GetStream(pkt->packet->stream_index);
+          if (pSubStream && m_CurrentSubtitle.id == pkt->packet->stream_index &&
+              m_CurrentSubtitle.source == STREAM_SOURCE_VIDEOMUX)
             ProcessSubData(pSubStream, pkt);
           else
             CDVDDemuxUtils::FreeDemuxPacket(pkt);
@@ -1547,14 +1548,14 @@ void CVideoPlayer::Process()
       if (std::shared_ptr<CDVDInputStream::IMenus> menu = std::dynamic_pointer_cast<CDVDInputStream::IMenus>(m_pInputStream))
       {
         double correction = menu->GetTimeStampCorrection();
-        if (pPacket->dts != DVD_NOPTS_VALUE && pPacket->dts > correction)
-          pPacket->dts -= correction;
-        if (pPacket->pts != DVD_NOPTS_VALUE && pPacket->pts > correction)
-          pPacket->pts -= correction;
+        if (pPacket->packet->dts != DVD_NOPTS_VALUE && pPacket->packet->dts > correction)
+          pPacket->packet->dts -= correction;
+        if (pPacket->packet->pts != DVD_NOPTS_VALUE && pPacket->packet->pts > correction)
+          pPacket->packet->pts -= correction;
       }
       if (m_dvd.syncClock)
       {
-        m_clock.Discontinuity(pPacket->dts);
+        m_clock.Discontinuity(pPacket->packet->dts);
         m_dvd.syncClock = false;
       }
     }
@@ -1566,10 +1567,8 @@ void CVideoPlayer::Process()
 
 bool CVideoPlayer::CheckIsCurrent(CCurrentStream& current, CDemuxStream* stream, DemuxPacket* pkg)
 {
-  if(current.id == pkg->iStreamId &&
-     current.demuxerId == stream->demuxerId &&
-     current.source == stream->source &&
-     current.type == stream->type)
+  if (current.id == pkg->packet->stream_index && current.demuxerId == stream->demuxerId &&
+      current.source == stream->source && current.type == stream->type)
     return true;
   else
     return false;
@@ -1651,7 +1650,7 @@ void CVideoPlayer::ProcessVideoData(CDemuxStream* pStream, DemuxPacket* pPacket)
   CheckStreamChanges(m_CurrentVideo, pStream);
   bool checkcont = false;
 
-  if( pPacket->iSize != 4) //don't check the EOF_SEQUENCE of stillframes
+  if (pPacket->packet->size != 4) //don't check the EOF_SEQUENCE of stillframes
   {
     checkcont = CheckContinuity(m_CurrentVideo, pPacket);
     UpdateTimestamps(m_CurrentVideo, pPacket);
@@ -2103,7 +2102,7 @@ void CVideoPlayer::HandlePlaySpeed()
       }
     }
   }
-  
+
   // reset tempo
   if (!m_State.cantempo)
   {
@@ -2160,24 +2159,24 @@ bool CVideoPlayer::CheckPlayerInit(CCurrentStream& current)
 
 void CVideoPlayer::UpdateCorrection(DemuxPacket* pkt, double correction)
 {
-  if(pkt->dts != DVD_NOPTS_VALUE)
-    pkt->dts -= correction;
-  if(pkt->pts != DVD_NOPTS_VALUE)
-    pkt->pts -= correction;
+  if (pkt->packet->dts != DVD_NOPTS_VALUE)
+    pkt->packet->dts -= correction;
+  if (pkt->packet->pts != DVD_NOPTS_VALUE)
+    pkt->packet->pts -= correction;
 }
 
 void CVideoPlayer::UpdateTimestamps(CCurrentStream& current, DemuxPacket* pPacket)
 {
   double dts = current.dts;
   /* update stored values */
-  if(pPacket->dts != DVD_NOPTS_VALUE)
-    dts = pPacket->dts;
-  else if(pPacket->pts != DVD_NOPTS_VALUE)
-    dts = pPacket->pts;
+  if (pPacket->packet->dts != DVD_NOPTS_VALUE)
+    dts = pPacket->packet->dts;
+  else if (pPacket->packet->pts != DVD_NOPTS_VALUE)
+    dts = pPacket->packet->pts;
 
   /* calculate some average duration */
-  if(pPacket->duration != DVD_NOPTS_VALUE)
-    current.dur = pPacket->duration;
+  if (pPacket->packet->duration != DVD_NOPTS_VALUE)
+    current.dur = pPacket->packet->duration;
   else if(dts != DVD_NOPTS_VALUE && current.dts != DVD_NOPTS_VALUE)
     current.dur = 0.1 * (current.dur * 9 + (dts - current.dts));
 
@@ -2199,7 +2198,7 @@ bool CVideoPlayer::CheckContinuity(CCurrentStream& current, DemuxPacket* pPacket
   if (m_playSpeed < DVD_PLAYSPEED_PAUSE)
     return false;
 
-  if( pPacket->dts == DVD_NOPTS_VALUE || current.dts == DVD_NOPTS_VALUE)
+  if (pPacket->packet->dts == DVD_NOPTS_VALUE || current.dts == DVD_NOPTS_VALUE)
     return false;
 
   double mindts = DVD_NOPTS_VALUE, maxdts = DVD_NOPTS_VALUE;
@@ -2213,31 +2212,33 @@ bool CVideoPlayer::CheckContinuity(CCurrentStream& current, DemuxPacket* pPacket
     return false;
 
   double correction = 0.0;
-  if( pPacket->dts > maxdts + DVD_MSEC_TO_TIME(1000))
+  if (pPacket->packet->dts > maxdts + DVD_MSEC_TO_TIME(1000))
   {
-    CLog::Log(LOGDEBUG, "CVideoPlayer::CheckContinuity - resync forward :%d, prev:%f, curr:%f, diff:%f"
-                            , current.type, current.dts, pPacket->dts, pPacket->dts - maxdts);
-    correction = pPacket->dts - maxdts;
+    CLog::Log(LOGDEBUG,
+              "CVideoPlayer::CheckContinuity - resync forward :%d, prev:%f, curr:%f, diff:%f",
+              current.type, current.dts, pPacket->packet->dts, pPacket->packet->dts - maxdts);
+    correction = pPacket->packet->dts - maxdts;
   }
 
   /* if it's large scale jump, correct for it after having confirmed the jump */
-  if(pPacket->dts + DVD_MSEC_TO_TIME(500) < current.dts_end())
+  if (pPacket->packet->dts + DVD_MSEC_TO_TIME(500) < current.dts_end())
   {
-    CLog::Log(LOGDEBUG, "CVideoPlayer::CheckContinuity - resync backward :%d, prev:%f, curr:%f, diff:%f"
-                            , current.type, current.dts, pPacket->dts, pPacket->dts - current.dts);
-    correction = pPacket->dts - current.dts_end();
+    CLog::Log(LOGDEBUG,
+              "CVideoPlayer::CheckContinuity - resync backward :%d, prev:%f, curr:%f, diff:%f",
+              current.type, current.dts, pPacket->packet->dts, pPacket->packet->dts - current.dts);
+    correction = pPacket->packet->dts - current.dts_end();
   }
-  else if(pPacket->dts < current.dts)
+  else if (pPacket->packet->dts < current.dts)
   {
-    CLog::Log(LOGDEBUG, "CVideoPlayer::CheckContinuity - wrapback :%d, prev:%f, curr:%f, diff:%f"
-                            , current.type, current.dts, pPacket->dts, pPacket->dts - current.dts);
+    CLog::Log(LOGDEBUG, "CVideoPlayer::CheckContinuity - wrapback :%d, prev:%f, curr:%f, diff:%f",
+              current.type, current.dts, pPacket->packet->dts, pPacket->packet->dts - current.dts);
   }
 
-  double lastdts = pPacket->dts;
+  double lastdts = pPacket->packet->dts;
   if(correction != 0.0)
   {
     // we want the dts values of two streams to close, or for one to be invalid (e.g. from a missing audio stream)
-    double this_dts = pPacket->dts;
+    double this_dts = pPacket->packet->dts;
     double that_dts = current.type == STREAM_AUDIO ? m_CurrentVideo.lastdts : m_CurrentAudio.lastdts;
 
     if (m_CurrentAudio.id == -1 || m_CurrentVideo.id == -1 ||
@@ -2246,7 +2247,7 @@ bool CVideoPlayer::CheckContinuity(CCurrentStream& current, DemuxPacket* pPacket
     {
       m_offset_pts += correction;
       UpdateCorrection(pPacket, correction);
-      lastdts = pPacket->dts;
+      lastdts = pPacket->packet->dts;
       CLog::Log(LOGDEBUG, "CVideoPlayer::CheckContinuity - update correction: %f", correction);
       if (current.avsync == CCurrentStream::AV_SYNC_CHECK)
         current.avsync = CCurrentStream::AV_SYNC_CONT;
@@ -2254,8 +2255,8 @@ bool CVideoPlayer::CheckContinuity(CCurrentStream& current, DemuxPacket* pPacket
     else
     {
       // not sure yet - flags the packets as unknown until we get confirmation on another audio/video packet
-      pPacket->dts = DVD_NOPTS_VALUE;
-      pPacket->pts = DVD_NOPTS_VALUE;
+      pPacket->packet->dts = DVD_NOPTS_VALUE;
+      pPacket->packet->pts = DVD_NOPTS_VALUE;
     }
   }
   else

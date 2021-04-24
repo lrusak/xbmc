@@ -103,8 +103,8 @@ bool CDVDAudioCodecPassthrough::AddData(const DemuxPacket &packet)
     m_backlogSize -= consumed;
   }
 
-  unsigned char *pData(const_cast<uint8_t*>(packet.pData));
-  int iSize(packet.iSize);
+  unsigned char* pData(const_cast<uint8_t*>(packet.packet->data));
+  int iSize(packet.packet->size);
 
   if (pData)
   {
@@ -113,16 +113,16 @@ bool CDVDAudioCodecPassthrough::AddData(const DemuxPacket &packet)
       if (m_nextPts != DVD_NOPTS_VALUE)
       {
         m_currentPts = m_nextPts;
-        m_nextPts = packet.pts;
+        m_nextPts = packet.packet->pts;
       }
-      else if (packet.pts != DVD_NOPTS_VALUE)
+      else if (packet.packet->pts != DVD_NOPTS_VALUE)
       {
-        m_currentPts = packet.pts;
+        m_currentPts = packet.packet->pts;
       }
     }
     else
     {
-      m_nextPts = packet.pts;
+      m_nextPts = packet.packet->pts;
     }
   }
 

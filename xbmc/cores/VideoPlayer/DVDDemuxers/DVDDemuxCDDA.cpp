@@ -98,10 +98,10 @@ DemuxPacket* CDVDDemuxCDDA::Read()
     return NULL;
   }
 
-  pPacket->iSize = m_pInput->Read(pPacket->pData, CDDA_READ_SIZE);
-  pPacket->iStreamId = 0;
+  pPacket->packet->size = m_pInput->Read(pPacket->packet->data, CDDA_READ_SIZE);
+  pPacket->packet->stream_index = 0;
 
-  if(pPacket->iSize < 1)
+  if (pPacket->packet->size < 1)
   {
     delete pPacket;
     pPacket = NULL;
@@ -111,14 +111,14 @@ DemuxPacket* CDVDDemuxCDDA::Read()
     int n = m_stream->iBitRate>>3;
     if (n > 0)
     {
-      m_bytes += pPacket->iSize;
-      pPacket->dts = (double)m_bytes * DVD_TIME_BASE / n;
-      pPacket->pts = pPacket->dts;
+      m_bytes += pPacket->packet->size;
+      pPacket->packet->dts = (double)m_bytes * DVD_TIME_BASE / n;
+      pPacket->packet->pts = pPacket->packet->dts;
     }
     else
     {
-      pPacket->dts = DVD_NOPTS_VALUE;
-      pPacket->pts = DVD_NOPTS_VALUE;
+      pPacket->packet->dts = DVD_NOPTS_VALUE;
+      pPacket->packet->pts = DVD_NOPTS_VALUE;
     }
   }
 

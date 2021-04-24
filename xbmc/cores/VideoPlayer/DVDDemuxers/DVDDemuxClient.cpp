@@ -120,7 +120,7 @@ bool CDVDDemuxClient::ParsePacket(DemuxPacket* pkt)
 {
   bool change = false;
 
-  CDemuxStream* st = GetStream(pkt->iStreamId);
+  CDemuxStream* st = GetStream(pkt->packet->stream_index);
   if (st == nullptr || st->changes < 0 || st->ExtraSize || !CodecHasExtraData(st->codec))
     return change;
 
@@ -153,7 +153,8 @@ bool CDVDDemuxClient::ParsePacket(DemuxPacket* pkt)
 
   if (stream->m_parser_split && stream->m_parser->parser->split)
   {
-    int len = stream->m_parser->parser->split(stream->m_context, pkt->pData, pkt->iSize);
+    int len =
+        stream->m_parser->parser->split(stream->m_context, pkt->packet->data, pkt->packet->size);
     if (len > 0 && len < FF_MAX_EXTRADATA_SIZE)
     {
       if (st->ExtraData)
@@ -162,7 +163,7 @@ bool CDVDDemuxClient::ParsePacket(DemuxPacket* pkt)
       st->disabled = false;
       st->ExtraSize = len;
       st->ExtraData = new uint8_t[len+AV_INPUT_BUFFER_PADDING_SIZE];
-      memcpy(st->ExtraData, pkt->pData, len);
+      memcpy(st->ExtraData, pkt->packet->data, len);
       memset(st->ExtraData + len, 0 , AV_INPUT_BUFFER_PADDING_SIZE);
       stream->m_parser_split = false;
       change = true;
@@ -171,31 +172,19 @@ bool CDVDDemuxClient::ParsePacket(DemuxPacket* pkt)
       // Allow ffmpeg to transport codec information to stream->m_context
       if (!avcodec_open2(stream->m_context, stream->m_context->codec, nullptr))
       {
-        AVPacket* avpkt = av_packet_alloc();
-        if (!avpkt)
-        {
-          CLog::Log(LOGERROR, "CDVDDemuxClient::{} - av_packet_alloc failed: {}", __FUNCTION__,
-                    strerror(errno));
-          return false;
-        }
-        avpkt->data = pkt->pData;
-        avpkt->size = pkt->iSize;
-        avpkt->dts = avpkt->pts = AV_NOPTS_VALUE;
-        avcodec_send_packet(stream->m_context, avpkt);
+        pkt->packet->dts = pkt->packet->pts = AV_NOPTS_VALUE;
+        avcodec_send_packet(stream->m_context, pkt->packet);
         avcodec_close(stream->m_context);
-        av_packet_free(&avpkt);
       }
     }
   }
 
   uint8_t *outbuf = nullptr;
   int outbuf_size = 0;
-  int len = av_parser_parse2(stream->m_parser,
-                             stream->m_context, &outbuf, &outbuf_size,
-                             pkt->pData, pkt->iSize,
-                             (int64_t)(pkt->pts * DVD_TIME_BASE),
-                             (int64_t)(pkt->dts * DVD_TIME_BASE),
-                             0);
+  int len = av_parser_parse2(stream->m_parser, stream->m_context, &outbuf, &outbuf_size,
+                             pkt->packet->data, pkt->packet->size,
+                             (int64_t)(pkt->packet->pts * DVD_TIME_BASE),
+                             (int64_t)(pkt->packet->dts * DVD_TIME_BASE), 0);
 
   // our parse is setup to parse complete frames, so we don't care about outbufs
   if (len >= 0)
@@ -315,23 +304,24 @@ DemuxPacket* CDVDDemuxClient::Read()
     return nullptr;
   }
 
-  if (m_packet->iStreamId == DMX_SPECIALID_STREAMINFO)
+  if (m_packet->packet->stream_index == DMX_SPECIALID_STREAMINFO)
   {
     RequestStreams();
     CDVDDemuxUtils::FreeDemuxPacket(m_packet.release());
     return CDVDDemuxUtils::AllocateDemuxPacket(0);
   }
-  else if (m_packet->iStreamId == DMX_SPECIALID_STREAMCHANGE)
+  else if (m_packet->packet->stream_index == DMX_SPECIALID_STREAMCHANGE)
   {
     RequestStreams();
   }
-  else if (m_packet->iStreamId >= 0 && m_streams.count(m_packet->iStreamId) > 0)
+  else if (m_packet->packet->stream_index >= 0 &&
+           m_streams.count(m_packet->packet->stream_index) > 0)
   {
     if (ParsePacket(m_packet.get()))
     {
       RequestStreams();
       DemuxPacket *pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
-      pPacket->iStreamId = DMX_SPECIALID_STREAMCHANGE;
+      pPacket->packet->stream_index = DMX_SPECIALID_STREAMCHANGE;
       pPacket->demuxerId = m_demuxerId;
       return pPacket;
     }
@@ -353,15 +343,15 @@ DemuxPacket* CDVDDemuxClient::Read()
     if (m_displayTime != dispTime)
     {
       m_displayTime = dispTime;
-      if (m_packet->dts != DVD_NOPTS_VALUE)
+      if (m_packet->packet->dts != DVD_NOPTS_VALUE)
       {
-        m_dtsAtDisplayTime = m_packet->dts;
+        m_dtsAtDisplayTime = m_packet->packet->dts;
       }
     }
-    if (m_dtsAtDisplayTime != DVD_NOPTS_VALUE && m_packet->dts != DVD_NOPTS_VALUE)
+    if (m_dtsAtDisplayTime != DVD_NOPTS_VALUE && m_packet->packet->dts != DVD_NOPTS_VALUE)
     {
       m_packet->dispTime = m_displayTime;
-      m_packet->dispTime += DVD_TIME_TO_MSEC(m_packet->dts - m_dtsAtDisplayTime);
+      m_packet->dispTime += DVD_TIME_TO_MSEC(m_packet->packet->dts - m_dtsAtDisplayTime);
     }
   }
 
