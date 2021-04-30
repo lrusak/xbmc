@@ -469,7 +469,7 @@ void CGUIDialogSubtitles::OnDownloadComplete(const CFileItemList *items, const s
     {
       CStackDirectory::GetPaths(g_application.CurrentFileItem().GetPath(), vecFiles);
       // Make sure (stack) size is the same as the size of the items handed to us, else fallback to single item
-      if (items->Size() != (int) vecFiles.size())
+      if (items->Size() != static_cast<int>(vecFiles.size()))
       {
         vecFiles.clear();
         vecFiles.push_back(strCurrentFile);

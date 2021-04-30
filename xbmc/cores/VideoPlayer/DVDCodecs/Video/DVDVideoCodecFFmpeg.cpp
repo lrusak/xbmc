@@ -933,12 +933,14 @@ bool CDVDVideoCodecFFmpeg::GetPictureCommon(VideoPicture* pVideoPicture)
   pVideoPicture->iHeight = m_pFrame->height;
 
   /* crop of 10 pixels if demuxer asked it */
-  if(m_pCodecContext->coded_width  && m_pCodecContext->coded_width  < (int)pVideoPicture->iWidth
-                                   && m_pCodecContext->coded_width  > (int)pVideoPicture->iWidth  - 10)
+  if (m_pCodecContext->coded_width &&
+      m_pCodecContext->coded_width < static_cast<int>(pVideoPicture->iWidth) &&
+      m_pCodecContext->coded_width > static_cast<int>(pVideoPicture->iWidth) - 10)
     pVideoPicture->iWidth = m_pCodecContext->coded_width;
 
-  if(m_pCodecContext->coded_height && m_pCodecContext->coded_height < (int)pVideoPicture->iHeight
-                                   && m_pCodecContext->coded_height > (int)pVideoPicture->iHeight - 10)
+  if (m_pCodecContext->coded_height &&
+      m_pCodecContext->coded_height < static_cast<int>(pVideoPicture->iHeight) &&
+      m_pCodecContext->coded_height > static_cast<int>(pVideoPicture->iHeight) - 10)
     pVideoPicture->iHeight = m_pCodecContext->coded_height;
 
   double aspect_ratio;
@@ -962,11 +964,13 @@ bool CDVDVideoCodecFFmpeg::GetPictureCommon(VideoPicture* pVideoPicture)
 
   /* XXX: we suppose the screen has a 1.0 pixel ratio */ // CDVDVideo will compensate it.
   pVideoPicture->iDisplayHeight = pVideoPicture->iHeight;
-  pVideoPicture->iDisplayWidth  = ((int)RINT(pVideoPicture->iHeight * aspect_ratio)) & -3;
+  pVideoPicture->iDisplayWidth =
+      (static_cast<int>(RINT(pVideoPicture->iHeight) * aspect_ratio)) & -3;
   if (pVideoPicture->iDisplayWidth > pVideoPicture->iWidth)
   {
     pVideoPicture->iDisplayWidth  = pVideoPicture->iWidth;
-    pVideoPicture->iDisplayHeight = ((int)RINT(pVideoPicture->iWidth / aspect_ratio)) & -3;
+    pVideoPicture->iDisplayHeight =
+        (static_cast<int>(RINT(pVideoPicture->iWidth) / aspect_ratio)) & -3;
   }
 
 

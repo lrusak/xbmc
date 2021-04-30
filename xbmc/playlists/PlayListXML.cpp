@@ -166,7 +166,7 @@ void CPlayListXML::Save(const std::string& strFileName) const
   std::string write;
   write += StringUtils::Format("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n");
   write += StringUtils::Format("<streams>\n");
-  for (int i = 0; i < (int)m_vecItems.size(); ++i)
+  for (int i = 0; i < static_cast<int>(m_vecItems.size()); ++i)
   {
     CFileItemPtr item = m_vecItems[i];
     write += StringUtils::Format("  <stream>\n" );

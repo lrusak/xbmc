@@ -18,7 +18,7 @@
 @property(nonatomic, strong) TVOSLibInputSettings* inputSettings;
 @property(nonatomic, strong) TVOSLibInputTouch* inputTouch;
 
-- (void)sendButtonPressed:(int)buttonId;
+- (void)sendButtonPressed:static_cast<int>(buttonId);
 - (instancetype)init;
 
 @end

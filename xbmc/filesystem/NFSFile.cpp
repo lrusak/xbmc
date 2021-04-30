@@ -308,7 +308,8 @@ bool CNfsConnection::Connect(const CURL& url, std::string &relativePath)
 
     if(contextRet == CONTEXT_NEW)
     {
-      CLog::Log(LOGDEBUG, "NFS: chunks: r/w %i/%i", (int)m_readChunkSize, (int)m_writeChunkSize);
+      CLog::Log(LOGDEBUG, "NFS: chunks: r/w %i/%i", static_cast<int>(m_readChunkSize),
+                static_cast<int>(m_writeChunkSize));
     }
   }
   return ret;

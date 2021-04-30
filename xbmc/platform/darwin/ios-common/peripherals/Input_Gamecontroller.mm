@@ -530,7 +530,7 @@ struct PlayerControllerState
   return scanresults;
 }
 
-- (GCCONTROLLER_TYPE)GetGCControllerType:(int)deviceID
+- (GCCONTROLLER_TYPE)GetGCControllerType:static_cast<int>(deviceID)
 {
   GCController* controller;
   for (GCController* aController in controllerArray)
@@ -548,7 +548,7 @@ struct PlayerControllerState
     return GCCONTROLLER_TYPE::NOTFOUND;
 }
 
-- (int)checkOptionalButtons:(int)deviceID
+- static_cast<int>(checkOptionalButtons:(int)deviceID)
 {
   int optionalButtonCount = 0;
 
@@ -601,7 +601,7 @@ struct PlayerControllerState
                    withEvent:(kodi::addon::PeripheralEvent*)event
                  withMessage:(NSString*)message
                     withAxis:(GCCONTROLLER_EXTENDED_GAMEPAD_AXIS)thumbstickside
-             withplayerIndex:(int)playerIndex
+             withplayerIndex:static_cast<int>(playerIndex)
 {
   // thumbstick released completely - zero both axis
   if (!thumbstick.up.isPressed && !thumbstick.down.isPressed && !thumbstick.left.isPressed &&
@@ -848,7 +848,7 @@ struct PlayerControllerState
 - (NSString*)checkdpad:(GCControllerDirectionPad*)dpad
              withEvent:(kodi::addon::PeripheralEvent*)event
          withInputInfo:(InputValueInfo)inputInfo
-       withplayerIndex:(int)playerIndex
+       withplayerIndex:static_cast<int>(playerIndex)
 {
   NSString* message = nil;
   if ((dpad.up.isPressed && !controllerState[playerIndex].dpadUpPressed) ||

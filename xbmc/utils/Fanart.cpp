@@ -156,7 +156,9 @@ bool CFanart::ParseColors(const std::string &colorsIn, std::string &colorsOut)
   { // need conversion
     colorsOut.clear();
     std::vector<std::string> strColors = StringUtils::Split(colorsIn, "|");
-    for (int i = 0; i < std::min((int)strColors.size()-1, (int)max_fanart_colors); i++)
+    for (int i = 0;
+         i < std::min(static_cast<int>(strColors.size() - 1), static_cast<int>(max_fanart_colors));
+         i++)
     { // split up each color
       std::vector<std::string> strTriplets = StringUtils::Split(strColors[i+1], ",");
       if (strTriplets.size() == 3)

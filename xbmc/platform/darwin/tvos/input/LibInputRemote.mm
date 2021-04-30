@@ -67,12 +67,12 @@ NSTimeInterval REPEATED_KEYPRESS_PAUSE_S = 0.05;
 
 #pragma mark - key press auto-repeat methods
 
-- (void)startKeyPressTimer:(int)keyId
+- (void)startKeyPressTimer:static_cast<int>(keyId)
 {
   [self startKeyPressTimer:keyId clickTime:REPEATED_KEYPRESS_PAUSE_S];
 }
 
-- (void)startKeyPressTimer:(int)keyId clickTime:(NSTimeInterval)interval
+- (void)startKeyPressTimer:static_cast<int>(keyId)clickTime:(NSTimeInterval)interval
 {
   if (m_pressAutoRepeatTimer != nil)
     [self stopKeyPressTimer];

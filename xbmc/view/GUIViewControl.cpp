@@ -58,7 +58,7 @@ void CGUIViewControl::SetCurrentView(int viewMode, bool bRefresh /* = false */)
 {
   // grab the previous control
   CGUIControl *previousView = nullptr;
-  if (m_currentView >= 0 && m_currentView < (int)m_visibleViews.size())
+  if (m_currentView >= 0 && m_currentView < static_cast<int>(m_visibleViews.size()))
     previousView = m_visibleViews[m_currentView];
 
   UpdateViewVisibility();
@@ -137,13 +137,13 @@ void CGUIViewControl::UpdateContents(const CGUIControl *control, int currentItem
 void CGUIViewControl::UpdateView()
 {
 //  CLog::Log(LOGDEBUG,"UpdateView: %i", m_currentView);
-  if (m_currentView < 0 || m_currentView >= (int)m_visibleViews.size())
-    return; // no valid current view!
+if (m_currentView < 0 || m_currentView >= static_cast<int>(m_visibleViews.size()))
+  return; // no valid current view!
 
-  CGUIControl *pControl = m_visibleViews[m_currentView];
-  // get the currently selected item
-  int item = GetSelectedItem(pControl);
-  UpdateContents(pControl, item < 0 ? 0 : item);
+CGUIControl* pControl = m_visibleViews[m_currentView];
+// get the currently selected item
+int item = GetSelectedItem(pControl);
+UpdateContents(pControl, item < 0 ? 0 : item);
 }
 
 int CGUIViewControl::GetSelectedItem(const CGUIControl *control) const
@@ -163,7 +163,7 @@ int CGUIViewControl::GetSelectedItem(const CGUIControl *control) const
 
 int CGUIViewControl::GetSelectedItem() const
 {
-  if (m_currentView < 0 || m_currentView >= (int)m_visibleViews.size())
+  if (m_currentView < 0 || m_currentView >= static_cast<int>(m_visibleViews.size()))
     return -1; // no valid current view!
 
   return GetSelectedItem(m_visibleViews[m_currentView]);
@@ -190,7 +190,7 @@ void CGUIViewControl::SetSelectedItem(int item)
   if (!m_fileItems || item < 0 || item >= m_fileItems->Size())
     return;
 
-  if (m_currentView < 0 || m_currentView >= (int)m_visibleViews.size())
+  if (m_currentView < 0 || m_currentView >= static_cast<int>(m_visibleViews.size()))
     return; // no valid current view!
 
   CGUIMessage msg(GUI_MSG_ITEM_SELECT, m_parentWindow, m_visibleViews[m_currentView]->GetID(), item);
@@ -221,7 +221,7 @@ void CGUIViewControl::SetSelectedItem(const std::string &itemPath)
 
 void CGUIViewControl::SetFocused()
 {
-  if (m_currentView < 0 || m_currentView >= (int)m_visibleViews.size())
+  if (m_currentView < 0 || m_currentView >= static_cast<int>(m_visibleViews.size()))
     return; // no valid current view!
 
   CGUIMessage msg(GUI_MSG_SETFOCUS, m_parentWindow, m_visibleViews[m_currentView]->GetID(), 0);
@@ -241,7 +241,7 @@ bool CGUIViewControl::HasControl(int viewControlID) const
 
 int CGUIViewControl::GetCurrentControl() const
 {
-  if (m_currentView < 0 || m_currentView >= (int)m_visibleViews.size())
+  if (m_currentView < 0 || m_currentView >= static_cast<int>(m_visibleViews.size()))
     return -1; // no valid current view!
 
   return m_visibleViews[m_currentView]->GetID();
@@ -251,7 +251,7 @@ int CGUIViewControl::GetCurrentControl() const
 int CGUIViewControl::GetViewModeNumber(int number) const
 {
   IGUIContainer *nextView = nullptr;
-  if (number >= 0 && number < (int)m_visibleViews.size())
+  if (number >= 0 && number < static_cast<int>(m_visibleViews.size()))
     nextView = static_cast<IGUIContainer*>(m_visibleViews[number]);
   else if (m_visibleViews.size())
     nextView = static_cast<IGUIContainer*>(m_visibleViews[0]);
@@ -283,7 +283,7 @@ int CGUIViewControl::GetNextViewMode(int direction) const
   if (!m_visibleViews.size())
     return 0; // no view modes :(
 
-  int viewNumber = (m_currentView + direction) % (int)m_visibleViews.size();
+  int viewNumber = (m_currentView + direction) % static_cast<int>(m_visibleViews.size());
   if (viewNumber < 0) viewNumber += m_visibleViews.size();
   IGUIContainer *nextView = static_cast<IGUIContainer*>(m_visibleViews[viewNumber]);
   return (nextView->GetType() << 16) | nextView->GetID();
@@ -291,7 +291,7 @@ int CGUIViewControl::GetNextViewMode(int direction) const
 
 void CGUIViewControl::Clear()
 {
-  if (m_currentView < 0 || m_currentView >= (int)m_visibleViews.size())
+  if (m_currentView < 0 || m_currentView >= static_cast<int>(m_visibleViews.size()))
     return; // no valid current view!
 
   CGUIMessage msg(GUI_MSG_LABEL_RESET, m_parentWindow, m_visibleViews[m_currentView]->GetID(), 0);
@@ -300,7 +300,7 @@ void CGUIViewControl::Clear()
 
 int CGUIViewControl::GetView(VIEW_TYPE type, int id) const
 {
-  for (int i = 0; i < (int)m_visibleViews.size(); i++)
+  for (int i = 0; i < static_cast<int>(m_visibleViews.size()); i++)
   {
     IGUIContainer *view = static_cast<IGUIContainer*>(m_visibleViews[i]);
     if ((type == VIEW_TYPE_NONE || type == view->GetType()) && (!id || view->GetID() == id))

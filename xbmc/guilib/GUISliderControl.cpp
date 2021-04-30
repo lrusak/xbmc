@@ -452,7 +452,7 @@ void CGUISliderControl::SetIntValue(int iValue, RangeSelector selector /* = Rang
 int CGUISliderControl::GetIntValue(RangeSelector selector /* = RangeSelectorLower */) const
 {
   if (m_iType == SLIDER_CONTROL_TYPE_FLOAT)
-    return (int)m_floatValues[selector];
+    return static_cast<int>(m_floatValues[selector]);
   else if (m_iType == SLIDER_CONTROL_TYPE_INT)
     return m_intValues[selector];
   else
@@ -485,7 +485,7 @@ void CGUISliderControl::SetFloatValue(float fValue, RangeSelector selector /* = 
     }
   }
   else if (m_iType == SLIDER_CONTROL_TYPE_INT)
-    SetIntValue((int)fValue, selector, updateCurrent);
+    SetIntValue(static_cast<int>(fValue), selector, updateCurrent);
   else
     SetPercentage(fValue, selector, updateCurrent);
 }
@@ -513,7 +513,7 @@ void CGUISliderControl::SetFloatInterval(float fInterval)
   if (m_iType == SLIDER_CONTROL_TYPE_FLOAT)
     m_fInterval = fInterval;
   else
-    m_iInterval = (int)fInterval;
+    m_iInterval = static_cast<int>(fInterval);
 }
 
 void CGUISliderControl::SetRange(int iStart, int iEnd)
@@ -530,7 +530,7 @@ void CGUISliderControl::SetRange(int iStart, int iEnd)
 void CGUISliderControl::SetFloatRange(float fStart, float fEnd)
 {
   if (m_iType == SLIDER_CONTROL_TYPE_INT)
-    SetRange((int)fStart, (int)fEnd);
+    SetRange(static_cast<int>(fStart), static_cast<int>(fEnd));
   else
   {
     m_floatValues[0] = m_fStart = fStart;

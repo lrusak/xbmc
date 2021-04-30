@@ -141,7 +141,7 @@ int CGUIWrappingListContainer::CorrectOffset(int offset, int cursor) const
 {
   if (m_items.size())
   {
-    int correctOffset = (offset + cursor) % (int)m_items.size();
+    int correctOffset = (offset + cursor) % static_cast<int>(m_items.size());
     if (correctOffset < 0) correctOffset += m_items.size();
     return correctOffset;
   }
@@ -204,7 +204,7 @@ bool CGUIWrappingListContainer::SelectItemFromPoint(const CPoint &point)
 
 void CGUIWrappingListContainer::SelectItem(int item)
 {
-  if (item >= 0 && item < (int)m_items.size())
+  if (item >= 0 && item < static_cast<int>(m_items.size()))
     ScrollToOffset(item - GetCursor());
 }
 
@@ -225,7 +225,7 @@ void CGUIWrappingListContainer::Reset()
 int CGUIWrappingListContainer::GetCurrentPage() const
 {
   int offset = CorrectOffset(GetOffset(), GetCursor());
-  if (offset + m_itemsPerPage - GetCursor() >= (int)GetRows())  // last page
+  if (offset + m_itemsPerPage - GetCursor() >= static_cast<int>(GetRows())) // last page
     return (GetRows() + m_itemsPerPage - 1) / m_itemsPerPage;
   return offset / m_itemsPerPage + 1;
 }

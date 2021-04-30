@@ -38,7 +38,8 @@ int CAndroidFeatures::GetVersion()
     }
 
     jint iSdkVersion = jenv->GetStaticIntField(jcOsBuild, jenv->GetStaticFieldID(jcOsBuild, "SDK_INT", "I"));
-    CLog::Log(LOGDEBUG, "%s: android.os.Build.VERSION %d", __PRETTY_FUNCTION__, (int)iSdkVersion);
+    CLog::Log(LOGDEBUG, "%s: android.os.Build.VERSION %d", __PRETTY_FUNCTION__,
+              static_cast<int>(iSdkVersion));
 
     // <= 10 Gingerbread
     // <= 13 Honeycomb

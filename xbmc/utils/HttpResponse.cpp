@@ -66,7 +66,7 @@ std::string CHttpResponse::Create()
   }
 
   char statusBuffer[4];
-  sprintf(statusBuffer, "%d", (int)m_status);
+  sprintf(statusBuffer, "%d", static_cast<int>(m_status));
   m_buffer.append(SPACE);
   m_buffer.append(statusBuffer);
 

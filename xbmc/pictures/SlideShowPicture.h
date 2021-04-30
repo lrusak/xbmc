@@ -53,8 +53,8 @@ public:
   bool IsFinished() const { return m_bIsFinished;};
   bool DrawNextImage() const { return m_bDrawNextImage;};
 
-  int GetWidth() const { return (int)m_fWidth;};
-  int GetHeight() const { return (int)m_fHeight;};
+  int GetWidth() const { return static_cast<int>(m_fWidth); };
+  int GetHeight() const { return static_cast<int>(m_fHeight); };
 
   void Keep();
   bool StartTransition();

@@ -262,7 +262,7 @@ void CScraperParser::ParseExpression(const std::string& input, std::string& dest
         InsertToken(strOutput,iBuf+1,"!!!ENCODE!!!");
     }
     int i = reg.RegFind(curInput.c_str());
-    while (i > -1 && (i < (int)curInput.size() || curInput.empty()))
+    while (i > -1 && (i < static_cast<int>(curInput.size()) || curInput.empty()))
     {
       if (!bAppend)
       {
@@ -318,7 +318,8 @@ void CScraperParser::ParseExpression(const std::string& input, std::string& dest
       }
       if (bRepeat && iLen > 0)
       {
-        curInput.erase(0,i+iLen>(int)curInput.size()?curInput.size():i+iLen);
+        curInput.erase(0,
+                       i + iLen > static_cast<int>(curInput.size() ? curInput.size() : i + iLen));
         i = reg.RegFind(curInput.c_str());
       }
       else

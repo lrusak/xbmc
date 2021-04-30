@@ -1023,9 +1023,8 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
       Flush();
     }
     // check size and stream index for being in a valid range
-    else if (m_pkt.pkt.size < 0 ||
-             m_pkt.pkt.stream_index < 0 ||
-             m_pkt.pkt.stream_index >= (int)m_pFormatContext->nb_streams)
+    else if (m_pkt.pkt.size < 0 || m_pkt.pkt.stream_index < 0 ||
+             m_pkt.pkt.stream_index >= static_cast<int>(m_pFormatContext->nb_streams))
     {
       // XXX, in some cases ffmpeg returns a negative packet size
       if (m_pFormatContext->pb && !m_pFormatContext->pb->eof_reached)
@@ -1068,7 +1067,8 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
           /* check so packet belongs to selected program */
           for (unsigned int i = 0; i < m_pFormatContext->programs[m_program]->nb_stream_indexes; i++)
           {
-            if (m_pkt.pkt.stream_index == (int)m_pFormatContext->programs[m_program]->stream_index[i])
+            if (m_pkt.pkt.stream_index ==
+                static_cast<int>(m_pFormatContext->programs[m_program]->stream_index[i]))
             {
               pPacket = CDVDDemuxUtils::AllocateDemuxPacket(m_pkt.pkt.size);
               break;
@@ -1986,7 +1986,7 @@ bool CDVDDemuxFFmpeg::SeekChapter(int chapter, double* startpts)
   if (m_pFormatContext == NULL)
     return false;
 
-  if (chapter < 1 || chapter > (int)m_pFormatContext->nb_chapters)
+  if (chapter < 1 || chapter > static_cast<int>(m_pFormatContext->nb_chapters))
     return false;
 
   AVChapter* ch = m_pFormatContext->chapters[chapter - 1];

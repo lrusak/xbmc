@@ -275,7 +275,8 @@ void CAAudioUnitSink::setCoreAudioBuffersize()
   OSStatus status = AudioSessionSetProperty(kAudioSessionProperty_PreferredHardwareIOBufferDuration,
                                    sizeof(preferredBufferSize), &preferredBufferSize);
   if (status != noErr)
-    CLog::Log(LOGWARNING, "%s preferredBufferSize couldn't be set (error: %d)", __PRETTY_FUNCTION__, (int)status);
+    CLog::Log(LOGWARNING, "%s preferredBufferSize couldn't be set (error: %d)", __PRETTY_FUNCTION__,
+              static_cast<int>(status));
 #endif
 }
 
@@ -287,7 +288,8 @@ bool CAAudioUnitSink::setCoreAudioInputFormat()
                                 kAudioUnitScope_Input, 0, &m_outputFormat, ioDataSize);
   if (status != noErr)
   {
-    CLog::Log(LOGERROR, "%s error setting stream format on audioUnit (error: %d)", __PRETTY_FUNCTION__, (int)status);
+    CLog::Log(LOGERROR, "%s error setting stream format on audioUnit (error: %d)",
+              __PRETTY_FUNCTION__, static_cast<int>(status));
     return false;
   }
   return true;
@@ -300,7 +302,8 @@ void CAAudioUnitSink::setCoreAudioPreferredSampleRate()
   OSStatus status = AudioSessionSetProperty(kAudioSessionProperty_PreferredHardwareSampleRate,
                                    sizeof(preferredSampleRate), &preferredSampleRate);
   if (status != noErr)
-    CLog::Log(LOGWARNING, "%s preferredSampleRate couldn't be set (error: %d)", __PRETTY_FUNCTION__, (int)status);
+    CLog::Log(LOGWARNING, "%s preferredSampleRate couldn't be set (error: %d)", __PRETTY_FUNCTION__,
+              static_cast<int>(status));
 }
 
 Float64 CAAudioUnitSink::getCoreAudioRealisedSampleRate()
@@ -338,7 +341,8 @@ bool CAAudioUnitSink::setupAudio()
   status = AudioComponentInstanceNew(component, &m_audioUnit);
   if (status != noErr)
   {
-    CLog::Log(LOGERROR, "%s error creating audioUnit (error: %d)", __PRETTY_FUNCTION__, (int)status);
+    CLog::Log(LOGERROR, "%s error creating audioUnit (error: %d)", __PRETTY_FUNCTION__,
+              static_cast<int>(status));
     return false;
   }
 
@@ -350,7 +354,8 @@ bool CAAudioUnitSink::setupAudio()
   {
     CLog::Log(LOGINFO,
               "%s couldn't set requested samplerate %d, coreaudio will resample to %d instead",
-              __PRETTY_FUNCTION__, (int)m_outputFormat.mSampleRate, (int)realisedSampleRate);
+              __PRETTY_FUNCTION__, static_cast<int>(m_outputFormat.mSampleRate),
+              static_cast<int>(realisedSampleRate));
     // if we don't ca to resample - but instead let activeae resample -
     // reflect the realised samplerate to the outputformat here
     // well maybe it is handy in the future - as of writing this
@@ -372,14 +377,16 @@ bool CAAudioUnitSink::setupAudio()
                                 0, &callbackStruct, sizeof(callbackStruct));
   if (status != noErr)
   {
-    CLog::Log(LOGERROR, "%s error setting render callback for audioUnit (error: %d)", __PRETTY_FUNCTION__, (int)status);
+    CLog::Log(LOGERROR, "%s error setting render callback for audioUnit (error: %d)",
+              __PRETTY_FUNCTION__, static_cast<int>(status));
     return false;
   }
 
   status = AudioUnitInitialize(m_audioUnit);
 	if (status != noErr)
   {
-    CLog::Log(LOGERROR, "%s error initializing audioUnit (error: %d)", __PRETTY_FUNCTION__, (int)status);
+    CLog::Log(LOGERROR, "%s error initializing audioUnit (error: %d)", __PRETTY_FUNCTION__,
+              static_cast<int>(status));
     return false;
   }
 

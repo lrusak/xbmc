@@ -118,7 +118,7 @@ int CDVDInputStreamStack::Read(uint8_t* buf, int buf_size)
 
   m_pos += ret;
 
-  return (int)ret;
+  return static_cast<int>(ret);
 }
 
 int64_t CDVDInputStreamStack::Seek(int64_t offset, int whence)

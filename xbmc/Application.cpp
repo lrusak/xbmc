@@ -2627,7 +2627,7 @@ bool CApplication::PlayMedia(CFileItem& item, const std::string &player, int iPl
       {
         int track=0;
         if (item.HasProperty("playlist_starting_track"))
-          track = (int)item.GetProperty("playlist_starting_track").asInteger();
+          track = static_cast<int>(item.GetProperty("playlist_starting_track").asInteger());
         return ProcessAndStartPlaylist(item.GetPath(), *pPlayList, iPlaylist, track);
       }
       else
@@ -3174,7 +3174,7 @@ void CApplication::OnPlayBackSeek(int64_t iTime, int64_t seekOffset)
   CJSONUtils::MillisecondsToTimeObject(iTime, param["player"]["time"]);
   CJSONUtils::MillisecondsToTimeObject(seekOffset, param["player"]["seekoffset"]);
   param["player"]["playerid"] = CServiceBroker::GetPlaylistPlayer().GetCurrentPlaylist();
-  param["player"]["speed"] = (int)m_appPlayer.GetPlaySpeed();
+  param["player"]["speed"] = static_cast<int>(m_appPlayer.GetPlaySpeed());
   CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Player, "OnSeek",
                                                      m_itemCurrentFile, param);
   CServiceBroker::GetGUI()->GetInfoManager().GetInfoProviders().GetPlayerInfoProvider().SetDisplayAfterSeek(2500, static_cast<int>(seekOffset));
@@ -4225,7 +4225,7 @@ int CApplication::GlobalIdleTime()
 {
   if(!m_idleTimer.IsRunning())
     m_idleTimer.StartZero();
-  return (int)m_idleTimer.GetElapsedSeconds();
+  return static_cast<int>(m_idleTimer.GetElapsedSeconds());
 }
 
 float CApplication::NavigationIdleTime()

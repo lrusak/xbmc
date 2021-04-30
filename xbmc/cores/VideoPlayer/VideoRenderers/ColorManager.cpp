@@ -160,7 +160,7 @@ bool CColorManager::GetVideo3dLut(AVColorPrimaries srcPrimaries, int* cmsToken,
 {
   const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
   CMS_PRIMARIES videoPrimaries = avColorToCmsPrimaries(srcPrimaries);
-  CLog::Log(LOGDEBUG, "ColorManager: video primaries: %d", (int)videoPrimaries);
+  CLog::Log(LOGDEBUG, "ColorManager: video primaries: %d", static_cast<int>(videoPrimaries));
   switch (settings->GetInt("videoscreen.cmsmode"))
   {
   case CMS_MODE_3DLUT:
@@ -202,10 +202,12 @@ bool CColorManager::GetVideo3dLut(AVColorPrimaries srcPrimaries, int* cmsToken,
       // create source profile
       m_curIccWhitePoint = static_cast<CMS_WHITEPOINT>(settings->GetInt("videoscreen.cmswhitepoint"));
       m_curIccPrimaries = static_cast<CMS_PRIMARIES>(settings->GetInt("videoscreen.cmsprimaries"));
-      CLog::Log(LOGDEBUG, "ColorManager: primaries setting: %d", (int)m_curIccPrimaries);
+      CLog::Log(LOGDEBUG, "ColorManager: primaries setting: %d",
+                static_cast<int>(m_curIccPrimaries));
       if (m_curIccPrimaries == CMS_PRIMARIES_AUTO)
         m_curIccPrimaries = videoPrimaries;
-      CLog::Log(LOGDEBUG, "ColorManager: source profile primaries: %d", (int)m_curIccPrimaries);
+      CLog::Log(LOGDEBUG, "ColorManager: source profile primaries: %d",
+                static_cast<int>(m_curIccPrimaries));
       cmsHPROFILE sourceProfile = CreateSourceProfile(m_curIccPrimaries, gammaCurve, m_curIccWhitePoint);
 
       // link profiles
@@ -608,9 +610,9 @@ void CColorManager::Create3dLut(cmsHTRANSFORM transform, CMS_DATA_FORMAT format,
   for (int y=0; y<lutResolution; y+=1)
   {
     int index = components*(y*lutResolution*lutResolution + y*lutResolution + y);
-    CLog::Log(LOGDEBUG, "  %d (%d): %d %d %d", (int)round(y * 255 / (lutResolution - 1.0)), y,
-              (int)round(clutData[index + 0]), (int)round(clutData[index + 1]),
-              (int)round(clutData[index + 2]));
+    CLog::Log(LOGDEBUG, "  %d (%d): %d %d %d", static_cast<int>(round(y) * 255 / (lutResolution - 1.0)), y,
+              static_cast<int>(round(clutData[index) + 0]), static_cast<int>(round(clutData[index) + 1]),
+              static_cast<int>(round(clutData[index) + 2]));
   }
   delete[] input;
   delete[] output;

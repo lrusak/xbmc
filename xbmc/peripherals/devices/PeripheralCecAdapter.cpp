@@ -1313,13 +1313,16 @@ void CPeripheralCecAdapter::SetConfigurationFromLibCEC(const CEC::libcec_configu
   bChanged |= SetSetting("activate_source", m_configuration.bActivateSource == 1);
 
   m_configuration.iDoubleTapTimeoutMs = config.iDoubleTapTimeoutMs;
-  bChanged |= SetSetting("double_tap_timeout_ms", (int)m_configuration.iDoubleTapTimeoutMs);
+  bChanged |=
+      SetSetting("double_tap_timeout_ms", static_cast<int>(m_configuration.iDoubleTapTimeoutMs));
 
   m_configuration.iButtonRepeatRateMs = config.iButtonRepeatRateMs;
-  bChanged |= SetSetting("button_repeat_rate_ms", (int)m_configuration.iButtonRepeatRateMs);
+  bChanged |=
+      SetSetting("button_repeat_rate_ms", static_cast<int>(m_configuration.iButtonRepeatRateMs));
 
   m_configuration.iButtonReleaseDelayMs = config.iButtonReleaseDelayMs;
-  bChanged |= SetSetting("button_release_delay_ms", (int)m_configuration.iButtonReleaseDelayMs);
+  bChanged |= SetSetting("button_release_delay_ms",
+                         static_cast<int>(m_configuration.iButtonReleaseDelayMs));
 
   m_configuration.bPowerOffOnStandby = config.bPowerOffOnStandby;
 
@@ -1345,10 +1348,10 @@ void CPeripheralCecAdapter::SetConfigurationFromSettings(void)
   // set the primary device type
   m_configuration.deviceTypes.Clear();
   int iDeviceType = GetSettingInt("device_type");
-  if (iDeviceType != (int)CEC_DEVICE_TYPE_RECORDING_DEVICE &&
-      iDeviceType != (int)CEC_DEVICE_TYPE_PLAYBACK_DEVICE &&
-      iDeviceType != (int)CEC_DEVICE_TYPE_TUNER)
-    iDeviceType = (int)CEC_DEVICE_TYPE_RECORDING_DEVICE;
+  if (iDeviceType != static_cast<int>(CEC_DEVICE_TYPE_RECORDING_DEVICE) &&
+      iDeviceType != static_cast<int>(CEC_DEVICE_TYPE_PLAYBACK_DEVICE) &&
+      iDeviceType != static_cast<int>(CEC_DEVICE_TYPE_TUNER))
+    iDeviceType = static_cast<int>(CEC_DEVICE_TYPE_RECORDING_DEVICE);
   m_configuration.deviceTypes.Add((cec_device_type)iDeviceType);
 
   // always try to autodetect the address.

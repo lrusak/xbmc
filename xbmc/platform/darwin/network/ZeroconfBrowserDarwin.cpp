@@ -171,8 +171,10 @@ void CZeroconfBrowserDarwin::BrowserCallback(CFNetServiceBrowserRef browser, CFO
     }
   } else
   {
-    CLog::Log(LOGERROR, "CZeroconfBrowserDarwin::BrowserCallback returned"
-      "(domain = %d, error = %" PRId64")", (int)error->domain, (int64_t)error->error);
+    CLog::Log(LOGERROR,
+              "CZeroconfBrowserDarwin::BrowserCallback returned"
+              "(domain = %d, error = %" PRId64 ")",
+              static_cast<int>(error->domain), (int64_t)error->error);
   }
 }
 
@@ -252,8 +254,10 @@ bool CZeroconfBrowserDarwin::doAddServiceType(const std::string& fcr_service_typ
     CFNetServiceBrowserUnscheduleFromRunLoop(p_browser, m_runloop, kCFRunLoopCommonModes);
     CFRelease(p_browser);
     p_browser = NULL;
-    CLog::Log(LOGERROR, "CFNetServiceBrowserSearchForServices returned"
-      "(domain = %d, error = %" PRId64")", (int)error.domain, (int64_t)error.error);
+    CLog::Log(LOGERROR,
+              "CFNetServiceBrowserSearchForServices returned"
+              "(domain = %d, error = %" PRId64 ")",
+              static_cast<int>(error.domain), (int64_t)error.error);
   }
   else
   {

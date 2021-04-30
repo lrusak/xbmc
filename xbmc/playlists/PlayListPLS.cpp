@@ -212,7 +212,7 @@ void CPlayListPLS::Save(const std::string& strFileName) const
   g_charsetConverter.utf8ToStringCharset(strPlayListName);
   write += StringUtils::Format("PlaylistName=%s\n", strPlayListName.c_str() );
 
-  for (int i = 0; i < (int)m_vecItems.size(); ++i)
+  for (int i = 0; i < static_cast<int>(m_vecItems.size()); ++i)
   {
     CFileItemPtr item = m_vecItems[i];
     std::string strFileName=item->GetPath();

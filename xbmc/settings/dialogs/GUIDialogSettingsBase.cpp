@@ -536,7 +536,7 @@ std::set<std::string> CGUIDialogSettingsBase::CreateSettings()
   if (m_categories.size() <= 0)
     return settingMap;
 
-  if (m_iCategory < 0 || m_iCategory >= (int)m_categories.size())
+  if (m_iCategory < 0 || m_iCategory >= static_cast<int>(m_categories.size()))
     m_iCategory = 0;
 
   CGUIControlGroupList* group = dynamic_cast<CGUIControlGroupList*>(GetControl(SETTINGS_GROUP_ID));

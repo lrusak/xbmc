@@ -344,7 +344,7 @@ int CAEChannelInfo::BestMatch(const std::vector<CAEChannelInfo>& dsts, int* scor
 
   bool remapped = (src != *this);
   /* good enough approximation (does not account for added channels) */
-  int dropped = std::max((int)src.Count() - (int)Count(), 0);
+  int dropped = std::max(static_cast<int>(src.Count()) - static_cast<int>(Count()), 0);
 
   int bestScore = std::numeric_limits<int>::min();
   int bestMatch = -1;

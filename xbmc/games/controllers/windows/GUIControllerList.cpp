@@ -147,7 +147,7 @@ void CGUIControllerList::OnSelect(unsigned int controllerIndex)
 
 void CGUIControllerList::ResetController(void)
 {
-  if (0 <= m_focusedController && m_focusedController < (int)m_controllers.size())
+  if (0 <= m_focusedController && m_focusedController < static_cast<int>(m_controllers.size()))
   {
     const std::string strControllerId = m_controllers[m_focusedController]->ID();
 

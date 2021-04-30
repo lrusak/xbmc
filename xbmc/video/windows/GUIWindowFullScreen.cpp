@@ -330,15 +330,13 @@ void CGUIWindowFullScreen::FrameMove()
       float xscale = (float)res.iScreenWidth  / (float)res.iWidth;
       float yscale = (float)res.iScreenHeight / (float)res.iHeight;
 
-      std::string strSizing = StringUtils::Format(g_localizeStrings.Get(245).c_str(),
-                                                 (int)info.SrcRect.Width(),
-                                                 (int)info.SrcRect.Height(),
-                                                 (int)(info.DestRect.Width() * xscale),
-                                                 (int)(info.DestRect.Height() * yscale),
-                                                 CDisplaySettings::GetInstance().GetZoomAmount(),
-                                                 info.videoAspectRatio*CDisplaySettings::GetInstance().GetPixelRatio(),
-                                                 CDisplaySettings::GetInstance().GetPixelRatio(),
-                                                 CDisplaySettings::GetInstance().GetVerticalShift());
+      std::string strSizing = StringUtils::Format(
+          g_localizeStrings.Get(245).c_str(), static_cast<int>(info.SrcRect.Width()),
+          static_cast<int>(info.SrcRect.Height()), (int)(info.DestRect.Width() * xscale),
+          (int)(info.DestRect.Height() * yscale), CDisplaySettings::GetInstance().GetZoomAmount(),
+          info.videoAspectRatio * CDisplaySettings::GetInstance().GetPixelRatio(),
+          CDisplaySettings::GetInstance().GetPixelRatio(),
+          CDisplaySettings::GetInstance().GetVerticalShift());
       CGUIMessage msg(GUI_MSG_LABEL_SET, GetID(), LABEL_ROW2);
       msg.SetLabel(strSizing);
       OnMessage(msg);

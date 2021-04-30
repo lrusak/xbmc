@@ -144,7 +144,7 @@ CDatabase::DatasetLayout::DatasetLayout(size_t totalfields)
 }
 
 void CDatabase::DatasetLayout::SetField(int fieldNo, const std::string &strField, bool bOutput /*= false*/)
-{  
+{
   if (fieldNo >= 0 && fieldNo < static_cast<int>(m_fields.size()))
   {
     m_fields[fieldNo].strField = strField;
@@ -793,7 +793,8 @@ bool CDatabase::CreateDatabase()
   }
   catch (...)
   {
-    CLog::Log(LOGERROR, "%s unable to create database:%i", __FUNCTION__, (int)GetLastError());
+    CLog::Log(LOGERROR, "%s unable to create database:%i", __FUNCTION__,
+              static_cast<int>(GetLastError()));
     RollbackTransaction();
     return false;
   }

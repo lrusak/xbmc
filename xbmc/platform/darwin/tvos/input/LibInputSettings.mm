@@ -30,7 +30,7 @@
   }
 }
 
-- (void)setRemoteIdleTimeout:(int)timeout
+- (void)setRemoteIdleTimeout:static_cast<int>(timeout)
 {
   m_remoteIdleTimeout = timeout;
   [g_xbmcController.inputHandler.inputRemote startRemoteTimer];

@@ -264,7 +264,7 @@ bool CGUITextureManager::HasTexture(const std::string &textureName, std::string 
 
   // Check our loaded and bundled textures - we store in bundles using \\.
   std::string bundledName = CTextureBundle::Normalize(textureName);
-  for (int i = 0; i < (int)m_vecTextures.size(); ++i)
+  for (int i = 0; i < static_cast<int>(m_vecTextures.size()); ++i)
   {
     CTextureMap *pMap = m_vecTextures[i];
     if (pMap->GetName() == textureName)
@@ -305,7 +305,7 @@ const CTextureArray& CGUITextureManager::Load(const std::string& strTextureName,
 
   if (size) // we found the texture
   {
-    for (int i = 0; i < (int)m_vecTextures.size(); ++i)
+    for (int i = 0; i < static_cast<int>(m_vecTextures.size()); ++i)
     {
       CTextureMap *pMap = m_vecTextures[i];
       if (pMap->GetName() == strTextureName)
@@ -365,8 +365,8 @@ const CTextureArray& CGUITextureManager::Load(const std::string& strTextureName,
       maxHeight = std::max(maxHeight, pTextures[iImage]->GetHeight());
     }
 
-    pMap->SetWidth((int)maxWidth);
-    pMap->SetHeight((int)maxHeight);
+    pMap->SetWidth(static_cast<int>(maxWidth));
+    pMap->SetHeight(static_cast<int>(maxHeight));
 
     delete[] pTextures;
     delete[] Delay;
@@ -423,8 +423,8 @@ const CTextureArray& CGUITextureManager::Load(const std::string& strTextureName,
       }
     }
 
-    pMap->SetWidth((int)maxWidth);
-    pMap->SetHeight((int)maxHeight);
+    pMap->SetWidth(static_cast<int>(maxWidth));
+    pMap->SetHeight(static_cast<int>(maxHeight));
 
     file.Close();
 
@@ -556,7 +556,7 @@ void CGUITextureManager::Dump() const
 {
   CLog::Log(LOGDEBUG, "{0}: total texturemaps size: {1}", __FUNCTION__, m_vecTextures.size());
 
-  for (int i = 0; i < (int)m_vecTextures.size(); ++i)
+  for (int i = 0; i < static_cast<int>(m_vecTextures.size()); ++i)
   {
     const CTextureMap* pMap = m_vecTextures[i];
     if (!pMap->IsEmpty())
@@ -589,7 +589,7 @@ void CGUITextureManager::Flush()
 unsigned int CGUITextureManager::GetMemoryUsage() const
 {
   unsigned int memUsage = 0;
-  for (int i = 0; i < (int)m_vecTextures.size(); ++i)
+  for (int i = 0; i < static_cast<int>(m_vecTextures.size()); ++i)
   {
     memUsage += m_vecTextures[i]->GetMemoryUsage();
   }

@@ -3119,7 +3119,8 @@ TextPageinfo_t* CTeletextDecoder::DecodePage(bool showl25,             // 1=deco
     {
       for (int c = 0; c < 40; c++)
       {
-        bitmask = (PageAtrb[o].bg == 0x08 ? 0x08 : 0x00) | (row == 0x08 ? 0x04 : 0x00) | (PageAtrb[o].boxwin <<1) | (int)boxed;
+        bitmask = (PageAtrb[o].bg == 0x08 ? 0x08 : 0x00) | (row == 0x08 ? 0x04 : 0x00) |
+                  (PageAtrb[o].boxwin << 1) | static_cast<int>(boxed);
         switch (bitmask)
         {
           case 0x08:
@@ -3140,7 +3141,8 @@ TextPageinfo_t* CTeletextDecoder::DecodePage(bool showl25,             // 1=deco
             PageAtrb[o].bg = TXT_ColorTransp;
             break;
         }
-        bitmask = (PageAtrb[o].fg  == 0x08 ? 0x08 : 0x00) | (row == 0x08 ? 0x04 : 0x00) | (PageAtrb[o].boxwin <<1) | (int)boxed;
+        bitmask = (PageAtrb[o].fg == 0x08 ? 0x08 : 0x00) | (row == 0x08 ? 0x04 : 0x00) |
+                  (PageAtrb[o].boxwin << 1) | static_cast<int>(boxed);
         switch (bitmask)
         {
           case 0x08:
@@ -3997,7 +3999,7 @@ UTILS::Color CTeletextDecoder::GetColorRGB(enumTeletextColor ttc)
   }
 
  /* Get colors for CLUTs 2+3 */
-  int index = (int)ttc;
+  int index = static_cast<int>(ttc);
   UTILS::Color color = (m_RenderInfo.tr0[index] << 24) |
                        (m_RenderInfo.bl0[index] << 16) |
                        (m_RenderInfo.gn0[index] << 8) |

@@ -156,9 +156,12 @@ bool CViewStateSettings::Save(TiXmlNode *settings) const
       continue;
 
     XMLUtils::SetInt(pNewNode, XML_VIEWMODE, viewState->second->m_viewMode);
-    XMLUtils::SetInt(pNewNode, XML_SORTMETHOD, (int)viewState->second->m_sortDescription.sortBy);
-    XMLUtils::SetInt(pNewNode, XML_SORTORDER, (int)viewState->second->m_sortDescription.sortOrder);
-    XMLUtils::SetInt(pNewNode, XML_SORTATTRIBUTES, (int)viewState->second->m_sortDescription.sortAttributes);
+    XMLUtils::SetInt(pNewNode, XML_SORTMETHOD,
+                     static_cast<int>(viewState->second->m_sortDescription.sortBy));
+    XMLUtils::SetInt(pNewNode, XML_SORTORDER,
+                     static_cast<int>(viewState->second->m_sortDescription.sortOrder));
+    XMLUtils::SetInt(pNewNode, XML_SORTATTRIBUTES,
+                     static_cast<int>(viewState->second->m_sortDescription.sortAttributes));
   }
 
   TiXmlNode *generalNode = settings->FirstChild(XML_GENERAL);
@@ -170,7 +173,7 @@ bool CViewStateSettings::Save(TiXmlNode *settings) const
       return false;
   }
 
-  XMLUtils::SetInt(generalNode, XML_SETTINGLEVEL, (int)m_settingLevel);
+  XMLUtils::SetInt(generalNode, XML_SETTINGLEVEL, static_cast<int>(m_settingLevel));
 
   TiXmlNode *eventLogNode = generalNode->FirstChild(XML_EVENTLOG);
   if (eventLogNode == NULL)
@@ -181,8 +184,9 @@ bool CViewStateSettings::Save(TiXmlNode *settings) const
       return false;
   }
 
-  XMLUtils::SetInt(eventLogNode, XML_EVENTLOG_LEVEL, (int)m_eventLevel);
-  XMLUtils::SetBoolean(eventLogNode, XML_EVENTLOG_LEVEL_HIGHER, (int)m_eventShowHigherLevels);
+  XMLUtils::SetInt(eventLogNode, XML_EVENTLOG_LEVEL, static_cast<int>(m_eventLevel));
+  XMLUtils::SetBoolean(eventLogNode, XML_EVENTLOG_LEVEL_HIGHER,
+                       static_cast<int>(m_eventShowHigherLevels));
 
   return true;
 }
@@ -229,7 +233,7 @@ void CViewStateSettings::CycleSettingLevel()
 
 SettingLevel CViewStateSettings::GetNextSettingLevel() const
 {
-  SettingLevel level = (SettingLevel)((int)m_settingLevel + 1);
+  SettingLevel level = (SettingLevel)(static_cast<int>(m_settingLevel) + 1);
   if (level > SettingLevel::Expert)
     level = SettingLevel::Basic;
   return level;
@@ -252,7 +256,7 @@ void CViewStateSettings::CycleEventLevel()
 
 EventLevel CViewStateSettings::GetNextEventLevel() const
 {
-  EventLevel level = (EventLevel)((int)m_eventLevel + 1);
+  EventLevel level = (EventLevel)(static_cast<int>(m_eventLevel) + 1);
   if (level > EventLevel::Error)
     level = EventLevel::Basic;
   return level;

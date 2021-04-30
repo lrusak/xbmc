@@ -226,19 +226,19 @@ void CGUIListItem::Archive(CArchive &ar)
     ar << m_sortLabel;
     ar << m_bSelected;
     ar << m_overlayIcon;
-    ar << (int)m_mapProperties.size();
+    ar << static_cast<int>(m_mapProperties.size());
     for (const auto& it : m_mapProperties)
     {
       ar << it.first;
       ar << it.second;
     }
-    ar << (int)m_art.size();
+    ar << static_cast<int>(m_art.size());
     for (const auto& i : m_art)
     {
       ar << i.first;
       ar << i.second;
     }
-    ar << (int)m_artFallbacks.size();
+    ar << static_cast<int>(m_artFallbacks.size());
     for (const auto& i : m_artFallbacks)
     {
       ar << i.first;

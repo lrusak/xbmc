@@ -166,7 +166,7 @@ JSONRPC_STATUS CPlaylistOperations::Remove(const std::string &method, ITransport
   if (playlist == PLAYLIST_PICTURE)
     return FailedToExecute;
 
-  int position = (int)parameterObject["position"].asInteger();
+  int position = static_cast<int>(parameterObject["position"].asInteger());
   if (CServiceBroker::GetPlaylistPlayer().GetCurrentPlaylist() == playlist && CServiceBroker::GetPlaylistPlayer().GetCurrentSong() == position)
     return InvalidParams;
 
@@ -214,7 +214,7 @@ JSONRPC_STATUS CPlaylistOperations::Swap(const std::string &method, ITransportLa
 
 int CPlaylistOperations::GetPlaylist(const CVariant &playlist)
 {
-  int playlistid = (int)playlist.asInteger();
+  int playlistid = static_cast<int>(playlist.asInteger());
   if (playlistid > PLAYLIST_NONE && playlistid <= PLAYLIST_PICTURE)
     return playlistid;
 

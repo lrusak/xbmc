@@ -456,8 +456,8 @@ CGUIControl *CGUIControlGroup::GetFirstFocusableControl(int id)
 void CGUIControlGroup::AddControl(CGUIControl *control, int position /* = -1*/)
 {
   if (!control) return;
-  if (position < 0 || position > (int)m_children.size())
-    position = (int)m_children.size();
+  if (position < 0 || position > static_cast<int>(m_children.size()))
+    position = static_cast<int>(m_children.size());
   m_children.insert(m_children.begin() + position, control);
   control->SetParentControl(this);
   control->SetControlStats(m_controlStats);

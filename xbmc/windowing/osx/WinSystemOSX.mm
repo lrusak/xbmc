@@ -1276,7 +1276,7 @@ void CWinSystemOSX::GetScreenResolution(int* w, int* h, double* fps, int screenI
   *h = CGDisplayModeGetHeight(mode);
   *fps = CGDisplayModeGetRefreshRate(mode);
   CGDisplayModeRelease(mode);
-  if ((int)*fps == 0)
+  if (static_cast<int>(*fps) == 0)
   {
     // NOTE: The refresh rate will be REPORTED AS 0 for many DVI and notebook displays.
     *fps = 60.0;
@@ -1390,7 +1390,7 @@ void CWinSystemOSX::FillInVideoModes()
         w = CGDisplayModeGetWidth(displayMode);
         h = CGDisplayModeGetHeight(displayMode);
         refreshrate = CGDisplayModeGetRefreshRate(displayMode);
-        if ((int)refreshrate == 0)  // LCD display?
+        if (static_cast<int>(refreshrate) == 0) // LCD display?
         {
           // NOTE: The refresh rate will be REPORTED AS 0 for many DVI and notebook displays.
           refreshrate = 60.0;

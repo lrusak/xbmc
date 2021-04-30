@@ -86,7 +86,7 @@ bool CGUIDialogGamepad::OnAction(const CAction &action)
     }
 
     std::string strHiddenInput(m_strUserInput);
-    for (int i = 0; i < (int)strHiddenInput.size(); i++)
+    for (int i = 0; i < static_cast<int>(strHiddenInput.size()); i++)
     {
       strHiddenInput[i] = m_cHideInputChar;
     }

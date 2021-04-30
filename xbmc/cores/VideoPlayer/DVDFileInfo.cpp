@@ -265,7 +265,7 @@ bool CDVDFileInfo::ExtractThumb(const CFileItem& fileItem,
               uint8_t *src[4]= { planes[0], planes[1], planes[2], 0 };
               int srcStride[] = { stride[0], stride[1], stride[2], 0 };
               uint8_t *dst[] = { pOutBuf, 0, 0, 0 };
-              int dstStride[] = { (int)nWidth*4, 0, 0, 0 };
+              int dstStride[] = {static_cast<int>(nWidth * 4), 0, 0, 0};
               int orientation = DegreeToOrientation(hint.orientation);
               sws_scale(context, src, srcStride, 0, picture.iHeight, dst, dstStride);
               sws_freeContext(context);

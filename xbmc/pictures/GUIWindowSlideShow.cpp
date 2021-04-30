@@ -104,11 +104,13 @@ void CBackgroundPicLoader::Process()
         bool bFullSize = false;
         if (texture)
         {
-          bFullSize = ((int)texture->GetWidth() < m_maxWidth) && ((int)texture->GetHeight() < m_maxHeight);
+          bFullSize = (static_cast<int>(texture->GetWidth()) < m_maxWidth) &&
+                      (static_cast<int>(texture->GetHeight()) < m_maxHeight);
           if (!bFullSize)
           {
             int iSize = texture->GetWidth() * texture->GetHeight() - MAX_PICTURE_SIZE;
-            if ((iSize + (int)texture->GetWidth() > 0) || (iSize + (int)texture->GetHeight() > 0))
+            if ((iSize + static_cast<int>(texture->GetWidth()) > 0) ||
+                (iSize + static_cast<int>(texture->GetHeight()) > 0))
               bFullSize = true;
             if (!bFullSize && texture->GetWidth() == CServiceBroker::GetRenderSystem()->GetMaxTextureSize())
               bFullSize = true;

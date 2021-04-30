@@ -95,7 +95,7 @@ TEST(TestFile, Write)
   ASSERT_NE(nullptr, file = XBMC_CREATETEMPFILE(""));
   file->Close();
   ASSERT_TRUE(file->OpenForWrite(XBMC_TEMPFILEPATH(file), true));
-  EXPECT_EQ((int)sizeof(str), file->Write(str, sizeof(str)));
+  EXPECT_EQ(static_cast<int>(sizeof(str)), file->Write(str, sizeof(str)));
   file->Flush();
   EXPECT_EQ((int64_t)sizeof(str), file->GetPosition());
   file->Close();

@@ -262,7 +262,8 @@ JSONRPC_STATUS CSettingsOperations::SetSettingValue(const std::string &method, I
     if (!value.isInteger() && !value.isUnsignedInteger())
       return InvalidParams;
 
-    result = std::static_pointer_cast<CSettingInt>(setting)->SetValue((int)value.asInteger());
+    result = std::static_pointer_cast<CSettingInt>(setting)->SetValue(
+        static_cast<int>(value.asInteger()));
     break;
 
   case SettingType::Number:

@@ -794,7 +794,8 @@ bool CAESinkALSA::InitializeHW(const ALSAConfig &inconfig, ALSAConfig &outconfig
   if (periodSize < AE_MIN_PERIODSIZE)
   {
     fragments = std::ceil((double) AE_MIN_PERIODSIZE / periodSize);
-    CLog::Log(LOGDEBUG, "Audio Driver reports too low periodSize %d - will use %d fragments", (int) periodSize, (int) fragments);
+    CLog::Log(LOGDEBUG, "Audio Driver reports too low periodSize %d - will use %d fragments",
+              static_cast<int>(periodSize), static_cast<int>(fragments));
     m_fragmented = true;
   }
 

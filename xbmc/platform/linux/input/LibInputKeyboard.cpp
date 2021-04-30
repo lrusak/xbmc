@@ -327,7 +327,7 @@ XBMCKey CLibInputKeyboard::XBMCKeyForKeysym(xkb_keysym_t sym, uint32_t scancode)
   }
   else if (sym >= XKB_KEY_F1 && sym <= XKB_KEY_F15)
   {
-    return static_cast<XBMCKey> (XBMCK_F1 + ((int)sym - XKB_KEY_F1));
+    return static_cast<XBMCKey>(XBMCK_F1 + (static_cast<int>(sym) - XKB_KEY_F1));
   }
 
   auto xkbmapping = xkbMap.find(sym);

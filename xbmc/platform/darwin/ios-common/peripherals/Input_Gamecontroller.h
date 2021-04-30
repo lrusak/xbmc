@@ -18,7 +18,7 @@ enum class GCCONTROLLER_TYPE;
 
 - (instancetype)initWithName:(CBPeripheralBusDarwinEmbeddedManager*)callbackManager;
 - (PERIPHERALS::PeripheralScanResults)GetGCDevices;
-- (GCCONTROLLER_TYPE)GetGCControllerType:(int)deviceID;
-- (int)checkOptionalButtons:(int)deviceID;
+- (GCCONTROLLER_TYPE)GetGCControllerType:static_cast<int>(deviceID);
+- static_cast<int>(checkOptionalButtons:(int)deviceID);
 
 @end

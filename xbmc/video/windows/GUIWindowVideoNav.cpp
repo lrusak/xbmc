@@ -1003,8 +1003,8 @@ bool CGUIWindowVideoNav::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
     item = m_vecItems->Get(itemNumber);
   if (CGUIDialogContextMenu::OnContextButton("video", item, button))
   {
-    if (button == CONTEXT_BUTTON_REMOVE_SOURCE && !item->IsLiveTV() 
-        &&!item->IsRSS() && !URIUtils::IsUPnP(item->GetPath()))
+    if (button == CONTEXT_BUTTON_REMOVE_SOURCE && !item->IsLiveTV() && !item->IsRSS() &&
+        !URIUtils::IsUPnP(item->GetPath()))
     {
       // if the source has been properly removed, remove the cached source list because the list has changed
       if (OnUnAssignContent(item->GetPath(), 20375, 20340))
@@ -1269,11 +1269,14 @@ bool CGUIWindowVideoNav::ApplyWatchedFilter(CFileItemList &items)
     if(item->HasVideoInfoTag() && (node == NODE_TYPE_TITLE_TVSHOWS || node == NODE_TYPE_SEASONS))
     {
       if (watchMode == WatchedModeUnwatched)
-        item->GetVideoInfoTag()->m_iEpisode = (int)item->GetProperty("unwatchedepisodes").asInteger();
+        item->GetVideoInfoTag()->m_iEpisode =
+            static_cast<int>(item->GetProperty("unwatchedepisodes").asInteger());
       if (watchMode == WatchedModeWatched)
-        item->GetVideoInfoTag()->m_iEpisode = (int)item->GetProperty("watchedepisodes").asInteger();
+        item->GetVideoInfoTag()->m_iEpisode =
+            static_cast<int>(item->GetProperty("watchedepisodes").asInteger());
       if (watchMode == WatchedModeAll)
-        item->GetVideoInfoTag()->m_iEpisode = (int)item->GetProperty("totalepisodes").asInteger();
+        item->GetVideoInfoTag()->m_iEpisode =
+            static_cast<int>(item->GetProperty("totalepisodes").asInteger());
       item->SetProperty("numepisodes", item->GetVideoInfoTag()->m_iEpisode);
       listchanged = true;
     }

@@ -241,7 +241,7 @@ TEST_F(TestArchive, SystemTimeArchive)
 TEST_F(TestArchive, CVariantArchive)
 {
   ASSERT_NE(nullptr, file);
-  CVariant CVariant_ref((int)1), CVariant_var;
+  CVariant CVariant_ref(static_cast<int>(1)), CVariant_var;
 
   CArchive arstore(file, CArchive::store);
   arstore << CVariant_ref;
@@ -337,7 +337,7 @@ TEST_F(TestArchive, MultiTypeArchive)
   std::wstring wstring_ref = L"test wstring", wstring_var;
   KODI::TIME::SystemTime SystemTime_ref = {1, 2, 3, 4, 5, 6, 7, 8};
   KODI::TIME::SystemTime SystemTime_var = {0, 0, 0, 0, 0, 0, 0, 0};
-  CVariant CVariant_ref((int)1), CVariant_var;
+  CVariant CVariant_ref(static_cast<int>(1)), CVariant_var;
   std::vector<std::string> strArray_ref, strArray_var;
   strArray_ref.emplace_back("test strArray_ref 0");
   strArray_ref.emplace_back("test strArray_ref 1");

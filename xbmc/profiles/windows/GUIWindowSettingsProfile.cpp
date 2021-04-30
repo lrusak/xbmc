@@ -58,7 +58,7 @@ void CGUIWindowSettingsProfile::OnPopupMenu(int iItem)
 {
   const std::shared_ptr<CProfileManager> profileManager = CServiceBroker::GetSettingsComponent()->GetProfileManager();
 
-  if (iItem == (int)profileManager->GetNumberOfProfiles())
+  if (iItem == static_cast<int>(profileManager->GetNumberOfProfiles()))
     return;
 
   // popup the context menu

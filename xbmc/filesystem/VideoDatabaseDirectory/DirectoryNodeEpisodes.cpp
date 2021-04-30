@@ -28,7 +28,7 @@ bool CDirectoryNodeEpisodes::GetContent(CFileItemList& items) const
   CQueryParams params;
   CollectQueryParams(params);
 
-  int season = (int)params.GetSeason();
+  int season = static_cast<int>(params.GetSeason());
   if (season == -2)
     season = -1;
 

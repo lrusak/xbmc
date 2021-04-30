@@ -192,7 +192,7 @@ static bool GetIntegerOptions(const SettingConstPtr& setting,
     std::vector<CVariant> list =
         CSettingUtils::GetList(std::static_pointer_cast<const CSettingList>(setting));
     for (const auto& itValue : list)
-      selectedOptions.insert((int)itValue.asInteger());
+      selectedOptions.insert(static_cast<int>(itValue.asInteger()));
   }
   else
     return false;
@@ -709,7 +709,7 @@ bool CGUIControlListSetting::OnClick()
       if (values.size() > 1)
         return false;
       ret = std::static_pointer_cast<CSettingInt>(m_pSetting)
-                ->SetValue((int)values.at(0).asInteger());
+                ->SetValue(static_cast<int>(values.at(0).asInteger()));
       break;
 
     case SettingType::String:

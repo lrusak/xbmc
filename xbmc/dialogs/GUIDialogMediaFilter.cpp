@@ -704,7 +704,7 @@ int CGUIDialogMediaFilter::GetItems(const Filter &filter, std::vector<std::strin
   if (countOnly)
   {
     if (size == 1 && selectItems.Get(0)->HasProperty("total"))
-      return (int)selectItems.Get(0)->GetProperty("total").asInteger();
+      return static_cast<int>(selectItems.Get(0)->GetProperty("total").asInteger());
     return 0;
   }
 

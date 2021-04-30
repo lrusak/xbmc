@@ -326,7 +326,9 @@ bool CAESinkAUDIOTRACK::Initialize(AEAudioFormat &format, std::string &device)
   {
      // prefer best match or alternatively something that divides nicely and
      // is not too far away
-     uint32_t d = std::abs((int)m_format.m_sampleRate - (int)s) + 8 * (s > m_format.m_sampleRate ? (s % m_format.m_sampleRate) : (m_format.m_sampleRate % s));
+     uint32_t d = std::abs(static_cast<int>(m_format.m_sampleRate) - static_cast<int>(s)) +
+                  8 * (s > m_format.m_sampleRate ? (s % m_format.m_sampleRate)
+                                                 : (m_format.m_sampleRate % s));
      if (d < distance)
      {
        m_sink_sampleRate = s;

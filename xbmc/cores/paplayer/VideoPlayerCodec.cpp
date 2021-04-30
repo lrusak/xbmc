@@ -318,7 +318,7 @@ bool VideoPlayerCodec::Seek(int64_t iSeekTime)
   // skip mpeg audio frames at playback start
   bool seekback = true;
 
-  bool ret = m_pDemuxer->SeekTime((int)iSeekTime, seekback);
+  bool ret = m_pDemuxer->SeekTime(static_cast<int>(iSeekTime), seekback);
   m_pAudioCodec->Reset();
 
   m_nDecodedLen = 0;

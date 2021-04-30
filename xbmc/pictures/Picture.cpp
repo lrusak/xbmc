@@ -340,9 +340,9 @@ bool CPicture::ScaleImage(uint8_t *in_pixels, unsigned int in_width, unsigned in
                                                          CPictureScalingAlgorithm::ToSwscale(scalingAlgorithm), NULL, NULL, NULL);
 
   uint8_t *src[] = { in_pixels, 0, 0, 0 };
-  int     srcStride[] = { (int)in_pitch, 0, 0, 0 };
+  int srcStride[] = {static_cast<int>(in_pitch), 0, 0, 0};
   uint8_t *dst[] = { out_pixels , 0, 0, 0 };
-  int     dstStride[] = { (int)out_pitch, 0, 0, 0 };
+  int dstStride[] = {static_cast<int>(out_pitch), 0, 0, 0};
 
   if (context)
   {

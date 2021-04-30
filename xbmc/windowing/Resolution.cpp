@@ -326,7 +326,10 @@ bool CResolutionUtils::FindResolutionFromOverride(float fps, int width, bool is3
   RESOLUTION_INFO curr = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo(resolution);
 
   //try to find a refreshrate from the override
-  for (int i = 0; i < (int)CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_videoAdjustRefreshOverrides.size(); i++)
+  for (int i = 0; i < static_cast<int>(CServiceBroker::GetSettingsComponent()
+                                           ->GetAdvancedSettings()
+                                           ->m_videoAdjustRefreshOverrides.size());
+       i++)
   {
     RefreshOverride& override = CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_videoAdjustRefreshOverrides[i];
 
@@ -337,7 +340,8 @@ bool CResolutionUtils::FindResolutionFromOverride(float fps, int width, bool is3
     if (!fallback && (fps < override.fpsmin || fps > override.fpsmax))
       continue;
 
-    for (size_t j = (int)RES_DESKTOP; j < CDisplaySettings::GetInstance().ResolutionInfoSize(); j++)
+    for (size_t j = static_cast<int>(RES_DESKTOP);
+         j < CDisplaySettings::GetInstance().ResolutionInfoSize(); j++)
     {
       RESOLUTION_INFO info = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo((RESOLUTION)j);
 

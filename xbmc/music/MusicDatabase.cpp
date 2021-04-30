@@ -1120,7 +1120,7 @@ int CMusicDatabase::AddSong(const int idSong,
                              strComment.c_str(), strMood.c_str(), replayGain.Get().c_str());
       m_pDS->exec(strSQL);
       if (idSong <= 0)
-        idNew = (int)m_pDS->lastinsertid();
+        idNew = static_cast<int>(m_pDS->lastinsertid());
       else
         idNew = idSong;
     }
@@ -1428,7 +1428,7 @@ int CMusicDatabase::AddAlbum(const std::string& strAlbum,
       strSQL += ")";
       m_pDS->exec(strSQL);
 
-      return (int)m_pDS->lastinsertid();
+      return static_cast<int>(m_pDS->lastinsertid());
     }
     else
     {
@@ -1704,7 +1704,7 @@ int CMusicDatabase::AddGenre(std::string& strGenre)
                           strGenre.c_str());
       m_pDS->exec(strSQL);
 
-      int idGenre = (int)m_pDS->lastinsertid();
+      int idGenre = static_cast<int>(m_pDS->lastinsertid());
       m_genreCache.insert(std::pair<std::string, int>(strGenre, idGenre));
       return idGenre;
     }
@@ -1909,7 +1909,7 @@ int CMusicDatabase::AddArtist(const std::string& strArtist,
                           strArtist.c_str(), strMusicBrainzArtistID.c_str(), bScrapedMBID);
 
     m_pDS->exec(strSQL);
-    int idArtist = (int)m_pDS->lastinsertid();
+    int idArtist = static_cast<int>(m_pDS->lastinsertid());
     return idArtist;
   }
   catch (...)
@@ -2910,7 +2910,7 @@ int CMusicDatabase::AddPath(const std::string& strPath1)
                           strPath.c_str());
       m_pDS->exec(strSQL);
 
-      int idPath = (int)m_pDS->lastinsertid();
+      int idPath = static_cast<int>(m_pDS->lastinsertid());
       m_pathCache.insert(std::pair<std::string, int>(strPath, idPath));
       return idPath;
     }
@@ -3071,7 +3071,7 @@ void CMusicDatabase::GetFileItemFromArtistCredits(VECARTISTCREDITS& artistCredit
   // When "missing tag" artist, it is the only artist when present.
   if (artistCredits.begin()->GetArtistId() == BLANKARTIST_ID)
   {
-    artistidObj.push_back((int)BLANKARTIST_ID);
+    artistidObj.push_back(static_cast<int>(BLANKARTIST_ID));
     songartists.push_back(StringUtils::Empty);
   }
   else
@@ -7551,7 +7551,7 @@ static const translateJSONField JSONtoDBSong[] = {
   { "displayconductor",          "string", false, "Role_Conductor",         "song_artist.idRole AS Role_Conductor" },
   { "displayorchestra",          "string", false, "Role_Orchestra",         "song_artist.idRole AS Role_Orchestra" },
   { "displaylyricist",           "string", false, "Role_Lyricist",          "song_artist.idRole AS Role_Lyricist" },
- 
+
   // Scalar subquery fields
   { "year",                     "integer", true,  "iYear",                  "CAST(<datefield> AS INTEGER) AS iYear" }, //From strReleaseDate or strOrigReleaseDate
   { "track",                    "integer", true,  "track",                  "(iTrack & 0xffff) AS track" },
@@ -8654,7 +8654,7 @@ void CMusicDatabase::UpdateTables(int version)
                             "FROM artist WHERE artist.idArtist = %i",
                             BLANKARTIST_ID);
         m_pDS->exec(strSQL);
-        int idArtist = (int)m_pDS->lastinsertid();
+        int idArtist = static_cast<int>(m_pDS->lastinsertid());
         //No triggers, so can delete artist without effecting other tables.
         strSQL = PrepareSQL("DELETE FROM artist WHERE artist.idArtist = %i", BLANKARTIST_ID);
         m_pDS->exec(strSQL);

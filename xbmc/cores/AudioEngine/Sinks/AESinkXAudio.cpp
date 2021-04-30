@@ -304,7 +304,8 @@ unsigned int CAESinkXAudio::AddPackets(uint8_t **data, unsigned int frames, unsi
 
   if (m_avgTimeWaiting < 3.0)
   {
-    CLog::LogF(LOGDEBUG, "Possible AQ Loss: Avg. Time Waiting for Audio Driver callback : %dmsec", (int)m_avgTimeWaiting);
+    CLog::LogF(LOGDEBUG, "Possible AQ Loss: Avg. Time Waiting for Audio Driver callback : %dmsec",
+               static_cast<int>(m_avgTimeWaiting));
   }
 #endif
 
@@ -685,7 +686,7 @@ bool CAESinkXAudio::InitializeInternal(std::string deviceId, AEAudioFormat &form
   unsigned int noOfCh;
 
   /* The requested format is not supported by the device.  Find something that works */
-  for (int layout = -1; layout <= (int)ARRAYSIZE(layoutsList); layout++)
+  for (int layout = -1; layout <= static_cast<int>(ARRAYSIZE(layoutsList)); layout++)
   {
     // if requested layout is not supported, try standard layouts with at least
     // the number of channels as requested
@@ -729,7 +730,10 @@ bool CAESinkXAudio::InitializeInternal(std::string deviceId, AEAudioFormat &form
             if ((WASAPISampleRates[i] == format.m_sampleRate) && (testFormats[j].subFormatType <= format.m_dataFormat))
               goto initialize;
             /* If this rate is closer to the source then the previous one, save it */
-            else if (closestMatch < 0 || abs((int)WASAPISampleRates[i] - (int)format.m_sampleRate) < abs((int)WASAPISampleRates[closestMatch] - (int)format.m_sampleRate))
+            else if (closestMatch < 0 || abs(static_cast<int>(WASAPISampleRates[i]) -
+                                             static_cast<int>(format.m_sampleRate)) <
+                                             abs(static_cast<int>(WASAPISampleRates[closestMatch]) -
+                                                 static_cast<int>(format.m_sampleRate)))
               closestMatch = i;
           }
         }

@@ -1375,7 +1375,7 @@ void CAdvancedSettings::AddSettingsFile(const std::string &filename)
 float CAdvancedSettings::GetLatencyTweak(float refreshrate)
 {
   float delay = m_videoDefaultLatency;
-  for (int i = 0; i < (int) m_videoRefreshLatency.size(); i++)
+  for (int i = 0; i < static_cast<int>(m_videoRefreshLatency.size()); i++)
   {
     RefreshVideoLatency& videolatency = m_videoRefreshLatency[i];
     if (refreshrate >= videolatency.refreshmin && refreshrate <= videolatency.refreshmax)

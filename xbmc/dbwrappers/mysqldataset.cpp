@@ -520,13 +520,13 @@ long MysqlDatabase::nextid(const char* sname) {
     else
     {
       MYSQL_ROW row = mysql_fetch_row(res);
-      //id = (int)row[0];
+      //id = static_cast<int>(row[0]);
       id = -1;
       unsigned long *lengths;
       lengths = mysql_fetch_lengths(res);
-      CLog::Log(LOGINFO, "Next id is [%.*s] ", (int)lengths[0], row[0]);
-      snprintf(sqlcmd, sizeof(sqlcmd), "UPDATE %s SET nextid=%d WHERE seq_name = '%s'", 
-               seq_table, id, sname);
+      CLog::Log(LOGINFO, "Next id is [%.*s] ", static_cast<int>(lengths[0]), row[0]);
+      snprintf(sqlcmd, sizeof(sqlcmd), "UPDATE %s SET nextid=%d WHERE seq_name = '%s'", seq_table,
+               id, sname);
       mysql_free_result(res);
       if ((last_err = query_with_reconnect(sqlcmd)) != 0) return DB_UNEXPECTED_RESULT;
       return id;
@@ -621,7 +621,7 @@ std::string MysqlDatabase::vprepare(const char *format, va_list args)
     pos += 6;
   }
 
-  // Replace some dataypes in CAST statements: 
+  // Replace some dataypes in CAST statements:
   // before: CAST(iFoo AS TEXT), CAST(foo AS INTEGER)
   // after:  CAST(iFoo AS CHAR), CAST(foo AS SIGNED INTEGER)
   pos = strResult.find("CAST(");
@@ -762,7 +762,7 @@ char MysqlDatabase::et_getdigit(double *val, int *cnt) {
   int digit;
   double d;
   if( (*cnt)++ >= 16 ) return '0';
-  digit = (int)*val;
+  digit = static_cast<int>(*val);
   d = digit;
   digit += '0';
   *val = (*val - d)*10.0;
@@ -774,7 +774,8 @@ char MysqlDatabase::et_getdigit(double *val, int *cnt) {
 */
 void MysqlDatabase::appendSpace(StrAccum *pAccum, int N) {
   static const char zSpaces[] = "                             ";
-  while( N>=(int)sizeof(zSpaces)-1 ) {
+  while (N >= static_cast<int>(sizeof(zSpaces) - 1))
+  {
     mysqlStrAccumAppend(pAccum, zSpaces, sizeof(zSpaces)-1);
     N -= sizeof(zSpaces)-1;
   }

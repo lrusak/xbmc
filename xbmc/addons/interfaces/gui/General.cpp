@@ -174,7 +174,7 @@ int Interface_GUIGeneral::get_video_resolution(KODI_HANDLE kodiBase)
     return -1;
   }
 
-  return (int)CServiceBroker::GetWinSystem()->GetGfxContext().GetVideoResolution();
+  return static_cast<int>(CServiceBroker::GetWinSystem()->GetGfxContext().GetVideoResolution());
 }
 //@}
 

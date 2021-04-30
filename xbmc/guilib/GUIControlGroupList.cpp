@@ -57,9 +57,11 @@ void CGUIControlGroupList::Process(unsigned int currentTime, CDirtyRegionList &d
 
   if (m_pageControl && (m_lastScrollerValue != m_scroller.GetValue() || sizeChanged))
   {
-    CGUIMessage message(GUI_MSG_LABEL_RESET, GetParentID(), m_pageControl, (int)Size(), (int)m_totalSize);
+    CGUIMessage message(GUI_MSG_LABEL_RESET, GetParentID(), m_pageControl, static_cast<int>(Size()),
+                        static_cast<int>(m_totalSize));
     SendWindowMessage(message);
-    CGUIMessage message2(GUI_MSG_ITEM_SELECT, GetParentID(), m_pageControl, (int)m_scroller.GetValue());
+    CGUIMessage message2(GUI_MSG_ITEM_SELECT, GetParentID(), m_pageControl,
+                         static_cast<int>(m_scroller.GetValue()));
     SendWindowMessage(message2);
     m_lastScrollerValue = static_cast<int>(m_scroller.GetValue());
   }
@@ -231,8 +233,8 @@ void CGUIControlGroupList::AddControl(CGUIControl *control, int position /*= -1*
 {
   // NOTE: We override control navigation here, but we don't override the <onleft> etc. builtins
   //       if specified.
-  if (position < 0 || position > (int)m_children.size()) // add at the end
-    position = (int)m_children.size();
+  if (position < 0 || position > static_cast<int>(m_children.size())) // add at the end
+    position = static_cast<int>(m_children.size());
 
   if (control)
   { // set the navigation of items so that they form a list
@@ -253,7 +255,7 @@ void CGUIControlGroupList::AddControl(CGUIControl *control, int position /*= -1*
           beforeAction = CGUIAction(m_children[m_children.size() - 1]->GetID());
         afterAction = CGUIAction(after->GetID());
       }
-      else if (position == (int)m_children.size())
+      else if (position == static_cast<int>(m_children.size()))
       { // inserting at the end
         before = m_children[m_children.size() - 1];
         if (!beforeAction.HasActionsMeetingCondition() || beforeAction.GetNavigation() == GetID())   // we're wrapping around top->bottom, so we have to update the first item

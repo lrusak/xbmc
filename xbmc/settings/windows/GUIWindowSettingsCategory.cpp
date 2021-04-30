@@ -126,10 +126,12 @@ bool CGUIWindowSettingsCategory::OnAction(const CAction &action)
 
       // try to keep the current position
       std::string oldCategory;
-      if (m_iCategory >= 0 && m_iCategory < (int)m_categories.size())
+      if (m_iCategory >= 0 && m_iCategory < static_cast<int>(m_categories.size()))
         oldCategory = m_categories[m_iCategory]->GetId();
 
-      SET_CONTROL_LABEL(CONTROL_BTN_LEVELS, 10036 + (int)CViewStateSettings::GetInstance().GetSettingLevel());
+      SET_CONTROL_LABEL(CONTROL_BTN_LEVELS,
+                        10036 +
+                            static_cast<int>(CViewStateSettings::GetInstance().GetSettingLevel()));
       // only re-create the categories, the settings will be created later
       SetupControls(false);
 
@@ -137,7 +139,7 @@ bool CGUIWindowSettingsCategory::OnAction(const CAction &action)
       // try to find the category that was previously selected
       if (!oldCategory.empty())
       {
-        for (int i = 0; i < (int)m_categories.size(); i++)
+        for (int i = 0; i < static_cast<int>(m_categories.size()); i++)
         {
           if (m_categories[i]->GetId() == oldCategory)
           {
@@ -166,13 +168,14 @@ bool CGUIWindowSettingsCategory::OnBack(int actionID)
 
 void CGUIWindowSettingsCategory::OnWindowLoaded()
 {
-  SET_CONTROL_LABEL(CONTROL_BTN_LEVELS, 10036 + (int)CViewStateSettings::GetInstance().GetSettingLevel());
+  SET_CONTROL_LABEL(CONTROL_BTN_LEVELS,
+                    10036 + static_cast<int>(CViewStateSettings::GetInstance().GetSettingLevel()));
   CGUIDialogSettingsManagerBase::OnWindowLoaded();
 }
 
 int CGUIWindowSettingsCategory::GetSettingLevel() const
 {
-  return (int)CViewStateSettings::GetInstance().GetSettingLevel();
+  return static_cast<int>(CViewStateSettings::GetInstance().GetSettingLevel());
 }
 
 SettingSectionPtr CGUIWindowSettingsCategory::GetSection()

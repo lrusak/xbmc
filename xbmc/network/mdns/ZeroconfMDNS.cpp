@@ -92,7 +92,8 @@ bool CZeroconfMDNS::doPublishService(const std::string& fcr_identifier,
     err = DNSServiceCreateConnection(&m_service);
     if (err != kDNSServiceErr_NoError)
     {
-      CLog::Log(LOGERROR, "ZeroconfMDNS: DNSServiceCreateConnection failed with error = %ld", (int) err);
+      CLog::Log(LOGERROR, "ZeroconfMDNS: DNSServiceCreateConnection failed with error = %ld",
+                static_cast<int>(err));
       return false;
     }
 #ifdef TARGET_WINDOWS_STORE
@@ -100,7 +101,8 @@ bool CZeroconfMDNS::doPublishService(const std::string& fcr_identifier,
 #else
     err = WSAAsyncSelect( (SOCKET) DNSServiceRefSockFD( m_service ), g_hWnd, BONJOUR_EVENT, FD_READ | FD_CLOSE );
     if (err != kDNSServiceErr_NoError)
-      CLog::Log(LOGERROR, "ZeroconfMDNS: WSAAsyncSelect failed with error = %ld", (int) err);
+      CLog::Log(LOGERROR, "ZeroconfMDNS: WSAAsyncSelect failed with error = %ld",
+                static_cast<int>(err));
 #endif
   }
 #endif //!HAS_MDNS_EMBEDDED
@@ -130,7 +132,8 @@ bool CZeroconfMDNS::doPublishService(const std::string& fcr_identifier,
     if (netService)
       DNSServiceRefDeallocate(netService);
 
-    CLog::Log(LOGERROR, "ZeroconfMDNS: DNSServiceRegister returned (error = %ld)", (int) err);
+    CLog::Log(LOGERROR, "ZeroconfMDNS: DNSServiceRegister returned (error = %ld)",
+              static_cast<int>(err));
   }
   else
   {
@@ -234,6 +237,7 @@ void CZeroconfMDNS::ProcessResults()
   CSingleLock lock(m_data_guard);
   DNSServiceErrorType err = DNSServiceProcessResult(m_service);
   if (err != kDNSServiceErr_NoError)
-    CLog::Log(LOGERROR, "ZeroconfMDNS: DNSServiceProcessResult returned (error = %ld)", (int) err);
+    CLog::Log(LOGERROR, "ZeroconfMDNS: DNSServiceProcessResult returned (error = %ld)",
+              static_cast<int>(err));
 }
 

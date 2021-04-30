@@ -339,7 +339,7 @@ bool CTextureDatabase::AddCachedTexture(const std::string &url, const CTextureDe
     std::string date = details.updateable ? CDateTime::GetCurrentDateTime().GetAsDBDateTime() : "";
     sql = PrepareSQL("INSERT INTO texture (id, url, cachedurl, imagehash, lasthashcheck) VALUES(NULL, '%s', '%s', '%s', '%s')", url.c_str(), details.file.c_str(), details.hash.c_str(), date.c_str());
     m_pDS->exec(sql);
-    int textureID = (int)m_pDS->lastinsertid();
+    int textureID = static_cast<int>(m_pDS->lastinsertid());
 
     // set the size information
     sql = PrepareSQL("INSERT INTO sizes (idtexture, size, usecount, lastusetime, width, height) VALUES(%u, 1, 1, CURRENT_TIMESTAMP, %u, %u)", textureID, details.width, details.height);

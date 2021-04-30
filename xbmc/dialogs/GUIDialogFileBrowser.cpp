@@ -146,7 +146,7 @@ bool CGUIDialogFileBrowser::OnMessage(CGUIMessage& message)
         bool bFool;
         int iSource = CUtil::GetMatchingSource(m_selectedPath,m_shares,bFool);
         bFool = true;
-        if (iSource > -1 && iSource < (int)m_shares.size())
+        if (iSource > -1 && iSource < static_cast<int>(m_shares.size()))
         {
           if (URIUtils::PathEquals(m_shares[iSource].strPath, m_selectedPath))
             bFool = false;

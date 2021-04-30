@@ -388,31 +388,31 @@ int field_value::get_asInt() const {
       return atoi(str_value.c_str());
     }
     case ft_Boolean:{
-      return (int)bool_value;
+      return static_cast<int>(bool_value);
     }
     case ft_Char: {
-      return (int)char_value;
+      return static_cast<int>(char_value);
     }
     case ft_Short: {
-       return (int)short_value;
+      return static_cast<int>(short_value);
     }
     case ft_UShort: {
-       return (int)ushort_value;
+      return static_cast<int>(ushort_value);
     }
     case ft_Int: {
       return int_value;
     }
     case ft_UInt: {
-      return (int)uint_value;
+      return static_cast<int>(uint_value);
     }
     case ft_Float: {
-      return (int)float_value;
+      return static_cast<int>(float_value);
     }
     case ft_Double: {
-      return (int)double_value;
+      return static_cast<int>(double_value);
     }
     case ft_Int64: {
-      return (int)int64_value;
+      return static_cast<int>(int64_value);
     }
     default:
       return 0;

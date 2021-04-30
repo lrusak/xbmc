@@ -405,7 +405,7 @@ const field_value Dataset::get_field_value(int index) {
 
 const sql_record* Dataset::get_sql_record()
 {
-  if (result.records.empty() || frecno >= (int)result.records.size())
+  if (result.records.empty() || frecno >= static_cast<int>(result.records.size()))
     return NULL;
 
   return result.records[frecno];

@@ -1136,7 +1136,7 @@ public:
   ///       for (unsigned int iChannelPtr = 0; iChannelPtr < myGroup.members.size(); iChannelPtr++)
   ///       {
   ///         int iId = myGroup.members.at(iChannelPtr) - 1;
-  ///         if (iId < 0 || iId > (int)m_channels.size() - 1)
+  ///         if (iId < 0 || iId > static_cast<int>(m_channels.size()) - 1)
   ///           continue;
   ///
   ///         PVRDemoChannel &channel = m_channels.at(iId);

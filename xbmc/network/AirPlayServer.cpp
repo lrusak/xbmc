@@ -725,7 +725,7 @@ void CAirPlayServer::backupVolume()
   CSingleLock lock(ServerInstanceLock);
 
   if (ServerInstance && ServerInstance->m_origVolume == -1)
-    ServerInstance->m_origVolume = (int)g_application.GetVolumePercent();
+    ServerInstance->m_origVolume = static_cast<int>(g_application.GetVolumePercent());
 }
 
 void CAirPlayServer::restoreVolume()

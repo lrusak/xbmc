@@ -242,7 +242,8 @@ bool CLogindUPowerSyscall::PumpPowerEvents(IPowerEventsCallback *callback)
         dbus_bool_t arg;
         // the boolean argument defines whether we are going to sleep (true) or just woke up (false)
         dbus_message_get_args(msg.get(), NULL, DBUS_TYPE_BOOLEAN, &arg, DBUS_TYPE_INVALID);
-        CLog::Log(LOGDEBUG, "LogindUPowerSyscall: Received PrepareForSleep with arg %i", (int)arg);
+        CLog::Log(LOGDEBUG, "LogindUPowerSyscall: Received PrepareForSleep with arg %i",
+                  static_cast<int>(arg));
         if (arg)
         {
           callback->OnSleep();

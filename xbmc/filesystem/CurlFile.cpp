@@ -1817,7 +1817,8 @@ int8_t CCurlFile::CReadState::FillBuffer(unsigned int want)
           else
           {
             unsigned int time_left = endTime.MillisLeft();
-            struct timeval wait = { (int)time_left / 1000, ((int)time_left % 1000) * 1000 };
+            struct timeval wait = {static_cast<int>(time_left) / 1000,
+                                   (static_cast<int>(time_left) % 1000) * 1000};
             rc = select(maxfd + 1, &fdread, &fdwrite, &fdexcep, &wait);
           }
 #ifdef TARGET_WINDOWS

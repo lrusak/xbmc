@@ -555,7 +555,7 @@ namespace XBMCAddon
 #ifdef DOXYGEN_SHOULD_USE_THIS
       ///
       /// \ingroup python_xbmcgui_window
-      /// @brief \python_func{ getFocusId(int) }
+      /// @brief \python_func{ getFocusIdstatic_cast<int>( })
       /// Returns the id of the control which is focused.
       ///
       /// @return                        Focused control id

@@ -221,7 +221,7 @@ void CPlayListM3U::Save(const std::string& strFileName) const
   if (file.Write(strLine.c_str(), strLine.size()) != static_cast<ssize_t>(strLine.size()))
     return; // error
 
-  for (int i = 0; i < (int)m_vecItems.size(); ++i)
+  for (int i = 0; i < static_cast<int>(m_vecItems.size()); ++i)
   {
     CFileItemPtr item = m_vecItems[i];
     std::string strDescription=item->GetLabel();

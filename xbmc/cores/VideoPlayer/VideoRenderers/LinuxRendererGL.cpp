@@ -734,7 +734,10 @@ void CLinuxRendererGL::UpdateVideoFilter()
 
   if (!Supports(m_scalingMethod))
   {
-    CLog::Log(LOGWARNING, "CLinuxRendererGL::UpdateVideoFilter - chosen scaling method %d, is not supported by renderer", (int)m_scalingMethod);
+    CLog::Log(LOGWARNING,
+              "CLinuxRendererGL::UpdateVideoFilter - chosen scaling method %d, is not supported by "
+              "renderer",
+              static_cast<int>(m_scalingMethod));
     m_scalingMethod = VS_SCALINGMETHOD_LINEAR;
   }
 
@@ -750,7 +753,8 @@ void CLinuxRendererGL::UpdateVideoFilter()
   if (m_scalingMethod == VS_SCALINGMETHOD_AUTO)
   {
     bool scaleSD = m_sourceHeight < 720 && m_sourceWidth < 1280;
-    bool scaleUp = (int)m_sourceHeight < m_viewRect.Height() && (int)m_sourceWidth < m_viewRect.Width();
+    bool scaleUp = static_cast<int>(m_sourceHeight) < m_viewRect.Height() &&
+                   static_cast<int>(m_sourceWidth) < m_viewRect.Width();
     bool scaleFps = m_fps < CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_videoAutoScaleMaxFps + 0.01f;
 
     if (Supports(VS_SCALINGMETHOD_LANCZOS3_FAST) && scaleSD && scaleUp && scaleFps)
@@ -1517,8 +1521,8 @@ void CLinuxRendererGL::RenderFromFBO()
 
 void CLinuxRendererGL::RenderProgressiveWeave(int index, int field)
 {
-  bool scale = (int)m_sourceHeight != m_destRect.Height() ||
-               (int)m_sourceWidth != m_destRect.Width();
+  bool scale = static_cast<int>(m_sourceHeight) != m_destRect.Height() ||
+               static_cast<int>(m_sourceWidth) != m_destRect.Width();
 
   if (m_fbo.fbo.IsSupported() && (scale || m_renderQuality == RQ_MULTIPASS))
   {

@@ -440,7 +440,7 @@ bool CFFmpegImage::DecodeFrame(AVFrame* frame, unsigned int width, unsigned int 
   if (!aligned)
     CLog::Log(LOGDEBUG, "Alignment of external buffer is not suitable for ffmpeg intrinsics - please fix your malloc");
 
-  if (aligned && size == pixelsSize && (int)pitch == pictureRGB->linesize[0])
+  if (aligned && size == pixelsSize && static_cast<int>(pitch) == pictureRGB->linesize[0])
   {
     // We can use the pixels buffer directly
     pictureRGB->data[0] = pixels;
@@ -500,7 +500,7 @@ bool CFFmpegImage::DecodeFrame(AVFrame* frame, unsigned int width, unsigned int 
 
   if (needsCopy)
   {
-    int minPitch = std::min((int)pitch, pictureRGB->linesize[0]);
+    int minPitch = std::min(static_cast<int>(pitch), pictureRGB->linesize[0]);
     if (minPitch < 0)
     {
       CLog::LogF(LOGERROR, "negative pitch or height");
@@ -634,7 +634,7 @@ bool CFFmpegImage::CreateThumbnailFromSurface(unsigned char* bufferin, unsigned 
   }
 
   uint8_t* src[] = { bufferin, NULL, NULL, NULL };
-  int srcStride[] = { (int) pitch, 0, 0, 0};
+  int srcStride[] = {static_cast<int>(pitch), 0, 0, 0};
 
   //input size == output size which means only pix_fmt conversion
   tdm.sws = sws_getContext(width, height, AV_PIX_FMT_RGB32, width, height, jpg_output ? AV_PIX_FMT_YUV420P : AV_PIX_FMT_RGBA, 0, 0, 0, 0);

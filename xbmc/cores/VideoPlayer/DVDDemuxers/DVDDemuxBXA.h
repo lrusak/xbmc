@@ -50,7 +50,7 @@ public:
   void Flush() override;
   DemuxPacket* Read() override;
   bool SeekTime(double time, bool backwards = false, double* startpts = NULL) override { return false; }
-  int GetStreamLength() override { return (int)m_header.durationMs; }
+  int GetStreamLength() override { return static_cast<int>(m_header.durationMs); }
   CDemuxStream* GetStream(int iStreamId) const override;
   std::vector<CDemuxStream*> GetStreams() const override;
   int GetNrOfStreams() const override;

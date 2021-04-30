@@ -73,7 +73,7 @@ TEST(TestUrlOptions, AddOption)
     CVariant variantValue;
     EXPECT_TRUE(urlOptions.GetOption(keyInt, variantValue));
     EXPECT_TRUE(variantValue.isInteger());
-    EXPECT_EQ(valueInt, (int)variantValue.asInteger());
+    EXPECT_EQ(valueInt, static_cast<int>(variantValue.asInteger()));
   }
 
   urlOptions.AddOption(keyFloat, valueFloat);

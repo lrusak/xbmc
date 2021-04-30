@@ -30,7 +30,7 @@
 
 //! @Todo: factor out siriremote customcontroller to a setting?
 // allow to select multiple customcontrollers via setting list?
-- (void)sendButtonPressed:(int)buttonId
+- (void)sendButtonPressed:static_cast<int>(buttonId)
 {
   int actionID;
   std::string actionName;

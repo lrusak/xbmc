@@ -205,7 +205,7 @@ bool CProfileManager::Load()
   SetCurrentProfileId(m_lastUsedProfile);
 
   // check the validity of the auto login profile index
-  if (m_autoLoginProfile < -1 || m_autoLoginProfile >= (int)m_profiles.size())
+  if (m_autoLoginProfile < -1 || m_autoLoginProfile >= static_cast<int>(m_profiles.size()))
     m_autoLoginProfile = -1;
   else if (m_autoLoginProfile >= 0)
     SetCurrentProfileId(m_autoLoginProfile);
@@ -484,7 +484,7 @@ bool CProfileManager::DeleteProfile(unsigned int index)
     return false;
 
   // fall back to master profile if necessary
-  if ((int)index == m_autoLoginProfile)
+  if (static_cast<int>(index) == m_autoLoginProfile)
     m_autoLoginProfile = 0;
 
   // delete profile

@@ -73,7 +73,7 @@ ssize_t CPipeFile::Read(void* lpBuf, size_t uiBufSize)
   if (uiBufSize > SSIZE_MAX)
     uiBufSize = SSIZE_MAX;
 
-  return m_pipe->Read((char *)lpBuf,(int)uiBufSize);
+  return m_pipe->Read((char*)lpBuf, static_cast<int>(uiBufSize));
 }
 
 ssize_t CPipeFile::Write(const void* lpBuf, size_t uiBufSize)

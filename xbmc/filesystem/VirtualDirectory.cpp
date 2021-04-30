@@ -116,7 +116,7 @@ bool CVirtualDirectory::IsSource(const std::string& strPath, VECSOURCES *sources
     shares = *sources;
   else
     GetSources(shares);
-  for (int i = 0; i < (int)shares.size(); ++i)
+  for (int i = 0; i < static_cast<int>(shares.size()); ++i)
   {
     const CMediaSource& share = shares.at(i);
     std::string strShare = share.strPath;

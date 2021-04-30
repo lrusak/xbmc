@@ -644,8 +644,11 @@ int CWinSystemX11::XErrorHandler(Display* dpy, XErrorEvent* error)
 {
   char buf[1024];
   XGetErrorText(error->display, error->error_code, buf, sizeof(buf));
-  CLog::Log(LOGERROR, "CWinSystemX11::XErrorHandler: %s, type:%i, serial:%lu, error_code:%i, request_code:%i minor_code:%i",
-            buf, error->type, error->serial, (int)error->error_code, (int)error->request_code, (int)error->minor_code);
+  CLog::Log(LOGERROR,
+            "CWinSystemX11::XErrorHandler: %s, type:%i, serial:%lu, error_code:%i, request_code:%i "
+            "minor_code:%i",
+            buf, error->type, error->serial, static_cast<int>(error->error_code),
+            static_cast<int>(error->request_code), static_cast<int>(error->minor_code));
 
   return 0;
 }

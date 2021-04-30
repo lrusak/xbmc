@@ -1172,7 +1172,7 @@ int CUtil::GetMatchingSource(const std::string& strPath1, VECSOURCES& VECSOURCES
   int iIndex = -1;
 
   // we first test the NAME of a source
-  for (int i = 0; i < (int)VECSOURCES.size(); ++i)
+  for (int i = 0; i < static_cast<int>(VECSOURCES.size()); ++i)
   {
     const CMediaSource &share = VECSOURCES[i];
     std::string strName = share.strName;
@@ -1211,7 +1211,7 @@ int CUtil::GetMatchingSource(const std::string& strPath1, VECSOURCES& VECSOURCES
 
   size_t iLength = 0;
   size_t iLenPath = strDest.size();
-  for (int i = 0; i < (int)VECSOURCES.size(); ++i)
+  for (int i = 0; i < static_cast<int>(VECSOURCES.size()); ++i)
   {
     const CMediaSource &share = VECSOURCES[i];
 
@@ -2388,7 +2388,7 @@ int CUtil::GetRandomNumber()
 #else
   unsigned int number;
   if (rand_s(&number) == 0)
-    return (int)number;
+    return static_cast<int>(number);
 
   return rand();
 #endif

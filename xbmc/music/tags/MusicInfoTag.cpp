@@ -161,7 +161,7 @@ const std::string &CMusicInfoTag::GetType() const
 }
 
 int CMusicInfoTag::GetYear() const
-{  
+{
   return atoi(GetYearString().c_str());
 }
 
@@ -1044,7 +1044,7 @@ void CMusicInfoTag::Archive(CArchive& ar)
     ar << m_lastPlayed;
     ar << m_dateAdded;
     ar << m_strComment;
-    ar << (int)m_musicRoles.size();
+    ar << static_cast<int>(m_musicRoles.size());
     for (const auto& credit : m_musicRoles)
     {
       ar << credit.GetRoleId();

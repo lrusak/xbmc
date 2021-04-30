@@ -22,7 +22,7 @@
 #include "windowing/GraphicContext.h"
 
 #include <algorithm>
-#include <cstdlib> // std::abs(int) prototype
+#include <cstdlib> // std::absstatic_cast<int>( prototype)
 
 
 CBaseRenderer::CBaseRenderer()

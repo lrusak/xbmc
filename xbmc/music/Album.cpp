@@ -83,9 +83,8 @@ void CAlbum::SetArtistCredits(const std::vector<std::string>& names, const std::
     {
       // Tags mis-match - report it and then try to fix
       CLog::Log(LOGDEBUG, "Mis-match in song file albumartist tags: %i mbid %i name album: %s %s",
-        (int)mbids.size(),
-        (int)names.size(),
-        strAlbum.c_str(), strArtistDesc.c_str());
+                static_cast<int>(mbids.size()), static_cast<int>(names.size()), strAlbum.c_str(),
+                strArtistDesc.c_str());
       /*
       Most likely we have no hints and a single artist name like "Artist1 feat. Artist2"
       or "Composer; Conductor, Orchestra, Soloist" or "Artist1/Artist2" where the
@@ -516,7 +515,7 @@ bool CAlbum::Load(const TiXmlElement *album, bool append, bool prioritise)
       strReleaseDate = StringUtils::Format("%04i", year);
   }
   XMLUtils::GetString(album, "originalreleasedate", strOrigReleaseDate);
-  
+
   const TiXmlElement* rElement = album->FirstChildElement("rating");
   if (rElement)
   {
@@ -655,7 +654,7 @@ bool CAlbum::Save(TiXmlNode *node, const std::string &tag, const std::string& st
     userrating->ToElement()->SetAttribute("max", 10);
 
   XMLUtils::SetInt(album,           "votes", iVotes);
-  
+
   for (const auto& artistCredit : artistCredits)
   {
     // add an <albumArtistCredits> tag

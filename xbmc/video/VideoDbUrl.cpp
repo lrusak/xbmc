@@ -155,32 +155,32 @@ bool CVideoDbUrl::parse()
     if (m_type == "musicvideos")
       optionName = "artistid";
 
-    AddOption(optionName, (int)queryParams.GetActorId());
+    AddOption(optionName, static_cast<int>(queryParams.GetActorId()));
   }
   if (queryParams.GetAlbumId() != -1)
-    AddOption("albumid", (int)queryParams.GetAlbumId());
+    AddOption("albumid", static_cast<int>(queryParams.GetAlbumId()));
   if (queryParams.GetCountryId() != -1)
-    AddOption("countryid", (int)queryParams.GetCountryId());
+    AddOption("countryid", static_cast<int>(queryParams.GetCountryId()));
   if (queryParams.GetDirectorId() != -1)
-    AddOption("directorid", (int)queryParams.GetDirectorId());
+    AddOption("directorid", static_cast<int>(queryParams.GetDirectorId()));
   if (queryParams.GetEpisodeId() != -1)
-    AddOption("episodeid", (int)queryParams.GetEpisodeId());
+    AddOption("episodeid", static_cast<int>(queryParams.GetEpisodeId()));
   if (queryParams.GetGenreId() != -1)
-    AddOption("genreid", (int)queryParams.GetGenreId());
+    AddOption("genreid", static_cast<int>(queryParams.GetGenreId()));
   if (queryParams.GetMovieId() != -1)
-    AddOption("movieid", (int)queryParams.GetMovieId());
+    AddOption("movieid", static_cast<int>(queryParams.GetMovieId()));
   if (queryParams.GetMVideoId() != -1)
-    AddOption("musicvideoid", (int)queryParams.GetMVideoId());
+    AddOption("musicvideoid", static_cast<int>(queryParams.GetMVideoId()));
   if (queryParams.GetSeason() != -1 && queryParams.GetSeason() >= -2)
-    AddOption("season", (int)queryParams.GetSeason());
+    AddOption("season", static_cast<int>(queryParams.GetSeason()));
   if (queryParams.GetSetId() != -1)
-    AddOption("setid", (int)queryParams.GetSetId());
+    AddOption("setid", static_cast<int>(queryParams.GetSetId()));
   if (queryParams.GetStudioId() != -1)
-    AddOption("studioid", (int)queryParams.GetStudioId());
+    AddOption("studioid", static_cast<int>(queryParams.GetStudioId()));
   if (queryParams.GetTvShowId() != -1)
-    AddOption("tvshowid", (int)queryParams.GetTvShowId());
+    AddOption("tvshowid", static_cast<int>(queryParams.GetTvShowId()));
   if (queryParams.GetYear() != -1)
-    AddOption("year", (int)queryParams.GetYear());
+    AddOption("year", static_cast<int>(queryParams.GetYear()));
 
   return true;
 }

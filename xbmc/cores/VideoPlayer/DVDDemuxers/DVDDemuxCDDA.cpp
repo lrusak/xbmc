@@ -147,7 +147,7 @@ int CDVDDemuxCDDA::GetStreamLength()
   int64_t num_track_bytes = m_pInput->GetLength();
   int bytes_per_second = (m_stream->iBitRate>>3);
   int64_t track_mseconds = num_track_bytes*1000 / bytes_per_second;
-  return (int)track_mseconds;
+  return static_cast<int>(track_mseconds);
 }
 
 CDemuxStream* CDVDDemuxCDDA::GetStream(int iStreamId) const

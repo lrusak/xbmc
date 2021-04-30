@@ -203,10 +203,14 @@ void CWeatherJob::SetFromProperties()
     else
     {
       LocalizeOverviewToken(direction);
-      m_info.currentWind = StringUtils::Format(g_localizeStrings.Get(434).c_str(),
-                                               direction.c_str(), (int)speed.To(g_langInfo.GetSpeedUnit()), g_langInfo.GetSpeedUnitString().c_str());
+      m_info.currentWind =
+          StringUtils::Format(g_localizeStrings.Get(434).c_str(), direction.c_str(),
+                              static_cast<int>(speed.To(g_langInfo.GetSpeedUnit())),
+                              g_langInfo.GetSpeedUnitString().c_str());
     }
-    std::string windspeed = StringUtils::Format("%i %s", (int)speed.To(g_langInfo.GetSpeedUnit()), g_langInfo.GetSpeedUnitString().c_str());
+    std::string windspeed =
+        StringUtils::Format("%i %s", static_cast<int>(speed.To(g_langInfo.GetSpeedUnit())),
+                            g_langInfo.GetSpeedUnitString().c_str());
     window->SetProperty("Current.WindSpeed",windspeed);
     FormatTemperature(m_info.currentDewPoint,
                       strtod(window->GetProperty("Current.DewPoint").asString().c_str(), nullptr));

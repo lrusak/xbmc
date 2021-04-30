@@ -12,7 +12,7 @@
 
 TEST(TestVariant, VariantTypeInteger)
 {
-  CVariant a((int)0), b((int64_t)1);
+  CVariant a(static_cast<int>(0)), b((int64_t)1);
 
   EXPECT_TRUE(a.isInteger());
   EXPECT_EQ(CVariant::VariantTypeInteger, a.type());
@@ -214,7 +214,7 @@ TEST(TestVariant, c_str)
 
 TEST(TestVariant, swap)
 {
-  CVariant a((int)0), b("variant");
+  CVariant a(static_cast<int>(0)), b("variant");
 
   EXPECT_TRUE(a.isInteger());
   EXPECT_TRUE(b.isString());

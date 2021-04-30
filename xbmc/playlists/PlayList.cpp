@@ -226,7 +226,7 @@ void CPlayList::Clear()
 
 int CPlayList::size() const
 {
-  return (int)m_vecItems.size();
+  return static_cast<int>(m_vecItems.size());
 }
 
 const CFileItemPtr CPlayList::operator[] (int iItem) const
@@ -331,7 +331,7 @@ int CPlayList::FindOrder(int iOrder) const
 void CPlayList::Remove(int position)
 {
   int iOrder = -1;
-  if (position >= 0 && position < (int)m_vecItems.size())
+  if (position >= 0 && position < static_cast<int>(m_vecItems.size()))
   {
     iOrder = m_vecItems[position]->m_iprogramCount;
     m_vecItems.erase(m_vecItems.begin() + position);

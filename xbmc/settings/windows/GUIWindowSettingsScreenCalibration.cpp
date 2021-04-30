@@ -162,7 +162,9 @@ bool CGUIWindowSettingsScreenCalibration::OnMessage(CGUIMessage& message)
       }
       if (m_iCurRes==(unsigned int)-1)
       {
-        CLog::Log(LOGERROR, "CALIBRATION: Reported current resolution: %d", (int)CServiceBroker::GetWinSystem()->GetGfxContext().GetVideoResolution());
+        CLog::Log(
+            LOGERROR, "CALIBRATION: Reported current resolution: %d",
+            static_cast<int>(CServiceBroker::GetWinSystem()->GetGfxContext().GetVideoResolution()));
         CLog::Log(LOGERROR, "CALIBRATION: Could not determine current resolution, falling back to default");
         m_iCurRes = 0;
       }
@@ -272,8 +274,8 @@ void CGUIWindowSettingsScreenCalibration::ResetControls()
                         info.iHeight*3 / 4,
                         info.iWidth*5 / 4,
                         info.iHeight*5 / 4);
-    pControl->SetPosition((float)info.Overscan.right - (int)pControl->GetWidth(),
-                          (float)info.Overscan.bottom - (int)pControl->GetHeight());
+    pControl->SetPosition((float)info.Overscan.right - static_cast<int>(pControl->GetWidth()),
+                          (float)info.Overscan.bottom - static_cast<int>(pControl->GetHeight()));
     pControl->SetLocation(info.Overscan.right,
                           info.Overscan.bottom, false);
   }

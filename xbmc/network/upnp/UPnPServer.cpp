@@ -377,7 +377,8 @@ PLT_MediaObject* CUPnPServer::Build(const CFileItemPtr& item,
                     // for tvshows and seasons, iEpisode and playCount are
                     // invalid
                     item->m_bIsFolder = true;
-                    item->GetVideoInfoTag()->m_iEpisode = (int)item->GetProperty("totalepisodes").asInteger();
+                    item->GetVideoInfoTag()->m_iEpisode =
+                        static_cast<int>(item->GetProperty("totalepisodes").asInteger());
                     item->GetVideoInfoTag()->SetPlayCount(static_cast<int>(item->GetProperty("watchedepisodes").asInteger()));
                 }
 
@@ -458,12 +459,12 @@ void CUPnPServer::Announce(AnnouncementFlag flag,
     else {
         // handle both updates & removals
         if (!data["item"].isNull()) {
-            item_id = (int)data["item"]["id"].asInteger();
-            item_type = data["item"]["type"].asString();
+          item_id = static_cast<int>(data["item"]["id"].asInteger());
+          item_type = data["item"]["type"].asString();
         }
         else {
-            item_id = (int)data["id"].asInteger();
-            item_type = data["type"].asString();
+          item_id = static_cast<int>(data["id"].asInteger());
+          item_type = data["type"].asString();
         }
 
         // we always update 'recently added' nodes along with the specific container,

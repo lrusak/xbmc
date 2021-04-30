@@ -435,18 +435,18 @@ bool CGUIDialogPVRChannelManager::OnClickEPGSourceSpin(CGUIMessage& message)
 {
   //! @todo Add EPG scraper support
   return true;
-//  CGUISpinControlEx* pSpin = (CGUISpinControlEx *)GetControl(SPIN_EPGSOURCE_SELECTION);
-//  if (pSpin)
-//  {
-//    CFileItemPtr pItem = m_channelItems->Get(m_iSelected);
-//    if (pItem)
-//    {
-//      pItem->SetProperty("EPGSource", (int)0);
-//      pItem->SetProperty("Changed", true);
-//      m_bContainsChanges = true;
-//      return true;
-//    }
-//  }
+  //  CGUISpinControlEx* pSpin = (CGUISpinControlEx *)GetControl(SPIN_EPGSOURCE_SELECTION);
+  //  if (pSpin)
+  //  {
+  //    CFileItemPtr pItem = m_channelItems->Get(m_iSelected);
+  //    if (pItem)
+  //    {
+  //      pItem->SetProperty("EPGSource", static_cast<int>(0));
+  //      pItem->SetProperty("Changed", true);
+  //      m_bContainsChanges = true;
+  //      return true;
+  //    }
+  //  }
 }
 
 bool CGUIDialogPVRChannelManager::OnClickButtonGroupManager(CGUIMessage& message)

@@ -274,7 +274,7 @@ namespace XFILE
     else
       items.SetContent(playlist.GetType());
 
-    items.SetProperty(PROPERTY_SORT_ORDER, (int)playlist.GetOrder());
+    items.SetProperty(PROPERTY_SORT_ORDER, static_cast<int>(playlist.GetOrder()));
     items.SetProperty(PROPERTY_SORT_ASCENDING, playlist.GetOrderDirection() == SortOrderAscending);
     if (!group.empty())
     {

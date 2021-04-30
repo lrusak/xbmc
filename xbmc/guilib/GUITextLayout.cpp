@@ -498,7 +498,9 @@ void CGUITextLayout::WrapText(const vecText &text, float maxWidth)
   if (!m_font)
     return;
 
-  int nMaxLines = (m_maxHeight > 0 && m_font->GetLineHeight() > 0)?(int)ceilf(m_maxHeight / m_font->GetLineHeight()):-1;
+  int nMaxLines = (m_maxHeight > 0 && m_font->GetLineHeight() > 0)
+                      ? static_cast<int>(ceilf(m_maxHeight) / m_font->GetLineHeight())
+                      : -1;
 
   m_lines.clear();
 
@@ -572,7 +574,9 @@ void CGUITextLayout::WrapText(const vecText &text, float maxWidth)
 
 void CGUITextLayout::LineBreakText(const vecText &text, std::vector<CGUIString> &lines)
 {
-  int nMaxLines = (m_maxHeight > 0 && m_font && m_font->GetLineHeight() > 0)?(int)ceilf(m_maxHeight / m_font->GetLineHeight()):-1;
+  int nMaxLines = (m_maxHeight > 0 && m_font && m_font->GetLineHeight() > 0)
+                      ? static_cast<int>(ceilf(m_maxHeight) / m_font->GetLineHeight())
+                      : -1;
   vecText::const_iterator lineStart = text.begin();
   vecText::const_iterator pos = text.begin();
   while (pos != text.end() && (nMaxLines <= 0 || lines.size() < (size_t)nMaxLines))

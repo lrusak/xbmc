@@ -164,12 +164,15 @@ bool CRenderSystemGL::ResetRenderSystem(int width, int height)
     GLenum error = glGetError();
     if (error != GL_NO_ERROR)
     {
-      CLog::Log(LOGERROR, "ResetRenderSystem() GL_MAX_TEXTURE_IMAGE_UNITS returned error %i", (int)error);
+      CLog::Log(LOGERROR, "ResetRenderSystem() GL_MAX_TEXTURE_IMAGE_UNITS returned error %i",
+                static_cast<int>(error));
       maxtex = 3;
     }
     else if (maxtex < 1 || maxtex > 32)
     {
-      CLog::Log(LOGERROR, "ResetRenderSystem() GL_MAX_TEXTURE_IMAGE_UNITS returned invalid value %i", (int)maxtex);
+      CLog::Log(LOGERROR,
+                "ResetRenderSystem() GL_MAX_TEXTURE_IMAGE_UNITS returned invalid value %i",
+                static_cast<int>(maxtex));
       maxtex = 3;
     }
 

@@ -309,7 +309,9 @@ JSONRPC_STATUS CPlayerOperations::PlayPause(const std::string &method, ITranspor
         else if (!g_application.GetAppPlayer().IsPausedPlayback())
           CApplicationMessenger::GetInstance().SendMsg(TMSG_MEDIA_PAUSE);
       }
-      result["speed"] = g_application.GetAppPlayer().IsPausedPlayback() ? 0 : (int)lrint(g_application.GetAppPlayer().GetPlaySpeed());
+      result["speed"] = g_application.GetAppPlayer().IsPausedPlayback()
+                            ? 0
+                            : static_cast<int>(lrint(g_application.GetAppPlayer().GetPlaySpeed()));
       return OK;
 
     case Picture:
@@ -358,7 +360,7 @@ JSONRPC_STATUS CPlayerOperations::SetSpeed(const std::string &method, ITransport
     case Audio:
       if (parameterObject["speed"].isInteger())
       {
-        int speed = (int)parameterObject["speed"].asInteger();
+        int speed = static_cast<int>(parameterObject["speed"].asInteger());
         if (speed != 0)
         {
           // If the player is paused we first need to unpause
@@ -379,7 +381,9 @@ JSONRPC_STATUS CPlayerOperations::SetSpeed(const std::string &method, ITransport
       else
         return InvalidParams;
 
-      result["speed"] = g_application.GetAppPlayer().IsPausedPlayback() ? 0 : (int)lrint(g_application.GetAppPlayer().GetPlaySpeed());
+      result["speed"] = g_application.GetAppPlayer().IsPausedPlayback()
+                            ? 0
+                            : static_cast<int>(lrint(g_application.GetAppPlayer().GetPlaySpeed()));
       return OK;
 
     case Picture:
@@ -480,7 +484,7 @@ JSONRPC_STATUS CPlayerOperations::Zoom(const std::string &method, ITransportLaye
   {
     case Picture:
       if (zoom.isInteger())
-        SendSlideshowAction(ACTION_ZOOM_LEVEL_NORMAL + ((int)zoom.asInteger() - 1));
+        SendSlideshowAction(ACTION_ZOOM_LEVEL_NORMAL + (static_cast<int>(zoom.asInteger()) - 1));
       else if (zoom.isString())
       {
         std::string strZoom = zoom.asString();
@@ -659,7 +663,7 @@ JSONRPC_STATUS CPlayerOperations::Open(const std::string &method, ITransportLaye
 
   if (parameterObject["item"].isMember("playlistid"))
   {
-    int playlistid = (int)parameterObject["item"]["playlistid"].asInteger();
+    int playlistid = static_cast<int>(parameterObject["item"]["playlistid"].asInteger());
 
     if (playlistid < PLAYLIST_PICTURE)
     {
@@ -671,7 +675,7 @@ JSONRPC_STATUS CPlayerOperations::Open(const std::string &method, ITransportLaye
         CServiceBroker::GetPlaylistPlayer().SetRepeat(playlistid, (REPEAT_STATE)ParseRepeatState(optionRepeat), false);
     }
 
-    int playlistStartPosition = (int)parameterObject["item"]["position"].asInteger();
+    int playlistStartPosition = static_cast<int>(parameterObject["item"]["position"].asInteger());
 
     switch (playlistid)
     {
@@ -1089,7 +1093,7 @@ JSONRPC_STATUS CPlayerOperations::SetAudioStream(const std::string &method, ITra
             return InvalidParams;
         }
         else if (parameterObject["stream"].isInteger())
-          index = (int)parameterObject["stream"].asInteger();
+          index = static_cast<int>(parameterObject["stream"].asInteger());
 
         if (index < 0 || g_application.GetAppPlayer().GetAudioStreamCount() <= index)
           return InvalidParams;
@@ -1162,7 +1166,7 @@ JSONRPC_STATUS CPlayerOperations::SetSubtitle(const std::string &method, ITransp
             return InvalidParams;
         }
         else if (parameterObject["subtitle"].isInteger())
-          index = (int)parameterObject["subtitle"].asInteger();
+          index = static_cast<int>(parameterObject["subtitle"].asInteger());
 
         if (index < 0 || g_application.GetAppPlayer().GetSubtitleCount() <= index)
           return InvalidParams;
@@ -1215,7 +1219,7 @@ JSONRPC_STATUS CPlayerOperations::SetVideoStream(const std::string &method, ITra
           return InvalidParams;
       }
       else if (parameterObject["stream"].isInteger())
-        index = (int)parameterObject["stream"].asInteger();
+        index = static_cast<int>(parameterObject["stream"].asInteger());
 
       if (index < 0 || streamCount <= index)
         return InvalidParams;
@@ -1258,7 +1262,7 @@ int CPlayerOperations::GetActivePlayers()
 
 PlayerType CPlayerOperations::GetPlayer(const CVariant &player)
 {
-  int iPlayer = (int)player.asInteger();
+  int iPlayer = static_cast<int>(player.asInteger());
   PlayerType playerID;
 
   switch (iPlayer)
@@ -1395,7 +1399,9 @@ JSONRPC_STATUS CPlayerOperations::GetPropertyValue(PlayerType player, const std:
     {
       case Video:
       case Audio:
-        result = g_application.GetAppPlayer().IsPausedPlayback() ? 0 : (int)lrint(g_application.GetAppPlayer().GetPlaySpeed());
+        result = g_application.GetAppPlayer().IsPausedPlayback()
+                     ? 0
+                     : static_cast<int>(lrint(g_application.GetAppPlayer().GetPlaySpeed()));
         break;
 
       case Picture:

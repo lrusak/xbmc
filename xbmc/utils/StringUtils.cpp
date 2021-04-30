@@ -1072,10 +1072,10 @@ int64_t StringUtils::AlphaNumericCompare(const wchar_t* left, const wchar_t* rig
     // alphanumeric ascii, rather than some being mixed between the numbers and letters, and
     // above all other unicode letters, symbols and punctuation.
     // (Locale collation of these chars varies across platforms)
-    lsym = (lc >= 32 && lc < L'0') || (lc > L'9' && lc < L'A') || 
-           (lc > L'Z' && lc < L'a') || (lc > L'z' && lc < 128);
-    rsym = (rc >= 32 && rc < L'0') || (rc > L'9' && rc < L'A') || 
-           (rc > L'Z' && rc < L'a') || (rc > L'z' && rc < 128);
+    lsym = (lc >= 32 && lc < L'0') || (lc > L'9' && lc < L'A') || (lc > L'Z' && lc < L'a') ||
+           (lc > L'z' && lc < 128);
+    rsym = (rc >= 32 && rc < L'0') || (rc > L'9' && rc < L'A') || (rc > L'Z' && rc < L'a') ||
+           (rc > L'z' && rc < 128);
     if (lsym && !rsym)
       return -1;
     if (!lsym && rsym)
@@ -1086,7 +1086,7 @@ int64_t StringUtils::AlphaNumericCompare(const wchar_t* left, const wchar_t* rig
         return lc - rc;
       else
       { // Same symbol advance to next wchar
-        l++; 
+        l++;
         r++;
         continue;
       }
@@ -1636,7 +1636,7 @@ int StringUtils::FindEndBracket(const std::string &str, char opener, char closer
     }
   }
 
-  return (int)std::string::npos;
+  return static_cast<int>(std::string::npos);
 }
 
 void StringUtils::WordToDigits(std::string &word)

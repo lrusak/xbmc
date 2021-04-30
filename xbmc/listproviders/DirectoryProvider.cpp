@@ -77,7 +77,7 @@ public:
         items.Sort(m_sort);
 
       // limit must not exceed the number of items
-      int limit = (m_limit == 0) ? items.Size() : std::min((int) m_limit, items.Size());
+      int limit = (m_limit == 0) ? items.Size() : std::min(static_cast<int>(m_limit), items.Size());
       // convert to CGUIStaticItem's and set visibility and targets
       m_items.reserve(limit);
       for (int i = 0; i < limit; i++)

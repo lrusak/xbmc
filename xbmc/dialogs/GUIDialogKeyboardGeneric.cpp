@@ -757,7 +757,7 @@ bool CGUIDialogKeyboardGeneric::CodingCharacter(const std::string &ch)
     }
     if (ch[0] >= '0' && ch[0] <= '9')
     {
-      int i = m_pos + (int)ch[0] - 48;
+      int i = m_pos + static_cast<int>(ch[0]) - 48;
       if (i < (m_pos + m_num))
       {
         m_hzcode = "";

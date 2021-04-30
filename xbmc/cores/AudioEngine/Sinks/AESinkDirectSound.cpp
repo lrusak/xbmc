@@ -349,7 +349,7 @@ unsigned int CAESinkDirectSound::AddPackets(uint8_t **data, unsigned int frames,
     DWORD size = 0, sizeWrap = 0;
     if (m_BufferOffset >= m_dwBufferLen) // Wrap-around manually
       m_BufferOffset = 0;
-    DWORD dwWriteBytes = std::min((int)m_dwChunkSize, (int)len);
+    DWORD dwWriteBytes = std::min(static_cast<int>(m_dwChunkSize), static_cast<int>(len));
     HRESULT res = m_pBuffer->Lock(m_BufferOffset, dwWriteBytes, &start, &size, &startWrap, &sizeWrap, 0);
     if (DS_OK != res)
     {

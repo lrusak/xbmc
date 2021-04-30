@@ -252,5 +252,5 @@ void CDVDAudioCodecPassthrough::Reset()
 
 int CDVDAudioCodecPassthrough::GetBufferSize()
 {
-  return (int)m_parser.GetBufferSize();
+  return static_cast<int>(m_parser.GetBufferSize());
 }

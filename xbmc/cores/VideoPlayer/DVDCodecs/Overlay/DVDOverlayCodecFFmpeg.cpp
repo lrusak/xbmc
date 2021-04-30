@@ -215,7 +215,7 @@ CDVDOverlay* CDVDOverlayCodecFFmpeg::GetOverlay()
 
   if(m_Subtitle.format == 0)
   {
-    if(m_SubtitleIndex >= (int)m_Subtitle.num_rects)
+    if (m_SubtitleIndex >= static_cast<int>(m_Subtitle.num_rects))
       return NULL;
 
     if(m_Subtitle.rects[m_SubtitleIndex] == NULL)

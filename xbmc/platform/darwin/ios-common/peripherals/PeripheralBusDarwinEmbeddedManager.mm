@@ -38,13 +38,13 @@
   return scanresults;
 }
 
-- (void)DeviceAdded:(int)deviceID
+- (void)DeviceAdded:static_cast<int>(deviceID)
 {
   parentClass->SetScanResults([self GetInputDevices]);
   parentClass->callOnDeviceAdded([self GetDeviceLocation:deviceID]);
 }
 
-- (void)DeviceRemoved:(int)deviceID
+- (void)DeviceRemoved:static_cast<int>(deviceID)
 {
   parentClass->callOnDeviceRemoved([self GetDeviceLocation:deviceID]);
   parentClass->SetScanResults([self GetInputDevices]);
@@ -119,7 +119,8 @@
   return events;
 }
 
-- (int)GetControllerAxisCount:(int)deviceId withControllerType:(GCCONTROLLER_TYPE)controllerType
+- static_cast<int>(GetControllerAxisCount:(int)deviceId)
+    withControllerType:(GCCONTROLLER_TYPE)controllerType
 {
   int axisCount = 0;
   if (controllerType == GCCONTROLLER_TYPE::EXTENDED)
@@ -134,7 +135,8 @@
   return axisCount;
 }
 
-- (int)GetControllerButtonCount:(int)deviceId withControllerType:(GCCONTROLLER_TYPE)controllerType
+- static_cast<int>(GetControllerButtonCount:(int)deviceId)
+    withControllerType:(GCCONTROLLER_TYPE)controllerType
 {
   int buttonCount = 0;
   if (controllerType == GCCONTROLLER_TYPE::EXTENDED)
@@ -152,7 +154,7 @@
 
 #pragma mark - callbackClass Controller ID matching
 
-- (GCCONTROLLER_TYPE)GetControllerType:(int)deviceID
+- (GCCONTROLLER_TYPE)GetControllerType:static_cast<int>(deviceID)
 {
 
   auto gcinputtype = [self.input_GC GetGCControllerType:deviceID];
@@ -163,14 +165,14 @@
   return GCCONTROLLER_TYPE::UNKNOWN;
 }
 
-- (std::string)GetDeviceLocation:(int)deviceId
+- (std::string)GetDeviceLocation:static_cast<int>(deviceId)
 {
   return StringUtils::Format("%s%d", parentClass->getDeviceLocationPrefix().c_str(), deviceId);
 }
 
 #pragma mark - Logging Utils
 
-- (void)displayMessage:(NSString*)message controllerID:(int)controllerID
+- (void)displayMessage:(NSString*)message controllerID:static_cast<int>(controllerID)
 {
   // Only log if message has any data
   if (message)

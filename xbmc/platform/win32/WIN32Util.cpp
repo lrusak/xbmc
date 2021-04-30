@@ -308,7 +308,7 @@ int CWIN32Util::GetDesktopColorDepth()
   ZeroMemory(&devmode, sizeof(devmode));
   devmode.dmSize = sizeof(devmode);
   EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &devmode);
-  return (int)devmode.dmBitsPerPel;
+  return static_cast<int>(devmode.dmBitsPerPel);
 #endif
 }
 

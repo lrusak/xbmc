@@ -28,7 +28,7 @@
 @interface AVDisplayCriteria ()
 @property(readonly) int videoDynamicRange;
 @property(readonly, nonatomic) float refreshRate;
-- (id)initWithRefreshRate:(float)arg1 videoDynamicRange:(int)arg2;
+- (id)initWithRefreshRate:(float)arg1 videoDynamicRange:static_cast<int>(arg2);
 @end
 
 @implementation TVOSDisplayManager
@@ -54,7 +54,7 @@
   }
 }
 
-- (void)displayRateSwitch:(float)refreshRate withDynamicRange:(int)dynamicRange
+- (void)displayRateSwitch:(float)refreshRate withDynamicRange:static_cast<int>(dynamicRange)
 {
   if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(
           CSettings::SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE) == ADJUST_REFRESHRATE_OFF)
@@ -193,7 +193,7 @@
   }
 }
 
-- (const char*)stringFromDynamicRange:(int)dynamicRange
+- (const char*)stringFromDynamicRange:static_cast<int>(dynamicRange)
 {
   switch (dynamicRange)
   {

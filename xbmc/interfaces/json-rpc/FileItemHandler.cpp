@@ -233,12 +233,12 @@ bool CFileItemHandler::GetField(const std::string &field, const CVariant &info, 
     {
       if (item->GetVideoInfoTag()->m_iSeason < 0 && field == "season")
       {
-        result[field] = (int)item->GetProperty("totalseasons").asInteger();
+        result[field] = static_cast<int>(item->GetProperty("totalseasons").asInteger());
         return true;
       }
       if (field == "watchedepisodes")
       {
-        result[field] = (int)item->GetProperty("watchedepisodes").asInteger();
+        result[field] = static_cast<int>(item->GetProperty("watchedepisodes").asInteger());
         return true;
       }
     }

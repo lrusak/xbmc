@@ -420,7 +420,7 @@ void CFileCache::Process()
     * low read-rate conditions.
     */
     if (m_bFilling && m_forwardCacheSize != 0)
-    { 
+    {
       const int64_t forward = m_pCache->WaitForData(0, 0);
       if (forward + m_chunkSize >= m_forwardCacheSize)
       {
@@ -475,7 +475,7 @@ retry:
   if (iRc > 0)
   {
     m_readPos += iRc;
-    return (int)iRc;
+    return static_cast<int>(iRc);
   }
 
   if (iRc == CACHE_RC_WOULD_BLOCK)
@@ -498,7 +498,7 @@ retry:
 
   // unknown error code
   CLog::Log(LOGERROR, "CFileCache::{} - <{}> cache strategy returned unknown error code {}",
-            __FUNCTION__, m_sourcePath, (int)iRc);
+            __FUNCTION__, m_sourcePath, static_cast<int>(iRc));
   return -1;
 }
 

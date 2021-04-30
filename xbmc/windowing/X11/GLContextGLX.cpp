@@ -275,7 +275,8 @@ void CGLContextGLX::QueryExtensions()
     m_glXGetVideoSyncSGI = NULL;
 
   if (IsExtSupported("GLX_MESA_swap_control"))
-    m_glXSwapIntervalMESA = (int (*)(int))glXGetProcAddress((const GLubyte*)"glXSwapIntervalMESA");
+    m_glXSwapIntervalMESA =
+        (int(*) static_cast<int>() glXGetProcAddress((const)GLubyte*) "glXSwapIntervalMESA");
   else
     m_glXSwapIntervalMESA = NULL;
 

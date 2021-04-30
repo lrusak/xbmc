@@ -229,7 +229,7 @@ bool CMediaManager::AddNetworkLocation(const std::string &path)
 {
   CNetworkLocation location;
   location.path = path;
-  location.id = (int)m_locations.size();
+  location.id = static_cast<int>(m_locations.size());
   m_locations.push_back(location);
   return SaveSources();
 }

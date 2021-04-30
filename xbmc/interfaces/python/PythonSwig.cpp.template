@@ -84,7 +84,7 @@ Helper.setup(this,classes,
       'unsigned long' : '${api} = PyLong_AsUnsignedLong(${slarg});',
       'long long' : '${api} = PyLong_AsLongLong(${slarg});',
       'unsigned long long' : '${api} = PyLong_AsUnsignedLongLong(${slarg});',
-      'int' : '${api} = (int)PyLong_AsLong(${slarg});',
+      'int' : '${api} = static_cast<int>(PyLong_AsLong(${slarg}));',
       'double' : '${api} = PyFloat_AsDouble(${slarg});',
       'float' : '${api} = (float)PyFloat_AsDouble(${slarg});',
       'XBMCAddon::StringOrInt' : 'if (${slarg}) PyXBMCGetUnicodeString(${api},${slarg},PyLong_Check(${slarg}) || PyFloat_Check(${slarg}),"${api}","${method.@name}");'

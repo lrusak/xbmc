@@ -164,7 +164,7 @@ bool CGUIDialogVideoBookmarks::OnAction(const CAction &action)
 
 void CGUIDialogVideoBookmarks::OnPopupMenu(int item)
 {
-  if (item < 0 || item >= (int) m_bookmarks.size())
+  if (item < 0 || item >= static_cast<int>(m_bookmarks.size()))
     return;
 
   // highlight the item
@@ -392,8 +392,8 @@ bool CGUIDialogVideoBookmarks::AddBookmark(CVideoInfoTag* tag)
 {
   CVideoDatabase videoDatabase;
   CBookmark bookmark;
-  bookmark.timeInSeconds = (int)g_application.GetTime();
-  bookmark.totalTimeInSeconds = (int)g_application.GetTotalTime();
+  bookmark.timeInSeconds = static_cast<int>(g_application.GetTime());
+  bookmark.totalTimeInSeconds = static_cast<int>(g_application.GetTotalTime());
 
   if( g_application.GetAppPlayer().HasPlayer() )
     bookmark.playerState = g_application.GetAppPlayer().GetPlayerState();
@@ -406,7 +406,7 @@ bool CGUIDialogVideoBookmarks::AddBookmark(CVideoInfoTag* tag)
   float aspectRatio = g_application.GetAppPlayer().GetRenderAspectRatio();
   int width = BOOKMARK_THUMB_WIDTH;
   int height = (int)(BOOKMARK_THUMB_WIDTH / aspectRatio);
-  if (height > (int)BOOKMARK_THUMB_WIDTH)
+  if (height > static_cast<int>(BOOKMARK_THUMB_WIDTH))
   {
     height = BOOKMARK_THUMB_WIDTH;
     width = (int)(BOOKMARK_THUMB_WIDTH * aspectRatio);
@@ -424,7 +424,8 @@ bool CGUIDialogVideoBookmarks::AddBookmark(CVideoInfoTag* tag)
     const std::shared_ptr<CProfileManager> profileManager = CServiceBroker::GetSettingsComponent()->GetProfileManager();
 
     auto crc = Crc32::ComputeFromLowerCase(g_application.CurrentFile());
-    bookmark.thumbNailImage = StringUtils::Format("%08x_%i.jpg", crc, (int)bookmark.timeInSeconds);
+    bookmark.thumbNailImage =
+        StringUtils::Format("%08x_%i.jpg", crc, static_cast<int>(bookmark.timeInSeconds));
     bookmark.thumbNailImage = URIUtils::AddFileToFolder(profileManager->GetBookmarksThumbFolder(), bookmark.thumbNailImage);
 
     if (!CPicture::CreateThumbnailFromSurface(pixels, width, height, width * 4,

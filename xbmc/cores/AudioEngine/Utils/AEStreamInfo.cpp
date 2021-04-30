@@ -206,7 +206,7 @@ int CAEStreamParser::AddData(uint8_t *data, unsigned int size, uint8_t **buffer/
     }
 
     /* bytes to skip until the next packet */
-    m_skipBytes = std::max(0, (int)m_fsize - (int)m_bufferSize);
+    m_skipBytes = std::max(0, static_cast<int>(m_fsize) - static_cast<int>(m_bufferSize));
     if (m_skipBytes)
     {
       if (bufferSize)

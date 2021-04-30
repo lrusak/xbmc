@@ -32,12 +32,12 @@ CMusicInfoScraper::~CMusicInfoScraper(void)
 
 int CMusicInfoScraper::GetAlbumCount() const
 {
-  return (int)m_vecAlbums.size();
+  return static_cast<int>(m_vecAlbums.size());
 }
 
 int CMusicInfoScraper::GetArtistCount() const
 {
-  return (int)m_vecArtists.size();
+  return static_cast<int>(m_vecArtists.size());
 }
 
 CMusicAlbumInfo& CMusicInfoScraper::GetAlbum(int iAlbum)
@@ -98,7 +98,7 @@ void CMusicInfoScraper::LoadArtistInfo(int iArtist, const std::string &strSearch
 
 void CMusicInfoScraper::LoadAlbumInfo()
 {
-  if (m_iAlbum<0 || m_iAlbum>=(int)m_vecAlbums.size())
+  if (m_iAlbum < 0 || m_iAlbum >= static_cast<int>(m_vecAlbums.size()))
     return;
 
   CMusicAlbumInfo& album=m_vecAlbums[m_iAlbum];
@@ -110,7 +110,7 @@ void CMusicInfoScraper::LoadAlbumInfo()
 
 void CMusicInfoScraper::LoadArtistInfo()
 {
-  if (m_iArtist<0 || m_iArtist>=(int)m_vecArtists.size())
+  if (m_iArtist < 0 || m_iArtist >= static_cast<int>(m_vecArtists.size()))
     return;
 
   CMusicArtistInfo& artist=m_vecArtists[m_iArtist];

@@ -194,10 +194,10 @@ bool CGraphicContext::SetViewPort(float fx, float fy, float fwidth, float fheigh
   {
     CRect oldviewport = m_viewStack.top();
     // do the intersection
-    int oldLeft = (int)oldviewport.x1;
-    int oldTop = (int)oldviewport.y1;
-    int oldRight = (int)oldviewport.x2;
-    int oldBottom = (int)oldviewport.y2;
+    int oldLeft = static_cast<int>(oldviewport.x1);
+    int oldTop = static_cast<int>(oldviewport.y1);
+    int oldRight = static_cast<int>(oldviewport.x2);
+    int oldBottom = static_cast<int>(oldviewport.y2);
     if (newLeft >= oldRight || newTop >= oldBottom || newRight <= oldLeft || newBottom <= oldTop)
     { // empty intersection - return false to indicate no rendering should occur
       return false;
@@ -336,7 +336,7 @@ void CGraphicContext::SetFullScreenVideo(bool bOnOff)
           bTriggerUpdateRes = true;
       }
     }
-    
+
     bool allowResolutionChangeOnStop = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE) != ADJUST_REFRESHRATE_ON_START;
     RESOLUTION targetResolutionOnStop = RES_DESKTOP;
     if (bTriggerUpdateRes)
@@ -345,7 +345,7 @@ void CGraphicContext::SetFullScreenVideo(bool bOnOff)
     {
       targetResolutionOnStop = CDisplaySettings::GetInstance().GetCurrentResolution();
     }
-    
+
     if (allowResolutionChangeOnStop && !bTriggerUpdateRes)
     {
       SetVideoResolution(targetResolutionOnStop, false);

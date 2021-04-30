@@ -41,7 +41,7 @@
 #define GROUP_LIST             996
 #define BUTTON_TEMPLATE       1000
 #define BUTTON_START          1001
-#define BUTTON_END            (BUTTON_START + (int)m_buttons.size() - 1)
+#define BUTTON_END (BUTTON_START + static_cast<int>(m_buttons.size()) - 1)
 
 void CContextButtons::Add(unsigned int button, const std::string &label)
 {
@@ -594,7 +594,7 @@ std::string CGUIDialogContextMenu::GetDefaultShareNameByType(const std::string &
 
   bool bIsSourceName(false);
   int iIndex = CUtil::GetMatchingSource(strDefault, *pShares, bIsSourceName);
-  if (iIndex < 0 || iIndex >= (int)pShares->size())
+  if (iIndex < 0 || iIndex >= static_cast<int>(pShares->size()))
     return "";
 
   return pShares->at(iIndex).strName;

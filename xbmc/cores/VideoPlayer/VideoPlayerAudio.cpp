@@ -365,7 +365,7 @@ void CVideoPlayerAudio::Process()
       {
         m_audioSink.Pause();
       }
-      m_speed = (int)speed;
+      m_speed = static_cast<int>(speed);
     }
     else if (pMsg->IsType(CDVDMsg::GENERAL_STREAMCHANGE))
     {
@@ -444,7 +444,8 @@ bool CVideoPlayerAudio::ProcessDecoderOutput(DVDAudioFrame &audioframe)
       m_audioClock = audioframe.pts;
     }
 
-    if (audioframe.format.m_sampleRate && m_streaminfo.samplerate != (int) audioframe.format.m_sampleRate)
+    if (audioframe.format.m_sampleRate &&
+        m_streaminfo.samplerate != static_cast<int>(audioframe.format.m_sampleRate))
     {
       // The sample rate has changed or we just got it for the first time
       // for this stream. See if we should enable/disable passthrough due

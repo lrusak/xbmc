@@ -697,7 +697,8 @@ void CTCPServer::CWebSocketClient::PushBuffer(CTCPServer *host, const char *buff
       else
       {
         for (unsigned int index = 0; index < frames.size(); index++)
-          CTCPClient::PushBuffer(host, frames.at(index)->GetApplicationData(), (int)frames.at(index)->GetLength());
+          CTCPClient::PushBuffer(host, frames.at(index)->GetApplicationData(),
+                                 static_cast<int>(frames.at(index)->GetLength()));
       }
 
       delete msg;

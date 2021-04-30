@@ -295,7 +295,8 @@ namespace XBMCAddon
     {
 #ifdef ENABLE_XBMC_TRACE_API
       XBMC_TRACE;
-      CLog::Log(LOGDEBUG,"%sMessage id:%d",_tg.getSpaces(),(int)message.GetMessage());
+      CLog::Log(LOGDEBUG, "%sMessage id:%d", _tg.getSpaces(),
+                static_cast<int>(message.GetMessage()));
 #endif
 
       //! @todo We shouldn't be dropping down to CGUIWindow in any of this ideally.

@@ -859,7 +859,7 @@ bool CPVRDatabase::Persist(CPVRChannelGroup& group)
     if (bReturn && group.GroupID() <= 0)
     {
       CSingleLock lock(group.m_critSection);
-      group.m_iGroupId = (int) m_pDS->lastinsertid();
+      group.m_iGroupId = static_cast<int>(m_pDS->lastinsertid());
     }
   }
 

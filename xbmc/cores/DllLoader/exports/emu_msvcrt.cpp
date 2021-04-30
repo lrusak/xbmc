@@ -1110,7 +1110,7 @@ extern "C"
       if (dll_fread(&buf, 1, 1, stream) <= 0)
         return EOF;
 
-      return (int)buf;
+      return static_cast<int>(buf);
     }
     CLog::Log(LOGERROR, "%s emulated function failed",  __FUNCTION__);
     return EOF;

@@ -428,7 +428,7 @@ void CSkinInfo::SettingOptionsSkinColorsFiller(const SettingConstPtr& setting,
     }
   }
   sort(vecColors.begin(), vecColors.end(), sortstringbyname());
-  for (int i = 0; i < (int) vecColors.size(); ++i)
+  for (int i = 0; i < static_cast<int>(vecColors.size()); ++i)
     list.emplace_back(vecColors[i], vecColors[i]);
 
   // try to find the best matching value
@@ -515,7 +515,7 @@ void CSkinInfo::SettingOptionsSkinThemesFiller(const SettingConstPtr& setting,
   CUtil::GetSkinThemes(vecTheme);
 
   // sort the themes for GUI and list them
-  for (int i = 0; i < (int) vecTheme.size(); ++i)
+  for (int i = 0; i < static_cast<int>(vecTheme.size()); ++i)
     list.emplace_back(vecTheme[i], vecTheme[i]);
 
   // try to find the best matching value

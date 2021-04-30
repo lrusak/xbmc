@@ -20,8 +20,8 @@
 - (void)startRemoteTimer;
 - (void)stopRemoteTimer;
 - (void)setRemoteIdleState;
-- (void)startKeyPressTimer:(int)keyId;
-- (void)startKeyPressTimer:(int)keyId clickTime:(NSTimeInterval)interval;
+- (void)startKeyPressTimer:static_cast<int>(keyId);
+- (void)startKeyPressTimer:static_cast<int>(keyId)clickTime:(NSTimeInterval)interval;
 - (void)stopKeyPressTimer;
 - (void)keyPressTimerCallback:(NSTimer*)theTimer;
 - (void)remoteControlEvent:(UIEvent*)receivedEvent;

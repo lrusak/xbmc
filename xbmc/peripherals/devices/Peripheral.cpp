@@ -182,8 +182,8 @@ bool CPeripheral::Initialise(void)
   if (bReturn)
   {
     CLog::Log(LOGDEBUG, "%s - initialised peripheral on '%s' with %d features and %d sub devices",
-              __FUNCTION__, m_strLocation.c_str(), (int)m_features.size(),
-              (int)m_subDevices.size());
+              __FUNCTION__, m_strLocation.c_str(), static_cast<int>(m_features.size()),
+              static_cast<int>(m_subDevices.size()));
     m_bInitialised = true;
   }
 

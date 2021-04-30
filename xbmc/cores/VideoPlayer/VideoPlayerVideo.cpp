@@ -180,7 +180,10 @@ void CVideoPlayerVideo::OpenStream(CDVDStreamInfo &hint, CDVDVideoCodec* codec)
 
   if( m_fFrameRate > 120 || m_fFrameRate < 5 )
   {
-    CLog::Log(LOGERROR, "CVideoPlayerVideo::OpenStream - Invalid framerate %d, using forced 25fps and just trust timestamps", (int)m_fFrameRate);
+    CLog::Log(LOGERROR,
+              "CVideoPlayerVideo::OpenStream - Invalid framerate %d, using forced 25fps and just "
+              "trust timestamps",
+              static_cast<int>(m_fFrameRate));
     m_fFrameRate = 25;
   }
 
@@ -675,11 +678,12 @@ bool CVideoPlayerVideo::ProcessDecoderOutput(double &frametime, double &pts)
     // use forced aspect if any
     if (m_fForcedAspectRatio != 0.0f)
     {
-      m_picture.iDisplayWidth = (int) (m_picture.iDisplayHeight * m_fForcedAspectRatio);
+      m_picture.iDisplayWidth = static_cast<int>((m_picture.iDisplayHeight) * m_fForcedAspectRatio);
       if (m_picture.iDisplayWidth > m_picture.iWidth)
       {
         m_picture.iDisplayWidth =  m_picture.iWidth;
-        m_picture.iDisplayHeight = (int) (m_picture.iDisplayWidth / m_fForcedAspectRatio);
+        m_picture.iDisplayHeight =
+            static_cast<int>((m_picture.iDisplayWidth) / m_fForcedAspectRatio);
       }
     }
 
@@ -953,7 +957,7 @@ std::string CVideoPlayerVideo::GetPlayerInfo()
 
 int CVideoPlayerVideo::GetVideoBitrate()
 {
-  return (int)m_videoStats.GetBitrate();
+  return static_cast<int>(m_videoStats.GetBitrate());
 }
 
 void CVideoPlayerVideo::ResetFrameRateCalc()

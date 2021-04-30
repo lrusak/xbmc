@@ -250,7 +250,8 @@ bool CAESinkOSS::Initialize(AEAudioFormat &format, std::string &device)
   for (int ch = format.m_channelLayout.Count(); ch < 9; ++ch)
   {
     oss_ch = ch;
-    if (ioctl(m_fd, SNDCTL_DSP_CHANNELS, &oss_ch) != -1 && oss_ch >= (int)format.m_channelLayout.Count())
+    if (ioctl(m_fd, SNDCTL_DSP_CHANNELS, &oss_ch) != -1 &&
+        oss_ch >= static_cast<int>(format.m_channelLayout.Count()))
     {
       found = true;
       break;

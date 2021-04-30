@@ -77,7 +77,7 @@ bool CGUIFixedListContainer::MoveUp(bool wrapAround)
     SelectItem(item - 1);
   else if (wrapAround)
   {
-    SelectItem((int)m_items.size() - 1);
+    SelectItem(static_cast<int>(m_items.size()) - 1);
     SetContainerMoving(-1);
   }
   else
@@ -88,7 +88,7 @@ bool CGUIFixedListContainer::MoveUp(bool wrapAround)
 bool CGUIFixedListContainer::MoveDown(bool wrapAround)
 {
   int item = GetSelectedItem();
-  if (item < (int)m_items.size() - 1)
+  if (item < static_cast<int>(m_items.size()) - 1)
     SelectItem(item + 1);
   else if (wrapAround)
   { // move first item in list
@@ -112,7 +112,7 @@ void CGUIFixedListContainer::Scroll(int amount)
     offset = -minCursor;
     SetCursor(nextCursor < minCursor ? minCursor : nextCursor);
   }
-  if (offset > (int)m_items.size() - 1 - maxCursor)
+  if (offset > static_cast<int>(m_items.size()) - 1 - maxCursor)
   {
     offset = m_items.size() - 1 - maxCursor;
     SetCursor(nextCursor > maxCursor ? maxCursor : nextCursor);
@@ -215,7 +215,7 @@ bool CGUIFixedListContainer::SelectItemFromPoint(const CPoint &point)
     }
     return true;
   }
-  else if (pos > end && GetOffset() + maxCursor < (int)m_items.size() - 1)
+  else if (pos > end && GetOffset() + maxCursor < static_cast<int>(m_items.size()) - 1)
   {
     if (!InsideLayout(m_layout, point))
       return false;
@@ -245,7 +245,7 @@ void CGUIFixedListContainer::SelectItem(int item)
   // Check that GetOffset() is valid
   ValidateOffset();
   // only select an item if it's in a valid range
-  if (item >= 0 && item < (int)m_items.size())
+  if (item >= 0 && item < static_cast<int>(m_items.size()))
   {
     // Select the item requested - we first set the cursor position
     // which may be different at either end of the list, then the offset
@@ -253,8 +253,8 @@ void CGUIFixedListContainer::SelectItem(int item)
     GetCursorRange(minCursor, maxCursor);
 
     int cursor;
-    if ((int)m_items.size() - 1 - item <= maxCursor - m_fixedCursor)
-      cursor = std::max(m_fixedCursor, maxCursor + item - (int)m_items.size() + 1);
+    if (static_cast<int>(m_items.size()) - 1 - item <= maxCursor - m_fixedCursor)
+      cursor = std::max(m_fixedCursor, maxCursor + item - static_cast<int>(m_items.size()) + 1);
     else if (item <= m_fixedCursor - minCursor)
       cursor = std::min(m_fixedCursor, minCursor + item);
     else
@@ -274,13 +274,14 @@ bool CGUIFixedListContainer::HasPreviousPage() const
 
 bool CGUIFixedListContainer::HasNextPage() const
 {
-  return (GetOffset() < (int)m_items.size() - m_itemsPerPage && (int)m_items.size() >= m_itemsPerPage);
+  return (GetOffset() < static_cast<int>(m_items.size()) - m_itemsPerPage &&
+          static_cast<int>(m_items.size()) >= m_itemsPerPage);
 }
 
 int CGUIFixedListContainer::GetCurrentPage() const
 {
   int offset = CorrectOffset(GetOffset(), GetCursor());
-  if (offset + m_itemsPerPage - GetCursor() >= (int)GetRows())  // last page
+  if (offset + m_itemsPerPage - GetCursor() >= static_cast<int>(GetRows())) // last page
     return (GetRows() + m_itemsPerPage - 1) / m_itemsPerPage;
   return offset / m_itemsPerPage + 1;
 }
@@ -297,7 +298,7 @@ void CGUIFixedListContainer::GetCursorRange(int &minCursor, int &maxCursor) cons
     return;
   }
 
-  while (maxCursor - minCursor > (int)m_items.size() - 1)
+  while (maxCursor - minCursor > static_cast<int>(m_items.size()) - 1)
   {
     if (maxCursor - m_fixedCursor > m_fixedCursor - minCursor)
       maxCursor--;

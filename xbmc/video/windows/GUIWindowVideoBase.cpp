@@ -308,7 +308,7 @@ bool CGUIWindowVideoBase::ShowIMDB(CFileItemPtr item, const ScraperPtr &info2, b
   CLog::Log(LOGDEBUG,"  strMovie  = [%s]", strMovie.c_str());
   CLog::Log(LOGDEBUG,"  strFile   = [%s]", strFile.c_str());
   CLog::Log(LOGDEBUG,"  strFolder = [%s]", strFolder.c_str());
-  CLog::Log(LOGDEBUG,"  bFolder   = [%s]", ((int)bFolder ? "true" : "false"));
+  CLog::Log(LOGDEBUG,"  bFolder   = [%s]", (static_cast<int>(bFolder) ? "true" : "false"));
   */
 
   CGUIDialogProgress* pDlgProgress = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogProgress>(WINDOW_DIALOG_PROGRESS);

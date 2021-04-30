@@ -168,7 +168,7 @@ namespace XBMCAddon
     void ControlTextBox::scroll(long position)
     {
       if (pGUIControl)
-        static_cast<CGUITextBox*>(pGUIControl)->Scroll((int)position);
+        static_cast<CGUITextBox*>(pGUIControl)->Scroll(static_cast<int>(position));
     }
 
     void ControlTextBox::autoScroll(int delay, int time, int repeat)
@@ -1244,7 +1244,7 @@ namespace XBMCAddon
 
     void ControlList::removeItem(int index)
     {
-      if (index < 0 || index >= (int)vecItems.size())
+      if (index < 0 || index >= static_cast<int>(vecItems.size()))
         throw WindowException("Index out of range");
 
       vecItems.erase(vecItems.begin() + index);
@@ -1382,7 +1382,7 @@ namespace XBMCAddon
 
     XBMCAddon::xbmcgui::ListItem* ControlList::getListItem(int index)
     {
-      if (index < 0 || index >= (int)vecItems.size())
+      if (index < 0 || index >= static_cast<int>(vecItems.size()))
         throw WindowException("Index out of range");
 
       AddonClass::Ref<ListItem> pListItem = vecItems[index];

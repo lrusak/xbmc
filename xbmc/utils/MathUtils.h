@@ -58,8 +58,8 @@ namespace MathUtils
   */
   inline int round_int(double x)
   {
-    assert(x > static_cast<double>((int) (INT_MIN / 2)) - 1.0);
-    assert(x < static_cast<double>((int) (INT_MAX / 2)) + 1.0);
+    assert(x > static_cast<double>(static_cast<int>((INT_MIN) / 2)) - 1.0);
+    assert(x < static_cast<double>(static_cast<int>((INT_MAX) / 2)) + 1.0);
 
 #if defined(DISABLE_MATHUTILS_ASM_ROUND_INT)
     /* This implementation warrants some further explanation.

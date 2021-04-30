@@ -563,8 +563,8 @@ int CSelectionStreams::CountTypeOfSource(StreamType type, StreamSource source) c
 
 int CSelectionStreams::CountType(StreamType type) const
 {
-  return std::count_if(m_Streams.begin(), m_Streams.end(), 
-    [&](const SelectionStream& stream) {return stream.type == type;});
+  return std::count_if(m_Streams.begin(), m_Streams.end(),
+                       [&](const SelectionStream& stream) { return stream.type == type; });
 }
 
 //------------------------------------------------------------------------------
@@ -1875,7 +1875,7 @@ void CVideoPlayer::HandlePlaySpeed()
             CLog::Log(LOGDEBUG,"CVideoPlayer::HandlePlaySpeed - audio stream stalled, triggering re-sync");
             FlushBuffers(DVD_NOPTS_VALUE, true, true);
             CDVDMsgPlayerSeek::CMode mode;
-            mode.time = (int)GetUpdatedTime();
+            mode.time = static_cast<int>(GetUpdatedTime());
             mode.backward = false;
             mode.accurate = true;
             mode.sync = true;
@@ -2105,7 +2105,7 @@ void CVideoPlayer::HandlePlaySpeed()
       }
     }
   }
-  
+
   // reset tempo
   if (!m_State.cantempo)
   {
@@ -2679,7 +2679,7 @@ void CVideoPlayer::HandleMessages()
             m_dvd.iSelectedAudioStream = -1;
             CloseStream(m_CurrentAudio, false);
             CDVDMsgPlayerSeek::CMode mode;
-            mode.time = (int)GetUpdatedTime();
+            mode.time = static_cast<int>(GetUpdatedTime());
             mode.backward = true;
             mode.accurate = true;
             mode.trickplay = true;
@@ -2694,7 +2694,7 @@ void CVideoPlayer::HandleMessages()
           AdaptForcedSubtitles();
 
           CDVDMsgPlayerSeek::CMode mode;
-          mode.time = (int)GetUpdatedTime();
+          mode.time = static_cast<int>(GetUpdatedTime());
           mode.backward = true;
           mode.accurate = true;
           mode.trickplay = true;
@@ -2718,7 +2718,7 @@ void CVideoPlayer::HandleMessages()
             m_dvd.iSelectedVideoStream = st.id;
 
             CDVDMsgPlayerSeek::CMode mode;
-            mode.time = (int)GetUpdatedTime();
+            mode.time = static_cast<int>(GetUpdatedTime());
             mode.backward = true;
             mode.accurate = true;
             mode.trickplay = true;
@@ -2731,7 +2731,7 @@ void CVideoPlayer::HandleMessages()
           CloseStream(m_CurrentVideo, false);
           OpenStream(m_CurrentVideo, st.demuxerId, st.id, st.source);
           CDVDMsgPlayerSeek::CMode mode;
-          mode.time = (int)GetUpdatedTime();
+          mode.time = static_cast<int>(GetUpdatedTime());
           mode.backward = true;
           mode.accurate = true;
           mode.trickplay = true;
@@ -3102,7 +3102,7 @@ void CVideoPlayer::Seek(bool bPlus, bool bLargeStep, bool bChapterOverride)
   }
 
   CDVDMsgPlayerSeek::CMode mode;
-  mode.time = (int)seekTarget;
+  mode.time = static_cast<int>(seekTarget);
   mode.backward = !bPlus;
   mode.accurate = false;
   mode.restore = restore;
@@ -3298,7 +3298,7 @@ bool CVideoPlayer::SeekTimeRelative(int64_t iTime)
   int64_t abstime = GetTime() + iTime;
 
   CDVDMsgPlayerSeek::CMode mode;
-  mode.time = (int)iTime;
+  mode.time = static_cast<int>(iTime);
   mode.relative = true;
   mode.backward = (iTime < 0) ? true : false;
   mode.accurate = false;
@@ -4420,9 +4420,10 @@ int CVideoPlayer::GetChapter()
 void CVideoPlayer::GetChapterName(std::string& strChapterName, int chapterIdx)
 {
   CSingleLock lock(m_StateSection);
-  if (chapterIdx == -1 && m_State.chapter > 0 && m_State.chapter <= (int) m_State.chapters.size())
+  if (chapterIdx == -1 && m_State.chapter > 0 &&
+      m_State.chapter <= static_cast<int>(m_State.chapters.size()))
     strChapterName = m_State.chapters[m_State.chapter - 1].first;
-  else if (chapterIdx > 0 && chapterIdx <= (int) m_State.chapters.size())
+  else if (chapterIdx > 0 && chapterIdx <= static_cast<int>(m_State.chapters.size()))
     strChapterName = m_State.chapters[chapterIdx - 1].first;
 }
 
@@ -4446,7 +4447,7 @@ int CVideoPlayer::SeekChapter(int iChapter)
 int64_t CVideoPlayer::GetChapterPos(int chapterIdx)
 {
   CSingleLock lock(m_StateSection);
-  if (chapterIdx > 0 && chapterIdx <= (int) m_State.chapters.size())
+  if (chapterIdx > 0 && chapterIdx <= static_cast<int>(m_State.chapters.size()))
     return m_State.chapters[chapterIdx - 1].second;
 
   return -1;

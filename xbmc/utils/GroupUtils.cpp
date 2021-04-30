@@ -132,9 +132,9 @@ bool GroupUtils::Group(GroupBy groupBy, const std::string &baseDir, const CFileI
         pItem->GetVideoInfoTag()->SetRating(totalRatings / ratings);
 
       setInfo->SetPlayCount(iWatched >= static_cast<int>(set->second.size()) ? (setInfo->GetPlayCount() / set->second.size()) : 0);
-      pItem->SetProperty("total", (int)set->second.size());
+      pItem->SetProperty("total", static_cast<int>(set->second.size()));
       pItem->SetProperty("watched", iWatched);
-      pItem->SetProperty("unwatched", (int)set->second.size() - iWatched);
+      pItem->SetProperty("unwatched", static_cast<int>(set->second.size()) - iWatched);
       pItem->SetOverlayImage(CGUIListItem::ICON_OVERLAY_UNWATCHED, setInfo->GetPlayCount() > 0);
 
       groupedItems.Add(pItem);

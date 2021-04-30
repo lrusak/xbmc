@@ -24,15 +24,17 @@
 
 - (instancetype)initWithName:(PERIPHERALS::CPeripheralBusDarwinEmbedded*)parentClass;
 - (PERIPHERALS::PeripheralScanResults)GetInputDevices;
-- (void)DeviceAdded:(int)deviceID;
-- (void)DeviceRemoved:(int)deviceID;
+- (void)DeviceAdded:static_cast<int>(deviceID);
+- (void)DeviceRemoved:static_cast<int>(deviceID);
 - (void)SetDigitalEvent:(kodi::addon::PeripheralEvent)event;
 - (void)SetAxisEvent:(kodi::addon::PeripheralEvent)event;
 - (std::vector<kodi::addon::PeripheralEvent>)GetButtonEvents;
 - (std::vector<kodi::addon::PeripheralEvent>)GetAxisEvents;
-- (int)GetControllerAxisCount:(int)deviceId withControllerType:(GCCONTROLLER_TYPE)controllerType;
-- (int)GetControllerButtonCount:(int)deviceId withControllerType:(GCCONTROLLER_TYPE)controllerType;
-- (GCCONTROLLER_TYPE)GetControllerType:(int)deviceID;
-- (std::string)GetDeviceLocation:(int)deviceId;
-- (void)displayMessage:(NSString*)message controllerID:(int)controllerID;
+- static_cast<int>(GetControllerAxisCount:(int)deviceId)
+    withControllerType:(GCCONTROLLER_TYPE)controllerType;
+- static_cast<int>(GetControllerButtonCount:(int)deviceId)
+    withControllerType:(GCCONTROLLER_TYPE)controllerType;
+- (GCCONTROLLER_TYPE)GetControllerType:static_cast<int>(deviceID);
+- (std::string)GetDeviceLocation:static_cast<int>(deviceId);
+- (void)displayMessage:(NSString*)message controllerID:static_cast<int>(controllerID);
 @end

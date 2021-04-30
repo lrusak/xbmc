@@ -68,8 +68,8 @@ namespace JSONRPC
       if (size < 0)
         size = 0;
 
-      start = (int)parameterObject["limits"]["start"].asInteger();
-      end   = (int)parameterObject["limits"]["end"].asInteger();
+      start = static_cast<int>(parameterObject["limits"]["start"].asInteger());
+      end = static_cast<int>(parameterObject["limits"]["end"].asInteger());
       end = (end <= 0 || end > size) ? size : end;
       start = start > end ? end : start;
 
@@ -105,8 +105,8 @@ namespace JSONRPC
 
     static void ParseLimits(const CVariant &parameterObject, int &limitStart, int &limitEnd)
     {
-      limitStart = (int)parameterObject["limits"]["start"].asInteger();
-      limitEnd = (int)parameterObject["limits"]["end"].asInteger();
+      limitStart = static_cast<int>(parameterObject["limits"]["start"].asInteger());
+      limitEnd = static_cast<int>(parameterObject["limits"]["end"].asInteger());
     }
 
     /*!

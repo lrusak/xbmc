@@ -136,7 +136,7 @@ void CGUITextBox::Process(unsigned int currentTime, CDirtyRegionList &dirtyregio
       if (m_autoScrollDelayTime > (unsigned int)m_autoScrollDelay && m_scrollSpeed == 0)
       { // delay is finished - start scrolling
         MarkDirtyRegion();
-        if (m_offset < (int)m_lines.size() - m_itemsPerPage)
+        if (m_offset < static_cast<int>(m_lines.size()) - m_itemsPerPage)
           ScrollToOffset(m_offset + 1, true);
         else
         { // at the end, run a delay and restart
@@ -239,7 +239,7 @@ void CGUITextBox::Render()
       if (m_colors.size())
         m_colors[0] = m_label.textColor;
 
-      while (posY < m_posY + m_renderHeight && current < (int)m_lines.size())
+      while (posY < m_posY + m_renderHeight && current < static_cast<int>(m_lines.size()))
       {
         uint32_t align = alignment;
         if (m_lines[current].m_text.size() && m_lines[current].m_carriageReturn)

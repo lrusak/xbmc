@@ -606,7 +606,7 @@ bool CEdl::AddCut(const Cut& newCut)
     return false;
   }
 
-  for (int i = 0; i < (int)m_vecCuts.size(); i++)
+  for (int i = 0; i < static_cast<int>(m_vecCuts.size()); i++)
   {
     if (cut.start < m_vecCuts[i].start && cut.end > m_vecCuts[i].end)
     {
@@ -710,7 +710,7 @@ int CEdl::RemoveCutTime(int iSeek) const
    * total duration for display.
    */
   int iCutTime = 0;
-  for (int i = 0; i < (int)m_vecCuts.size(); i++)
+  for (int i = 0; i < static_cast<int>(m_vecCuts.size()); i++)
   {
     if (m_vecCuts[i].action == Action::CUT)
     {
@@ -729,7 +729,7 @@ double CEdl::RestoreCutTime(double dClock) const
     return dClock;
 
   double dSeek = dClock;
-  for (int i = 0; i < (int)m_vecCuts.size(); i++)
+  for (int i = 0; i < static_cast<int>(m_vecCuts.size()); i++)
   {
     if (m_vecCuts[i].action == Action::CUT && dSeek >= m_vecCuts[i].start)
       dSeek += static_cast<double>(m_vecCuts[i].end - m_vecCuts[i].start);
@@ -749,7 +749,7 @@ std::string CEdl::GetInfo() const
   if (HasCut())
   {
     int cutCount = 0, muteCount = 0, commBreakCount = 0;
-    for (int i = 0; i < (int)m_vecCuts.size(); i++)
+    for (int i = 0; i < static_cast<int>(m_vecCuts.size()); i++)
     {
       switch (m_vecCuts[i].action)
       {
@@ -781,7 +781,7 @@ std::string CEdl::GetInfo() const
 
 bool CEdl::InCut(const int iSeek, Cut *pCut)
 {
-  for (int i = 0; i < (int)m_vecCuts.size(); i++)
+  for (int i = 0; i < static_cast<int>(m_vecCuts.size()); i++)
   {
     if (iSeek < m_vecCuts[i].start) // Early exit if not even up to the cut start time.
       return false;
@@ -832,7 +832,7 @@ bool CEdl::GetNearestCut(bool bPlus, const int iSeek, Cut *pCut) const
   else
   {
     // Searching backwards
-    for (int i = (int)m_vecCuts.size() - 1; i >= 0; i--)
+    for (int i = static_cast<int>(m_vecCuts.size()) - 1; i >= 0; i--)
     {
       if (iSeek - 20000 >= m_vecCuts[i].start && iSeek <= m_vecCuts[i].end)
         // Inside cut. We ignore if we're closer to 20 seconds inside
@@ -864,7 +864,7 @@ bool CEdl::GetNextSceneMarker(bool bPlus, const int iClock, int *iSceneMarker)
 
   if (bPlus) // Find closest scene forwards
   {
-    for (int i = 0; i < (int)m_vecSceneMarkers.size(); i++)
+    for (int i = 0; i < static_cast<int>(m_vecSceneMarkers.size()); i++)
     {
       if ((m_vecSceneMarkers[i] > iSeek) && ((m_vecSceneMarkers[i] - iSeek) < iDiff))
       {
@@ -876,7 +876,7 @@ bool CEdl::GetNextSceneMarker(bool bPlus, const int iClock, int *iSceneMarker)
   }
   else // Find closest scene backwards
   {
-    for (int i = 0; i < (int)m_vecSceneMarkers.size(); i++)
+    for (int i = 0; i < static_cast<int>(m_vecSceneMarkers.size()); i++)
     {
       if ((m_vecSceneMarkers[i] < iSeek) && ((iSeek - m_vecSceneMarkers[i]) < iDiff))
       {
@@ -988,7 +988,7 @@ void CEdl::MergeShortCommBreaks()
   /*
    * Add in scene markers at the start and end of the commercial breaks.
    */
-  for (int i = 0; i < (int)m_vecCuts.size(); i++)
+  for (int i = 0; i < static_cast<int>(m_vecCuts.size()); i++)
   {
     if (m_vecCuts[i].action == Action::COMM_BREAK)
     {

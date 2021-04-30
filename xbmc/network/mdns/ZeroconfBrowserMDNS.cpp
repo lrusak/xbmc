@@ -89,7 +89,7 @@ void DNSSD_API CZeroconfBrowserMDNS::BrowserCallback(DNSServiceRef browser,
   else
   {
     CLog::Log(LOGERROR, "ZeroconfBrowserMDNS::BrowserCallback returned (error = %ld)",
-              (int)errorCode);
+              static_cast<int>(errorCode));
   }
 }
 
@@ -106,7 +106,8 @@ void DNSSD_API CZeroconfBrowserMDNS::GetAddrInfoCallback(DNSServiceRef          
 
   if (errorCode)
   {
-    CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: GetAddrInfoCallback failed with error = %ld", (int) errorCode);
+    CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: GetAddrInfoCallback failed with error = %ld",
+              static_cast<int>(errorCode));
     return;
   }
 
@@ -135,7 +136,8 @@ void DNSSD_API CZeroconfBrowserMDNS::ResolveCallback(DNSServiceRef              
 
   if (errorCode)
   {
-    CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: ResolveCallback failed with error = %ld", (int) errorCode);
+    CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: ResolveCallback failed with error = %ld",
+              static_cast<int>(errorCode));
     return;
   }
 
@@ -227,13 +229,15 @@ bool CZeroconfBrowserMDNS::doAddServiceType(const std::string& fcr_service_type)
     err = DNSServiceCreateConnection(&m_browser);
     if (err != kDNSServiceErr_NoError)
     {
-      CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: DNSServiceCreateConnection failed with error = %ld", (int) err);
+      CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: DNSServiceCreateConnection failed with error = %ld",
+                static_cast<int>(err));
       return false;
     }
 #if defined(TARGET_WINDOWS_DESKTOP)
     err = WSAAsyncSelect( (SOCKET) DNSServiceRefSockFD( m_browser ), g_hWnd, BONJOUR_BROWSER_EVENT, FD_READ | FD_CLOSE );
     if (err != kDNSServiceErr_NoError)
-      CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: WSAAsyncSelect failed with error = %ld", (int) err);
+      CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: WSAAsyncSelect failed with error = %ld",
+                static_cast<int>(err));
 #elif defined(TARGET_WINDOWS_STORE)
     // need to modify this code to use WSAEventSelect since WSAAsyncSelect is not supported
     CLog::Log(LOGERROR, "%s is not implemented for TARGET_WINDOWS_STORE", __FUNCTION__);
@@ -252,7 +256,8 @@ bool CZeroconfBrowserMDNS::doAddServiceType(const std::string& fcr_service_type)
     if (browser)
       DNSServiceRefDeallocate(browser);
 
-    CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: DNSServiceBrowse returned (error = %ld)", (int) err);
+    CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: DNSServiceBrowse returned (error = %ld)",
+              static_cast<int>(err));
     return false;
   }
 
@@ -325,14 +330,18 @@ bool CZeroconfBrowserMDNS::doResolveService(CZeroconfBrowser::ZeroconfService& f
     if (sdRef)
       DNSServiceRefDeallocate(sdRef);
 
-    CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: DNSServiceResolve returned (error = %ld)", (int) err);
+    CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: DNSServiceResolve returned (error = %ld)",
+              static_cast<int>(err));
     return false;
   }
 
   err = DNSServiceProcessResult(sdRef);
 
   if (err != kDNSServiceErr_NoError)
-      CLog::Log(LOGERROR, "ZeroconfBrowserMDNS::doResolveService DNSServiceProcessResult returned (error = %ld)", (int) err);
+    CLog::Log(
+        LOGERROR,
+        "ZeroconfBrowserMDNS::doResolveService DNSServiceProcessResult returned (error = %ld)",
+        static_cast<int>(err));
 
 #if defined(HAS_MDNS_EMBEDDED)
   // when using the embedded mdns service the call to DNSServiceProcessResult
@@ -357,12 +366,16 @@ bool CZeroconfBrowserMDNS::doResolveService(CZeroconfBrowser::ZeroconfService& f
     err = DNSServiceGetAddrInfo(&sdRef, 0, kDNSServiceInterfaceIndexAny, kDNSServiceProtocol_IPv4, fr_service.GetHostname().c_str(), GetAddrInfoCallback, this);
 
     if (err != kDNSServiceErr_NoError)
-      CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: DNSServiceGetAddrInfo returned (error = %ld)", (int) err);
+      CLog::Log(LOGERROR, "ZeroconfBrowserMDNS: DNSServiceGetAddrInfo returned (error = %ld)",
+                static_cast<int>(err));
 
     err = DNSServiceProcessResult(sdRef);
 
     if (err != kDNSServiceErr_NoError)
-      CLog::Log(LOGERROR, "ZeroconfBrowserMDNS::doResolveService DNSServiceProcessResult returned (error = %ld)", (int) err);
+      CLog::Log(
+          LOGERROR,
+          "ZeroconfBrowserMDNS::doResolveService DNSServiceProcessResult returned (error = %ld)",
+          static_cast<int>(err));
 
 #if defined(HAS_MDNS_EMBEDDED)
     // when using the embedded mdns service the call to DNSServiceProcessResult
@@ -396,5 +409,6 @@ void CZeroconfBrowserMDNS::ProcessResults()
   CSingleLock lock(m_data_guard);
   DNSServiceErrorType err = DNSServiceProcessResult(m_browser);
   if (err != kDNSServiceErr_NoError)
-    CLog::Log(LOGERROR, "ZeroconfWIN: DNSServiceProcessResult returned (error = %ld)", (int) err);
+    CLog::Log(LOGERROR, "ZeroconfWIN: DNSServiceProcessResult returned (error = %ld)",
+              static_cast<int>(err));
 }

@@ -36,7 +36,7 @@ LibraryLoader *CSectionLoader::LoadDLL(const std::string &dllname, bool bDelayUn
 
   if (dllname.empty()) return NULL;
   // check if it's already loaded, and increase the reference count if so
-  for (int i = 0; i < (int)g_sectionLoader.m_vecLoadedDLLs.size(); ++i)
+  for (int i = 0; i < static_cast<int>(g_sectionLoader.m_vecLoadedDLLs.size()); ++i)
   {
     CDll& dll = g_sectionLoader.m_vecLoadedDLLs[i];
     if (StringUtils::EqualsNoCase(dll.m_strDllName, dllname))
@@ -68,7 +68,7 @@ void CSectionLoader::UnloadDLL(const std::string &dllname)
 
   if (dllname.empty()) return;
   // check if it's already loaded, and decrease the reference count if so
-  for (int i = 0; i < (int)g_sectionLoader.m_vecLoadedDLLs.size(); ++i)
+  for (int i = 0; i < static_cast<int>(g_sectionLoader.m_vecLoadedDLLs.size()); ++i)
   {
     CDll& dll = g_sectionLoader.m_vecLoadedDLLs[i];
     if (StringUtils::EqualsNoCase(dll.m_strDllName, dllname))
@@ -97,7 +97,7 @@ void CSectionLoader::UnloadDelayed()
   CSingleLock lock(g_sectionLoader.m_critSection);
 
   // check if we can unload any unreferenced dlls
-  for (int i = 0; i < (int)g_sectionLoader.m_vecLoadedDLLs.size(); ++i)
+  for (int i = 0; i < static_cast<int>(g_sectionLoader.m_vecLoadedDLLs.size()); ++i)
   {
     CDll& dll = g_sectionLoader.m_vecLoadedDLLs[i];
     if (dll.m_lReferenceCount == 0 && XbmcThreads::SystemClockMillis() - dll.m_unloadDelayStartTick > UNLOAD_DELAY)
