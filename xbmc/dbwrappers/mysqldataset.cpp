@@ -1070,7 +1070,7 @@ void MysqlDatabase::mysqlVXPrintf(
         /* Normalize realvalue to within 10.0 > realvalue >= 1.0 */
         exp = 0;
 #if 0
-        if( mysqlIsNaN((double)realvalue) ){
+        if( mysqlIsNaN(static_cast<double>(realvalue)) ){
           bufpt = "NaN";
           length = 3;
           break;

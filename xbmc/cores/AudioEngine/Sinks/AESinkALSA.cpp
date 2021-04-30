@@ -579,7 +579,7 @@ bool CAESinkALSA::Initialize(AEAudioFormat &format, std::string &device)
   format.m_dataFormat = outconfig.format;
 
   m_format              = format;
-  m_formatSampleRateMul = 1.0 / (double)m_format.m_sampleRate;
+  m_formatSampleRateMul = 1.0 / static_cast<double>(m_format.m_sampleRate);
 
   return true;
 }
@@ -793,7 +793,7 @@ bool CAESinkALSA::InitializeHW(const ALSAConfig &inconfig, ALSAConfig &outconfig
   unsigned int fragments = 1;
   if (periodSize < AE_MIN_PERIODSIZE)
   {
-    fragments = std::ceil((double) AE_MIN_PERIODSIZE / periodSize);
+    fragments = std::ceil(static_cast<double>(AE_MIN_PERIODSIZE) / periodSize);
     CLog::Log(LOGDEBUG, "Audio Driver reports too low periodSize %d - will use %d fragments",
               static_cast<int>(periodSize), static_cast<int>(fragments));
     m_fragmented = true;
@@ -804,7 +804,7 @@ bool CAESinkALSA::InitializeHW(const ALSAConfig &inconfig, ALSAConfig &outconfig
   outconfig.frameSize    = snd_pcm_frames_to_bytes(m_pcm, 1);
 
   m_bufferSize = (unsigned int)bufferSize;
-  m_timeout    = std::ceil((double)(bufferSize * 1000) / (double)sampleRate);
+  m_timeout = std::ceil((double)(bufferSize * 1000) / static_cast<double>(sampleRate));
 
   CLog::Log(LOGDEBUG, "CAESinkALSA::InitializeHW - Setting timeout to %d ms", m_timeout);
 
@@ -868,12 +868,12 @@ void CAESinkALSA::GetDelay(AEDelayStatus& status)
     frames = 0;
   }
 
-  status.SetDelay((double)frames * m_formatSampleRateMul);
+  status.SetDelay(static_cast<double>(frames) * m_formatSampleRateMul);
 }
 
 double CAESinkALSA::GetCacheTotal()
 {
-  return (double)m_bufferSize * m_formatSampleRateMul;
+  return static_cast<double>(m_bufferSize) * m_formatSampleRateMul;
 }
 
 unsigned int CAESinkALSA::AddPackets(uint8_t **data, unsigned int frames, unsigned int offset)

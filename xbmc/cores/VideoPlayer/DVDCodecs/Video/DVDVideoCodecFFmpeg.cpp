@@ -1095,7 +1095,7 @@ bool CDVDVideoCodecFFmpeg::GetPictureCommon(VideoPicture* pVideoPicture)
   int64_t bpts = m_pFrame->best_effort_timestamp;
   if (bpts != AV_NOPTS_VALUE)
   {
-    pVideoPicture->pts = (double)bpts * DVD_TIME_BASE / AV_TIME_BASE;
+    pVideoPicture->pts = static_cast<double>(bpts) * DVD_TIME_BASE / AV_TIME_BASE;
     if (pVideoPicture->pts == m_decoderPts)
     {
       pVideoPicture->iRepeatPicture = -0.5;

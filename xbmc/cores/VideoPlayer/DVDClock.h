@@ -46,7 +46,7 @@ public:
   void SetMaxSpeedAdjust(double speed);
 
   double GetAbsoluteClock(bool interpolated = true);
-  double GetFrequency() { return (double)m_systemFrequency ; }
+  double GetFrequency() { return static_cast<double>(m_systemFrequency); }
 
   bool GetClockInfo(int& MissedVblanks, double& ClockSpeed, double& RefreshRate) const;
   void SetVsyncAdjust(double adjustment);

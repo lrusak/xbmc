@@ -962,12 +962,12 @@ double CDVDDemuxFFmpeg::ConvertTimestamp(int64_t pts, int den, int num)
 
   // do calculations in floats as they can easily overflow otherwise
   // we don't care for having a completely exact timestamp anyway
-  double timestamp = (double)pts * num / den;
+  double timestamp = static_cast<double>(pts) * num / den;
   double starttime = 0.0f;
 
   std::shared_ptr<CDVDInputStream::IMenus> menu = std::dynamic_pointer_cast<CDVDInputStream::IMenus>(m_pInput);
   if (!menu && m_pFormatContext->start_time != (int64_t)AV_NOPTS_VALUE)
-    starttime = (double)m_pFormatContext->start_time / AV_TIME_BASE;
+    starttime = static_cast<double>(m_pFormatContext->start_time) / AV_TIME_BASE;
 
   if (m_checkTransportStream)
     starttime = m_startTime;
@@ -1102,7 +1102,8 @@ DemuxPacket* CDVDDemuxFFmpeg::Read()
 
         pPacket->pts = ConvertTimestamp(m_pkt.pkt.pts, stream->time_base.den, stream->time_base.num);
         pPacket->dts = ConvertTimestamp(m_pkt.pkt.dts, stream->time_base.den, stream->time_base.num);
-        pPacket->duration =  DVD_SEC_TO_TIME((double)m_pkt.pkt.duration * stream->time_base.num / stream->time_base.den);
+        pPacket->duration = DVD_SEC_TO_TIME(static_cast<double>(m_pkt.pkt.duration) *
+                                            stream->time_base.num / stream->time_base.den);
 
         CDVDDemuxUtils::StoreSideData(pPacket, &m_pkt.pkt);
 
@@ -1614,7 +1615,7 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
         st->iHeight = pStream->codecpar->height;
         st->fAspect = SelectAspect(pStream, st->bForcedAspect);
         if (pStream->codecpar->height)
-          st->fAspect *= (double)pStream->codecpar->width / pStream->codecpar->height;
+          st->fAspect *= static_cast<double>(pStream->codecpar->width) / pStream->codecpar->height;
         st->iOrientation = 0;
         st->iBitsPerPixel = pStream->codecpar->bits_per_coded_sample;
         st->iBitRate = static_cast<int>(pStream->codecpar->bit_rate);

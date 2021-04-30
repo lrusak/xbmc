@@ -159,8 +159,8 @@ ASS_Image* CDVDSubtitlesLibass::RenderImage(int frameWidth, int frameHeight, int
     return NULL;
   }
 
-  double sar = (double)sourceWidth / sourceHeight;
-  double dar = (double)videoWidth / videoHeight;
+  double sar = static_cast<double>(sourceWidth) / sourceHeight;
+  double dar = static_cast<double>(videoWidth) / videoHeight;
   ass_set_frame_size(m_renderer, frameWidth, frameHeight);
   int topmargin = (frameHeight - videoHeight) / 2;
   int leftmargin = (frameWidth - videoWidth) / 2;

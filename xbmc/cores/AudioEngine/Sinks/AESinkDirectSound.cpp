@@ -420,13 +420,13 @@ void CAESinkDirectSound::GetDelay(AEDelayStatus& status)
     m_isDirtyDS = true;
 
   /** returns current cached data duration in seconds */
-  status.SetDelay((double)m_CacheLen / (double)m_AvgBytesPerSec);
+  status.SetDelay(static_cast<double>(m_CacheLen) / static_cast<double>(m_AvgBytesPerSec));
 }
 
 double CAESinkDirectSound::GetCacheTotal()
 {
   /** returns total cache capacity in seconds */
-  return (double)m_dwBufferLen / (double)m_AvgBytesPerSec;
+  return static_cast<double>(m_dwBufferLen) / static_cast<double>(m_AvgBytesPerSec);
 }
 
 void CAESinkDirectSound::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList, bool force)

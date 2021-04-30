@@ -476,7 +476,7 @@ static NSWindow *curtainWindow;
 void fadeInDisplay(NSScreen *theScreen, double fadeTime)
 {
   int     fadeSteps     = 100;
-  double  fadeInterval  = (fadeTime / (double) fadeSteps);
+  double fadeInterval = (fadeTime / static_cast<double>(fadeSteps));
 
   if (curtainWindow != nil)
   {
@@ -498,7 +498,7 @@ void fadeInDisplay(NSScreen *theScreen, double fadeTime)
 void fadeOutDisplay(NSScreen *theScreen, double fadeTime)
 {
   int     fadeSteps     = 100;
-  double  fadeInterval  = (fadeTime / (double) fadeSteps);
+  double fadeInterval = (fadeTime / static_cast<double>(fadeSteps));
 
   [NSCursor hide];
 

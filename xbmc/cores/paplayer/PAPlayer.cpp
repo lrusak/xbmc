@@ -835,7 +835,8 @@ inline bool PAPlayer::ProcessStream(StreamInfo *si, double &freeBufferTime)
       if (si->m_audioFormat.m_dataFormat != AE_FMT_RAW)
         free_space = (double)(si->m_stream->GetSpace() / si->m_bytesPerSample) / si->m_audioFormat.m_sampleRate;
       else
-        free_space = (double) si->m_stream->GetSpace() * si->m_audioFormat.m_streamInfo.GetDuration() / 1000;
+        free_space = static_cast<double>(si->m_stream->GetSpace()) *
+                     si->m_audioFormat.m_streamInfo.GetDuration() / 1000;
 
       freeBufferTime = std::max(freeBufferTime , free_space);
     }
@@ -959,7 +960,8 @@ int64_t PAPlayer::GetTimeInternal()
   if (!m_currentStream)
     return 0;
 
-  double time = ((double)m_currentStream->m_framesSent / (double)m_currentStream->m_audioFormat.m_sampleRate);
+  double time = (static_cast<double>(m_currentStream->m_framesSent) /
+                 static_cast<double>(m_currentStream->m_audioFormat.m_sampleRate));
   if (m_currentStream->m_stream)
     time -= m_currentStream->m_stream->GetDelay();
   time = time * 1000.0;
@@ -980,7 +982,7 @@ bool PAPlayer::SetTotalTimeInternal(int64_t time)
 
   m_currentStream->m_decoder.SetTotalTime(time);
   UpdateGUIData(m_currentStream);
-  
+
   return true;
 }
 
@@ -994,7 +996,7 @@ bool PAPlayer::SetTimeInternal(int64_t time)
 
   if (m_currentStream->m_stream)
     m_currentStream->m_framesSent += m_currentStream->m_stream->GetDelay() * m_currentStream->m_audioFormat.m_sampleRate;
-  
+
   return true;
 }
 

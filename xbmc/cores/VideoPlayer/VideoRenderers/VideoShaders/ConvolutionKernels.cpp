@@ -62,7 +62,7 @@ void CConvolutionKernel::Lanczos2()
 {
   for (int i = 0; i < m_size; i++)
   {
-    double x = (double)i / (double)m_size;
+    double x = (double)i / static_cast<double>(m_size);
 
     //generate taps
     for (int j = 0; j < 4; j++)
@@ -90,7 +90,7 @@ void CConvolutionKernel::Lanczos3Fast()
   for (int i = 0; i < m_size; i++)
   {
     double a = 3.0;
-    double x = (double)i / (double)m_size;
+    double x = (double)i / static_cast<double>(m_size);
 
     //generate taps
     m_floatpixels[i * 4 + 0] = (float)(LanczosWeight(x - 2.0, a) + LanczosWeight(x - 3.0, a));
@@ -116,7 +116,7 @@ void CConvolutionKernel::Lanczos3()
 {
   for (int i = 0; i < m_size; i++)
   {
-    double x = (double)i / (double)m_size;
+    double x = (double)i / static_cast<double>(m_size);
 
     //generate taps
     for (int j = 0; j < 3; j++)
@@ -148,7 +148,7 @@ void CConvolutionKernel::Spline36Fast()
 {
   for (int i = 0; i < m_size; i++)
   {
-    double x = (double)i / (double)m_size;
+    double x = (double)i / static_cast<double>(m_size);
 
     //generate taps
     m_floatpixels[i * 4 + 0] = (float)(Spline36Weight(x - 2.0) + Spline36Weight(x - 3.0));
@@ -169,7 +169,7 @@ void CConvolutionKernel::Spline36()
 {
   for (int i = 0; i < m_size; i++)
   {
-    double x = (double)i / (double)m_size;
+    double x = (double)i / static_cast<double>(m_size);
 
     //generate taps
     for (int j = 0; j < 3; j++)
@@ -200,7 +200,7 @@ void CConvolutionKernel::Bicubic(double B, double C)
 {
   for (int i = 0; i < m_size; i++)
   {
-    double x = (double)i / (double)m_size;
+    double x = (double)i / static_cast<double>(m_size);
 
     //generate taps
     for (int j = 0; j < 4; j++)

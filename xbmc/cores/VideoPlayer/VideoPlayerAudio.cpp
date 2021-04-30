@@ -516,7 +516,7 @@ bool CVideoPlayerAudio::ProcessDecoderOutput(DVDAudioFrame &audioframe)
   int framesOutput = m_audioSink.AddPackets(audioframe);
 
   // guess next pts
-  m_audioClock += audioframe.duration * ((double)framesOutput / audioframe.nb_frames);
+  m_audioClock += audioframe.duration * (static_cast<double>(framesOutput) / audioframe.nb_frames);
 
   audioframe.framesOut += framesOutput;
 

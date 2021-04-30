@@ -209,7 +209,7 @@ int CAEPackIEC61937::PackDTS(uint8_t *data, unsigned int size, uint8_t *dest, bo
 int CAEPackIEC61937::PackPause(uint8_t *dest, unsigned int millis, unsigned int framesize, unsigned int samplerate, unsigned int rep_period, unsigned int encodedRate)
 {
   int periodInBytes = rep_period * framesize;
-  double periodInTime = (double)rep_period / samplerate * 1000;
+  double periodInTime = static_cast<double>(rep_period) / samplerate * 1000;
   int periodsNeeded = millis / periodInTime;
   int maxPeriods = MAX_IEC61937_PACKET / periodInBytes;
   if (periodsNeeded > maxPeriods)

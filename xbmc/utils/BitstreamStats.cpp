@@ -49,11 +49,11 @@ void BitstreamStats::CalculateBitrate()
   int64_t tmNow;
   tmNow = CurrentHostCounter();
 
-  double elapsed = (double)(tmNow - m_tmStart) / (double)m_tmFreq;
+  double elapsed = (double)(tmNow - m_tmStart) / static_cast<double>(m_tmFreq);
   // only update once every 2 seconds
   if (elapsed >= 2)
   {
-    m_dBitrate = (double)m_nBitCount / elapsed;
+    m_dBitrate = static_cast<double>(m_nBitCount) / elapsed;
 
     if (m_dBitrate > m_dMaxBitrate)
       m_dMaxBitrate = m_dBitrate;

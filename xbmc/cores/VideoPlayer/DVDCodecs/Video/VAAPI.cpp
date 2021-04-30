@@ -3130,7 +3130,7 @@ bool CFFmpegPostproc::Filter(CVaapiProcessedPicture &outPic)
   int64_t bpts = outPic.frame->best_effort_timestamp;
   if(bpts != AV_NOPTS_VALUE)
   {
-    outPic.DVDPic.pts = (double)bpts * DVD_TIME_BASE / AV_TIME_BASE;
+    outPic.DVDPic.pts = static_cast<double>(bpts) * DVD_TIME_BASE / AV_TIME_BASE;
   }
   else
     outPic.DVDPic.pts = DVD_NOPTS_VALUE;

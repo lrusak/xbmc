@@ -208,7 +208,7 @@ double CAESinkXAudio::GetCacheTotal()
   if (!m_initialized)
     return 0.0;
 
-  return XAUDIO_BUFFERS_IN_QUEUE * m_format.m_frames / (double)m_format.m_sampleRate;
+  return XAUDIO_BUFFERS_IN_QUEUE * m_format.m_frames / static_cast<double>(m_format.m_sampleRate);
 }
 
 double CAESinkXAudio::GetLatency()
@@ -219,7 +219,7 @@ double CAESinkXAudio::GetLatency()
   XAUDIO2_PERFORMANCE_DATA perfData;
   m_xAudio2->GetPerformanceData(&perfData);
 
-  return perfData.CurrentLatencyInSamples / (double) m_format.m_sampleRate;
+  return perfData.CurrentLatencyInSamples / static_cast<double>(m_format.m_sampleRate);
 }
 
 unsigned int CAESinkXAudio::AddPackets(uint8_t **data, unsigned int frames, unsigned int offset)
@@ -299,7 +299,8 @@ unsigned int CAESinkXAudio::AddPackets(uint8_t **data, unsigned int frames, unsi
 #ifndef _DEBUG
   QueryPerformanceCounter(&timerStop);
   LONGLONG timerDiff = timerStop.QuadPart - timerStart.QuadPart;
-  double timerElapsed = (double) timerDiff * 1000.0 / (double) timerFreq.QuadPart;
+  double timerElapsed =
+      static_cast<double>(timerDiff) * 1000.0 / static_cast<double>(timerFreq.QuadPart);
   m_avgTimeWaiting += (timerElapsed - m_avgTimeWaiting) * 0.5;
 
   if (m_avgTimeWaiting < 3.0)

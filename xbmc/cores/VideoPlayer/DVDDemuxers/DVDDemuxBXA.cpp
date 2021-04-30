@@ -132,7 +132,7 @@ DemuxPacket* CDVDDemuxBXA::Read()
     if (n > 0)
     {
       m_bytes += pPacket->iSize;
-      pPacket->dts = (double)m_bytes * DVD_TIME_BASE / n;
+      pPacket->dts = static_cast<double>(m_bytes) * DVD_TIME_BASE / n;
       pPacket->pts = pPacket->dts;
     }
     else

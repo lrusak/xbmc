@@ -196,7 +196,7 @@ CVariant::CVariant(double value)
 CVariant::CVariant(float value)
 {
   m_type = VariantTypeDouble;
-  m_data.dvalue = (double)value;
+  m_data.dvalue = static_cast<double>(value);
 }
 
 CVariant::CVariant(bool boolean)
@@ -439,9 +439,9 @@ double CVariant::asDouble(double fallback) const
     case VariantTypeDouble:
       return m_data.dvalue;
     case VariantTypeInteger:
-      return (double)m_data.integer;
+      return static_cast<double>(m_data.integer);
     case VariantTypeUnsignedInteger:
-      return (double)m_data.unsignedinteger;
+      return static_cast<double>(m_data.unsignedinteger);
     case VariantTypeString:
       return str2double(*m_data.string, fallback);
     case VariantTypeWideString:

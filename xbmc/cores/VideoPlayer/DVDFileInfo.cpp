@@ -245,10 +245,11 @@ bool CDVDFileInfo::ExtractThumb(const CFileItem& fileItem,
         {
           {
             unsigned int nWidth = std::min(picture.iDisplayWidth, CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_imageRes);
-            double aspect = (double)picture.iDisplayWidth / (double)picture.iDisplayHeight;
+            double aspect = static_cast<double>(picture.iDisplayWidth) /
+                            static_cast<double>(picture.iDisplayHeight);
             if(hint.forced_aspect && hint.aspect != 0)
               aspect = hint.aspect;
-            unsigned int nHeight = (unsigned int)((double)nWidth / aspect);
+            unsigned int nHeight = (unsigned int)(static_cast<double>(nWidth) / aspect);
 
             // We pass the buffers to sws_scale uses 16 aligned widths when using intrinsics
             int sizeNeeded = FFALIGN(nWidth, 16) * nHeight * 4;

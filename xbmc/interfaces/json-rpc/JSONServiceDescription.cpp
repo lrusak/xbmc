@@ -550,8 +550,8 @@ bool JSONSchemaTypeDefinition::Parse(const CVariant &value, bool isParameter /* 
     }
     else if ((type  & IntegerValue) == IntegerValue)
     {
-      minimum = (double)value["minimum"].asInteger(std::numeric_limits<int>::min());
-      maximum = (double)value["maximum"].asInteger(std::numeric_limits<int>::max());
+      minimum = static_cast<double>(value["minimum"].asInteger(std::numeric_limits<int>::min()));
+      maximum = static_cast<double>(value["maximum"].asInteger(std::numeric_limits<int>::max()));
     }
 
     exclusiveMinimum = value["exclusiveMinimum"].asBoolean(false);
@@ -932,7 +932,7 @@ JSONRPC_STATUS JSONSchemaTypeDefinition::Check(const CVariant& value,
     if (value.isDouble())
       numberValue = value.asDouble();
     else
-      numberValue = (double)value.asInteger();
+      numberValue = static_cast<double>(value.asInteger());
     // Check minimum
     if ((exclusiveMinimum && numberValue <= minimum) || (!exclusiveMinimum && numberValue < minimum) ||
     // Check maximum

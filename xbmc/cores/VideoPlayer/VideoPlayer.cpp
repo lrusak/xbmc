@@ -1753,7 +1753,7 @@ bool CVideoPlayer::GetCachingTimes(double& level, double& delay, double& offset)
   if (currate == 0)
     return true;
 
-  double cache_sbp = 1.1 * (double)DVD_TIME_BASE / currate;          /* underestimate by 10 % */
+  double cache_sbp = 1.1 * static_cast<double>(DVD_TIME_BASE) / currate; /* underestimate by 10 % */
   double play_left = play_sbp  * (remain + queued);                  /* time to play out all remaining bytes */
   double cache_left = cache_sbp * (remain - cached);                 /* time to cache the remaining bytes */
   double cache_need = std::max(0.0, remain - play_left / cache_sbp); /* bytes needed until play_left == cache_left */
@@ -3417,8 +3417,8 @@ bool CVideoPlayer::OpenStream(CCurrentStream& current, int64_t demuxerId, int iS
     if(pts == DVD_NOPTS_VALUE)
       pts = 0;
     pts += m_offset_pts;
-    if (!m_pSubtitleDemuxer->SeekTime((int)(1000.0 * pts / (double)DVD_TIME_BASE)))
-        CLog::Log(LOGDEBUG, "%s - failed to start subtitle demuxing from: %f", __FUNCTION__, pts);
+    if (!m_pSubtitleDemuxer->SeekTime((int)(1000.0 * pts / static_cast<double>(DVD_TIME_BASE))))
+      CLog::Log(LOGDEBUG, "%s - failed to start subtitle demuxing from: %f", __FUNCTION__, pts);
     stream = m_pSubtitleDemuxer->GetStream(demuxerId, iStream);
     if(!stream || stream->disabled)
       return false;
@@ -3604,7 +3604,9 @@ bool CVideoPlayer::OpenVideoStream(CDVDStreamInfo& hint, bool reset)
   {
     if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_ADJUSTREFRESHRATE) != ADJUST_REFRESHRATE_OFF)
     {
-      double framerate = DVD_TIME_BASE / CDVDCodecUtils::NormalizeFrameduration((double)DVD_TIME_BASE * hint.fpsscale / hint.fpsrate);
+      double framerate =
+          DVD_TIME_BASE / CDVDCodecUtils::NormalizeFrameduration(
+                              static_cast<double>(DVD_TIME_BASE) * hint.fpsscale / hint.fpsrate);
       RESOLUTION res = CResolutionUtils::ChooseBestResolution(static_cast<float>(framerate), hint.width, hint.height, !hint.stereo_mode.empty());
       CServiceBroker::GetWinSystem()->GetGfxContext().SetVideoResolution(res, false);
       m_renderManager.TriggerUpdateResolution(framerate, hint.width, hint.height, hint.stereo_mode);
@@ -4692,8 +4694,8 @@ void CVideoPlayer::UpdatePlayState(double timeout)
 
   if (m_Edl.HasCut())
   {
-    state.time = (double) m_Edl.RemoveCutTime(llrint(state.time));
-    state.timeMax = (double) m_Edl.RemoveCutTime(llrint(state.timeMax));
+    state.time = static_cast<double>(m_Edl.RemoveCutTime(llrint(state.time)));
+    state.timeMax = static_cast<double>(m_Edl.RemoveCutTime(llrint(state.timeMax)));
   }
 
   if (m_caching > CACHESTATE_DONE && m_caching < CACHESTATE_PLAY)

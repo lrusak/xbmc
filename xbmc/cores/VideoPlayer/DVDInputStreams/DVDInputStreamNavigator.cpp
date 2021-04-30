@@ -533,7 +533,7 @@ int CDVDInputStreamNavigator::ProcessBlock(uint8_t* dest_buffer, int* read)
         CLog::Log(LOGDEBUG, "%s - Cell change: Title %d, Chapter %d", __FUNCTION__, m_iTitle,
                   m_iPart);
         CLog::Log(LOGDEBUG, "%s - At position %.0f%% inside the feature", __FUNCTION__,
-                  100 * (double)pos / (double)len);
+                  100 * static_cast<double>(pos) / static_cast<double>(len));
         //Get total segment time
 
         dvdnav_cell_change_event_t* cell_change_event = reinterpret_cast<dvdnav_cell_change_event_t*>(buf);

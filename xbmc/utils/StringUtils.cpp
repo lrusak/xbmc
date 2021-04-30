@@ -1489,7 +1489,7 @@ std::string StringUtils::SizeToString(int64_t size)
   std::string strLabel;
   const char prefixes[] = {' ', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'};
   unsigned int i = 0;
-  double s = (double)size;
+  double s = static_cast<double>(size);
   while (i < ARRAY_SIZE(prefixes) && s >= 1000.0)
   {
     s /= 1024.0;

@@ -1469,7 +1469,7 @@ JSONRPC_STATUS CPlayerOperations::GetPropertyValue(PlayerType player, const std:
       case Picture:
         slideshow = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIWindowSlideShow>(WINDOW_SLIDESHOW);
         if (slideshow && slideshow->NumSlides() > 0)
-          result = (double)slideshow->CurrentSlide() / slideshow->NumSlides();
+          result = static_cast<double>(slideshow->CurrentSlide()) / slideshow->NumSlides();
         else
           result = 0.0;
         break;

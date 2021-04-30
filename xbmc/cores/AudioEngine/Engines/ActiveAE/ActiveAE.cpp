@@ -68,9 +68,10 @@ void CEngineStats::GetDelay(AEDelayStatus& status)
   CSingleLock lock(m_lock);
   status = m_sinkDelay;
   if (m_pcmOutput)
-    status.delay += (double)m_bufferedSamples / m_sinkSampleRate;
+    status.delay += static_cast<double>(m_bufferedSamples) / m_sinkSampleRate;
   else
-    status.delay += (double)m_bufferedSamples * m_sinkFormat.m_streamInfo.GetDuration() / 1000;
+    status.delay +=
+        static_cast<double>(m_bufferedSamples) * m_sinkFormat.m_streamInfo.GetDuration() / 1000;
 }
 
 void CEngineStats::AddStream(unsigned int streamid)
@@ -139,9 +140,10 @@ void CEngineStats::GetDelay(AEDelayStatus& status, CActiveAEStream *stream)
   status = m_sinkDelay;
   status.delay += m_sinkLatency;
   if (m_pcmOutput)
-    status.delay += (double)m_bufferedSamples / m_sinkSampleRate;
+    status.delay += static_cast<double>(m_bufferedSamples) / m_sinkSampleRate;
   else
-    status.delay += (double)m_bufferedSamples * m_sinkFormat.m_streamInfo.GetDuration() / 1000;
+    status.delay +=
+        static_cast<double>(m_bufferedSamples) * m_sinkFormat.m_streamInfo.GetDuration() / 1000;
 
   for (auto &str : m_streamStats)
   {
@@ -162,9 +164,10 @@ void CEngineStats::GetSyncInfo(CAESyncInfo& info, CActiveAEStream *stream)
   AEDelayStatus status;
   status = m_sinkDelay;
   if (m_pcmOutput)
-    status.delay += (double)m_bufferedSamples / m_sinkSampleRate;
+    status.delay += static_cast<double>(m_bufferedSamples) / m_sinkSampleRate;
   else
-    status.delay += (double)m_bufferedSamples * m_sinkFormat.m_streamInfo.GetDuration() / 1000;
+    status.delay +=
+        static_cast<double>(m_bufferedSamples) * m_sinkFormat.m_streamInfo.GetDuration() / 1000;
 
   status.delay += m_sinkLatency;
 
@@ -1185,7 +1188,7 @@ void CActiveAE::Configure(AEAudioFormat *desiredFmt)
     if (m_sinkRequestFormat.m_dataFormat != AE_FMT_RAW)
     {
       // limit buffer size in case of sink returns large buffer
-      double buffertime = (double)m_sinkFormat.m_frames / m_sinkFormat.m_sampleRate;
+      double buffertime = static_cast<double>(m_sinkFormat.m_frames) / m_sinkFormat.m_sampleRate;
       if (buffertime > MAX_BUFFER_TIME)
       {
         CLog::Log(LOGWARNING, "ActiveAE::%s - sink returned large buffer of %d ms, reducing to %d ms", __FUNCTION__, (int)(buffertime * 1000), (int)(MAX_BUFFER_TIME*1000));
@@ -2488,8 +2491,9 @@ CSampleBuffer* CActiveAE::SyncStream(CActiveAEStream *stream)
           memmove(buf->pkt->data[i], buf->pkt->data[i]+bytesToSkip, buf->pkt->linesize - bytesToSkip);
         }
         buf->pkt->nb_samples -= framesToSkip;
-        stream->m_syncError.Correction((double)framesToSkip * 1000 / buf->pkt->config.sample_rate);
-        error += (double)framesToSkip * 1000 / buf->pkt->config.sample_rate;
+        stream->m_syncError.Correction(static_cast<double>(framesToSkip) * 1000 /
+                                       buf->pkt->config.sample_rate);
+        error += static_cast<double>(framesToSkip) * 1000 / buf->pkt->config.sample_rate;
       }
     }
 

@@ -495,7 +495,7 @@ cmsToneCurve* CColorManager::CreateToneCurve(CMS_TRC_TYPE gammaType, float gamma
       double gain = pow(wtipow - bkipow, gammaValue);
       for (int i=0; i<tableSize; i++)
       {
-        gammaTable[i] = gain * pow(((double) i)/(tableSize-1) + lift, gammaValue);
+        gammaTable[i] = gain * pow((static_cast<double>(i) / (tableSize - 1)) + lift, gammaValue);
       }
     }
     break;
@@ -508,7 +508,8 @@ cmsToneCurve* CColorManager::CreateToneCurve(CMS_TRC_TYPE gammaType, float gamma
       double adjustedGamma = log(gain/(gain+pow(2,-gammaValue)-1))/log(2);
       for (int i=0; i<tableSize; i++)
       {
-        gammaTable[i] = gain * pow(((double) i)/(tableSize-1), adjustedGamma) + blackPoint.Y;
+        gammaTable[i] =
+            gain * pow((static_cast<double>(i) / (tableSize - 1)), adjustedGamma) + blackPoint.Y;
       }
     }
     break;
@@ -517,7 +518,8 @@ cmsToneCurve* CColorManager::CreateToneCurve(CMS_TRC_TYPE gammaType, float gamma
     {
       for (int i=0; i<tableSize; i++)
       {
-        gammaTable[i] = fmax(blackPoint.Y, pow(((double) i)/(tableSize-1), gammaValue));
+        gammaTable[i] =
+            fmax(blackPoint.Y, pow((static_cast<double>(i) / (tableSize - 1)), gammaValue));
       }
     }
     break;

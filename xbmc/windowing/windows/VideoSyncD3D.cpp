@@ -74,7 +74,7 @@ void CVideoSyncD3D::Run(CEvent& stopEvent)
 
     // calculate how many vblanks happened
     Now = CurrentHostCounter();
-    VBlankTime = (double)(Now - LastVBlankTime) / (double)systemFrequency;
+    VBlankTime = (double)(Now - LastVBlankTime) / static_cast<double>(systemFrequency);
     NrVBlanks = MathUtils::round_int(VBlankTime * m_fps);
 
     // update the vblank timestamp, update the clock and send a signal that we got a vblank

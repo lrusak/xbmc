@@ -28,8 +28,10 @@ double CPosixResourceCounter::GetCPUUsage()
     CLog::Log(LOGERROR, "error %d in gettimeofday", errno);
   else
   {
-    double dElapsed = ( ((double)tmNow.tv_sec + (double)tmNow.tv_usec / 1000000.0) -
-                 ((double)m_tmLastCheck.tv_sec + (double)m_tmLastCheck.tv_usec / 1000000.0) );
+    double dElapsed =
+        ((static_cast<double>(tmNow.tv_sec) + static_cast<double>(tmNow.tv_usec) / 1000000.0) -
+         (static_cast<double>(m_tmLastCheck.tv_sec) +
+          static_cast<double>(m_tmLastCheck.tv_usec) / 1000000.0));
 
     if (dElapsed >= 3.0)
     {
@@ -38,10 +40,14 @@ double CPosixResourceCounter::GetCPUUsage()
         CLog::Log(LOGERROR,"error %d in getrusage", errno);
       else
       {
-        double dUser = ( ((double)usage.ru_utime.tv_sec + (double)usage.ru_utime.tv_usec / 1000000.0) -
-                         ((double)m_usage.ru_utime.tv_sec + (double)m_usage.ru_utime.tv_usec / 1000000.0) );
-        double dSys  = ( ((double)usage.ru_stime.tv_sec + (double)usage.ru_stime.tv_usec / 1000000.0) -
-                  ((double)m_usage.ru_stime.tv_sec + (double)m_usage.ru_stime.tv_usec / 1000000.0) );
+        double dUser = ((static_cast<double>(usage.ru_utime.tv_sec) +
+                         static_cast<double>(usage.ru_utime.tv_usec) / 1000000.0) -
+                        (static_cast<double>(m_usage.ru_utime.tv_sec) +
+                         static_cast<double>(m_usage.ru_utime.tv_usec) / 1000000.0));
+        double dSys = ((static_cast<double>(usage.ru_stime.tv_sec) +
+                        static_cast<double>(usage.ru_stime.tv_usec) / 1000000.0) -
+                       (static_cast<double>(m_usage.ru_stime.tv_sec) +
+                        static_cast<double>(m_usage.ru_stime.tv_usec) / 1000000.0));
 
         m_tmLastCheck = tmNow;
         m_usage = usage;

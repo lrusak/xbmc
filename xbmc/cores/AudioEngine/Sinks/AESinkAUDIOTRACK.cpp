@@ -797,7 +797,8 @@ unsigned int CAESinkAUDIOTRACK::AddPackets(uint8_t **data, unsigned int frames, 
         }
       }
       else
-        m_duration_written += ((double) loop_written / m_format.m_frameSize) / m_format.m_sampleRate;
+        m_duration_written +=
+            (static_cast<double>(loop_written) / m_format.m_frameSize) / m_format.m_sampleRate;
 
       // just try again to care for fragmentation
       if (written < size)

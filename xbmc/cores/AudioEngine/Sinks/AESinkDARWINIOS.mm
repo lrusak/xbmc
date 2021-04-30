@@ -200,8 +200,8 @@ void CAAudioUnitSink::getDelay(AEDelayStatus& status)
   CAESpinLock lock(m_render_section);
   do
   {
-    status.delay  = (double)m_buffer->GetReadSize() / m_frameSize;
-    status.delay += (double)m_render_frames;
+    status.delay = static_cast<double>(m_buffer->GetReadSize()) / m_frameSize;
+    status.delay += static_cast<double>(m_render_frames);
     status.tick   = m_render_timestamp;
   } while(lock.retry());
 
@@ -211,7 +211,7 @@ void CAAudioUnitSink::getDelay(AEDelayStatus& status)
 
 double CAAudioUnitSink::cacheSize()
 {
-  return (double)m_buffer->GetMaxSize() / (double)(m_frameSize * m_sampleRate);
+  return static_cast<double>(m_buffer->GetMaxSize()) / (double)(m_frameSize * m_sampleRate);
 }
 
 CCriticalSection mutex;

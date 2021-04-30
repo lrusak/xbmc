@@ -302,7 +302,8 @@ unsigned int CActiveAEStream::AddData(const uint8_t* const *data, unsigned int o
         if (m_format.m_dataFormat != AE_FMT_RAW)
         {
           m_currentBuffer->pkt->nb_samples += minFrames;
-          m_bufferedTime += (double)minFrames / m_currentBuffer->pkt->config.sample_rate;
+          m_bufferedTime +=
+              static_cast<double>(minFrames) / m_currentBuffer->pkt->config.sample_rate;
         }
         else
         {

@@ -589,7 +589,8 @@ void CDVDAudioCodecAndroidMediaCodec::GetData(DVDAudioFrame &frame)
   frame.profile = GetProfile();
   // compute duration.
   if (frame.format.m_sampleRate)
-    frame.duration = ((double)frame.nb_frames * DVD_TIME_BASE) / frame.format.m_sampleRate;
+    frame.duration =
+        (static_cast<double>(frame.nb_frames) * DVD_TIME_BASE) / frame.format.m_sampleRate;
   else
     frame.duration = 0.0;
   if (frame.nb_frames > 0 && CServiceBroker::GetLogging().CanLogComponent(LOGAUDIO))

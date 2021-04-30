@@ -392,13 +392,15 @@ void CAESinkDARWINOSX::GetDelay(AEDelayStatus& status)
 
   } while(lock.retry());
 
-  status.delay += (double)size / (double)m_frameSizePerPlane / (double)m_framesPerSecond;
-  status.delay += (double)m_latentFrames / (double)m_framesPerSecond;
+  status.delay += static_cast<double>(size) / static_cast<double>(m_frameSizePerPlane) /
+                  static_cast<double>(m_framesPerSecond);
+  status.delay += static_cast<double>(m_latentFrames) / static_cast<double>(m_framesPerSecond);
 }
 
 double CAESinkDARWINOSX::GetCacheTotal()
 {
-  return (double)m_buffer->GetMaxSize() / (double)(m_frameSizePerPlane * m_framesPerSecond);
+  return static_cast<double>(m_buffer->GetMaxSize()) /
+         (double)(m_frameSizePerPlane * m_framesPerSecond);
 }
 
 CCriticalSection mutex;

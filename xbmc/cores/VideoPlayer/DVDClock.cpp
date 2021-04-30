@@ -304,6 +304,6 @@ double CDVDClock::GetClockSpeed()
 {
   CSingleLock lock(m_critSection);
 
-  double speed = (double)m_systemFrequency / m_systemUsed;
+  double speed = static_cast<double>(m_systemFrequency) / m_systemUsed;
   return m_videoRefClock->GetSpeed() * speed + m_speedAdjust;
 }

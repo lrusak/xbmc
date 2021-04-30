@@ -499,31 +499,31 @@ double field_value::get_asDouble() const {
       return atof(str_value.c_str());
     }
     case ft_Boolean:{
-      return (double)bool_value;
+      return static_cast<double>(bool_value);
     }
     case ft_Char: {
-      return (double)char_value;
+      return static_cast<double>(char_value);
     }
     case ft_Short: {
-       return (double)short_value;
+      return static_cast<double>(short_value);
     }
     case ft_UShort: {
-       return (double)ushort_value;
+      return static_cast<double>(ushort_value);
     }
     case ft_Int: {
-      return (double)int_value;
+      return static_cast<double>(int_value);
     }
     case ft_UInt: {
-      return (double)uint_value;
+      return static_cast<double>(uint_value);
     }
     case ft_Float: {
-      return (double)float_value;
+      return static_cast<double>(float_value);
     }
     case ft_Double: {
-      return (double)double_value;
+      return static_cast<double>(double_value);
     }
     case ft_Int64: {
-      return (double)int64_value;
+      return static_cast<double>(int64_value);
     }
     default:
       return 0.0;

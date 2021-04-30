@@ -93,7 +93,7 @@ static bool FindDeviceWait(CUPnP* upnp, const char* uuid, PLT_DeviceDataReferenc
             return false;
 
         // sleep a bit and try again
-        NPT_System::Sleep(NPT_TimeInterval((double)1));
+        NPT_System::Sleep(NPT_TimeInterval(static_cast<double>(1)));
     }
 
     return !device.IsNull();

@@ -560,7 +560,7 @@ public:
   /// you wish to use this be sure to set the AESTREAM_FORCE_RESAMPLE option.
   ///
   /// @param[in] ratio the new sample rate ratio, calculated by
-  ///                  ((double)desiredRate / (double)GetSampleRate())
+  ///                  (static_cast<double>(desiredRate) / static_cast<double>(GetSampleRate()))
   ///
   void SetResampleRatio(double ratio)
   {

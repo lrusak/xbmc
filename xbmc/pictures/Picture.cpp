@@ -141,12 +141,12 @@ bool CPicture::ResizeTexture(const std::string &image, uint8_t *pixels, uint32_t
   }
   else if (dest_width == 0)
   {
-    double factor = (double)dest_height / (double)height;
+    double factor = static_cast<double>(dest_height) / static_cast<double>(height);
     dest_width = (uint32_t)(width * factor);
   }
   else if (dest_height == 0)
   {
-    double factor = (double)dest_width / (double)width;
+    double factor = static_cast<double>(dest_width) / static_cast<double>(width);
     dest_height = (uint32_t)(height * factor);
   }
 

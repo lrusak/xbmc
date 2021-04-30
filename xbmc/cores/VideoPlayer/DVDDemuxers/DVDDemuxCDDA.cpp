@@ -112,7 +112,7 @@ DemuxPacket* CDVDDemuxCDDA::Read()
     if (n > 0)
     {
       m_bytes += pPacket->iSize;
-      pPacket->dts = (double)m_bytes * DVD_TIME_BASE / n;
+      pPacket->dts = static_cast<double>(m_bytes) * DVD_TIME_BASE / n;
       pPacket->pts = pPacket->dts;
     }
     else
@@ -137,7 +137,7 @@ bool CDVDDemuxCDDA::SeekTime(double time, bool backwards, double* startpts)
     m_bytes = seekPos;
 
   if (startpts)
-    *startpts = (double)m_bytes * DVD_TIME_BASE / bytes_per_second;
+    *startpts = static_cast<double>(m_bytes) * DVD_TIME_BASE / bytes_per_second;
 
   return seekPos > 0;
 };

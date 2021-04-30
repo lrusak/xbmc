@@ -34,7 +34,7 @@ bool CDVDSubtitleParserMicroDVD::Open(CDVDStreamInfo &hints)
   CLog::Log(LOGDEBUG, "%s - framerate %d:%d", __FUNCTION__, hints.fpsrate, hints.fpsscale);
   if (hints.fpsscale > 0 && hints.fpsrate > 0)
   {
-    m_framerate = (double)hints.fpsscale / (double)hints.fpsrate;
+    m_framerate = static_cast<double>(hints.fpsscale) / static_cast<double>(hints.fpsrate);
     m_framerate *= DVD_TIME_BASE;
   }
   else

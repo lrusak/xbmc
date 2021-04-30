@@ -250,7 +250,8 @@ void CAESinkWASAPI::GetDelay(AEDelayStatus& status)
   } while (hr != S_OK && ++retries < 100);
   EXIT_ON_FAILURE(hr, "Retrieval of IAudioClock::GetPosition failed.")
 
-  status.delay = (double)(m_sinkFrames + m_bufferPtr) / m_format.m_sampleRate - (double)pos / m_clockFreq;
+  status.delay = (double)(m_sinkFrames + m_bufferPtr) / m_format.m_sampleRate -
+                 static_cast<double>(pos) / m_clockFreq;
   status.tick  = rescale_u64(tick, CurrentHostFrequency(), 10000000); /* convert from 100ns back to qpc ticks */
   return;
 failed:
@@ -351,7 +352,8 @@ unsigned int CAESinkWASAPI::AddPackets(uint8_t **data, unsigned int frames, unsi
 #ifndef _DEBUG
   QueryPerformanceCounter(&timerStop);
   LONGLONG timerDiff = timerStop.QuadPart - timerStart.QuadPart;
-  double timerElapsed = (double) timerDiff * 1000.0 / (double) timerFreq.QuadPart;
+  double timerElapsed =
+      static_cast<double>(timerDiff) * 1000.0 / static_cast<double>(timerFreq.QuadPart);
   m_avgTimeWaiting += (timerElapsed - m_avgTimeWaiting) * 0.5;
 
   if (m_avgTimeWaiting < 3.0)

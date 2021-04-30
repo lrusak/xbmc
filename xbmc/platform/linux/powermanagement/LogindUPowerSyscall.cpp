@@ -220,7 +220,7 @@ void CLogindUPowerSyscall::UpdateBatteryLevel()
 
   if (batteryCount > 0)
   {
-    m_batteryLevel = (int)(batteryLevelSum / (double)batteryCount);
+    m_batteryLevel = (int)(batteryLevelSum / static_cast<double>(batteryCount));
     m_lowBattery = CDBusUtil::GetVariant("org.freedesktop.UPower", "/org/freedesktop/UPower", "org.freedesktop.UPower", "OnLowBattery").asBoolean();
   }
 }

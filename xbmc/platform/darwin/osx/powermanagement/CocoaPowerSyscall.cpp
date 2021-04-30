@@ -371,7 +371,7 @@ void CCocoaPowerSyscall::OSPowerSourceCallBack(void *refcon)
         CFNumberGetValue(cf_number_ref, kCFNumberSInt32Type, &maxCapacity);
 
         ctx->m_OnBattery = true;
-        ctx->m_BatteryPercent = (int)((double)curCapacity/(double)maxCapacity * 100);
+        ctx->m_BatteryPercent = (int)(static_cast<double>(curCapacity / (double)maxCapacity) * 100);
       }
 		}
   }

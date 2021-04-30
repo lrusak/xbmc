@@ -210,13 +210,14 @@ void CDVDAudioCodecFFmpeg::GetData(DVDAudioFrame &frame)
   frame.profile = GetProfile();
   // compute duration.
   if (frame.format.m_sampleRate)
-    frame.duration = ((double)frame.nb_frames * DVD_TIME_BASE) / frame.format.m_sampleRate;
+    frame.duration =
+        (static_cast<double>(frame.nb_frames) * DVD_TIME_BASE) / frame.format.m_sampleRate;
   else
     frame.duration = 0.0;
 
   int64_t bpts = m_pFrame->best_effort_timestamp;
   if(bpts != AV_NOPTS_VALUE)
-    frame.pts = (double)bpts * DVD_TIME_BASE / AV_TIME_BASE;
+    frame.pts = static_cast<double>(bpts) * DVD_TIME_BASE / AV_TIME_BASE;
   else
     frame.pts = DVD_NOPTS_VALUE;
 

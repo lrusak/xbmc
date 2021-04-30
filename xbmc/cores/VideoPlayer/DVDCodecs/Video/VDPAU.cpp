@@ -701,15 +701,21 @@ void CDecoder::SetWidthHeight(int width, int height)
   if (CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth() < width || CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight() < height || m_vdpauConfig.upscale >= 0)
   {
     //scale width to desktop size if the aspect ratio is the same or bigger than the desktop
-    if ((double)height * CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth() / width <= (double)CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight())
+    if (static_cast<double>(height) * CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth() /
+            width <=
+        static_cast<double>(CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight()))
     {
       m_vdpauConfig.outWidth = CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth();
-      m_vdpauConfig.outHeight = MathUtils::round_int((double)height * CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth() / width);
+      m_vdpauConfig.outHeight =
+          MathUtils::round_int(static_cast<double>(height) *
+                               CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth() / width);
     }
     else //scale height to the desktop size if the aspect ratio is smaller than the desktop
     {
       m_vdpauConfig.outHeight = CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight();
-      m_vdpauConfig.outWidth = MathUtils::round_int((double)width * CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight() / height);
+      m_vdpauConfig.outWidth = MathUtils::round_int(
+          static_cast<double>(width) * CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight() /
+          height);
     }
   }
   else
@@ -2085,16 +2091,17 @@ bool CMixer::GenerateStudioCSCMatrix(VdpColorStandard colorStandard, VdpCSCMatri
    studioCSCMatrix[B][Y] = 1.0;
 
    studioCSCMatrix[R][Cb] = 0.0;
-   studioCSCMatrix[G][Cb] = (double)-2 * Kb * (1 - Kb) / Kg;
+   studioCSCMatrix[G][Cb] = static_cast<double>(-2) * Kb * (1 - Kb) / Kg;
    studioCSCMatrix[B][Cb] = (double)(1 - Kb) / 0.5;
 
    studioCSCMatrix[R][Cr] = (double)(1 - Kr) / 0.5;
-   studioCSCMatrix[G][Cr] = (double)-2 * Kr * (1 - Kr) / Kg;
+   studioCSCMatrix[G][Cr] = static_cast<double>(-2) * Kr * (1 - Kr) / Kg;
    studioCSCMatrix[B][Cr] = 0.0;
 
-   studioCSCMatrix[R][C] = (double)-1 * studioCSCMatrix[R][Cr] * CDZ/EXC;
-   studioCSCMatrix[G][C] = (double)-1 * (studioCSCMatrix[G][Cb] + studioCSCMatrix[G][Cr]) * CDZ/EXC;
-   studioCSCMatrix[B][C] = (double)-1 * studioCSCMatrix[B][Cb] * CDZ/EXC;
+   studioCSCMatrix[R][C] = static_cast<double>(-1) * studioCSCMatrix[R][Cr] * CDZ / EXC;
+   studioCSCMatrix[G][C] =
+       static_cast<double>(-1) * (studioCSCMatrix[G][Cb] + studioCSCMatrix[G][Cr]) * CDZ / EXC;
+   studioCSCMatrix[B][C] = static_cast<double>(-1) * studioCSCMatrix[B][Cb] * CDZ / EXC;
 
    return true;
 }
@@ -2637,7 +2644,8 @@ void CMixer::InitCycle()
     m_mixerInput[1].DVDPic.iHeight = m_config.outHeight;
     if (m_SeenInterlaceFlag)
     {
-      double ratio = (double)m_mixerInput[1].DVDPic.iDisplayHeight / m_mixerInput[1].DVDPic.iHeight;
+      double ratio = static_cast<double>(m_mixerInput[1].DVDPic.iDisplayHeight) /
+                     m_mixerInput[1].DVDPic.iHeight;
       m_mixerInput[1].DVDPic.iDisplayHeight = lrint(ratio*(m_mixerInput[1].DVDPic.iHeight-NUM_CROP_PIX*2));
       m_processPicture.crop = true;
     }
