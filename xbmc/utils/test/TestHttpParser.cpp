@@ -45,5 +45,5 @@ TEST(TestHttpParser, General)
   varstr = a.getValue("content-type");
   EXPECT_STREQ(refstr.c_str(), varstr.c_str());
 
-  EXPECT_EQ((unsigned)35, a.getContentLength());
+  EXPECT_EQ(static_cast<unsigned int>(35), a.getContentLength());
 }

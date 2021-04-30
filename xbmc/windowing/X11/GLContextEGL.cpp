@@ -123,7 +123,8 @@ bool CGLContextEGL::Refresh(bool force, int screen, Window glWindow, bool &newCo
   vInfo = XGetVisualInfo(m_dpy, VisualScreenMask | VisualIDMask, &vMask, &availableVisuals);
   if (!vInfo)
   {
-    CLog::Log(LOGERROR, "Failed to get VisualInfo of visual 0x%x", (unsigned) vMask.visualid);
+    CLog::Log(LOGERROR, "Failed to get VisualInfo of visual 0x%x",
+              static_cast<unsigned int>(vMask.visualid));
     Destroy();
     return false;
   }

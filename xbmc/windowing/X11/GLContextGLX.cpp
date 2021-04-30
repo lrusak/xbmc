@@ -58,11 +58,12 @@ bool CGLContextGLX::Refresh(bool force, int screen, Window glWindow, bool &newCo
     vMask.visualid = XVisualIDFromVisual(winAttr.visual);
     vInfo = XGetVisualInfo(m_dpy, VisualScreenMask | VisualIDMask, &vMask, &availableVisuals);
     if (!vInfo)
-      CLog::Log(LOGWARNING, "Failed to get VisualInfo of visual 0x%x", (unsigned) vMask.visualid);
+      CLog::Log(LOGWARNING, "Failed to get VisualInfo of visual 0x%x",
+                static_cast<unsigned int>(vMask.visualid));
     else if(!IsSuitableVisual(vInfo))
     {
       CLog::Log(LOGWARNING, "Visual 0x%x of the window is not suitable, looking for another one...",
-                (unsigned) vInfo->visualid);
+                static_cast<unsigned int>(vInfo->visualid));
       vMask.depth = vInfo->depth;
       XFree(vInfo);
       vInfo = NULL;
@@ -92,7 +93,7 @@ bool CGLContextGLX::Refresh(bool force, int screen, Window glWindow, bool &newCo
 
   if (vInfo)
   {
-    CLog::Log(LOGINFO, "Using visual 0x%x", (unsigned)vInfo->visualid);
+    CLog::Log(LOGINFO, "Using visual 0x%x", static_cast<unsigned int>(vInfo->visualid));
     if (m_glxContext)
     {
       glXMakeCurrent(m_dpy, None, NULL);

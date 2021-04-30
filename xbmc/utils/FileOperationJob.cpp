@@ -325,7 +325,7 @@ bool CFileOperationJob::CFileOperation::OnFileCallback(void* pContext, int iperc
                               data->base->GetCurrentFile().c_str(),
                               data->base->GetAverageSpeed().c_str());
   data->base->SetText(line);
-  return !data->base->ShouldCancel((unsigned)current, 100);
+  return !data->base->ShouldCancel(static_cast<unsigned int>(current), 100);
 }
 
 bool CFileOperationJob::operator==(const CJob* job) const

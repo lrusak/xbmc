@@ -184,7 +184,7 @@ void CGUIDialogVideoBookmarks::OnPopupMenu(int item)
 
 void CGUIDialogVideoBookmarks::Delete(int item)
 {
-  if ( item>=0 && (unsigned)item < m_bookmarks.size() )
+  if (item >= 0 && static_cast<unsigned int>(item) < m_bookmarks.size())
   {
     CVideoDatabase videoDatabase;
     videoDatabase.Open();
