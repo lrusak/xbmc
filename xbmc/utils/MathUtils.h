@@ -111,7 +111,7 @@ namespace MathUtils
      *    The representation once the offset is applied has equal or greater
      *    precision than the input, so the addition does not cause rounding.
      */
-    return ((unsigned int) (x + 2147483648.5)) - 0x80000000;
+    return (static_cast<unsigned int>((x) + 2147483648.5)) - 0x80000000;
 
 #else
     const float round_to_nearest = 0.5f;

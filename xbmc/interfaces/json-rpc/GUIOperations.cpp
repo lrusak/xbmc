@@ -70,7 +70,8 @@ JSONRPC_STATUS CGUIOperations::ShowNotification(const std::string &method, ITran
   std::string image = parameterObject["image"].asString();
   std::string title = parameterObject["title"].asString();
   std::string message = parameterObject["message"].asString();
-  unsigned int displaytime = (unsigned int)parameterObject["displaytime"].asUnsignedInteger();
+  unsigned int displaytime =
+      static_cast<unsigned int>(parameterObject["displaytime"].asUnsignedInteger());
 
   if (image.compare("info") == 0)
     CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Info, title, message, displaytime);

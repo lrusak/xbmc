@@ -77,7 +77,7 @@
 - (void) enableSystemSleep;
 - (void) disableScreenSaver;
 - (void) enableScreenSaver;
-- (bool) changeScreen: (unsigned int)screenIdx withMode:(UIScreenMode *)mode;
+- (bool)changeScreen:static_cast<unsigned int>(screenIdx)withMode:(UIScreenMode*)mode;
 - (void) activateScreen: (UIScreen *)screen withOrientation:(UIInterfaceOrientation)newOrientation;
 - (id)   initWithFrame:(CGRect)frame withScreen:(UIScreen *)screen;
 - (CVEAGLContext)getEAGLContextObj;

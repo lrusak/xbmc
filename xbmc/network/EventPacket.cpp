@@ -53,7 +53,7 @@ bool CEventPacket::Parse(int datasize, const void *data)
   buf += 4;
   m_iPayloadSize = ntohs(*((uint16_t*)buf));
 
-  if ((m_iPayloadSize + HEADER_SIZE) != (unsigned int)datasize)
+  if ((m_iPayloadSize + HEADER_SIZE) != static_cast<unsigned int>(datasize))
     return false;
 
   // get the client's token

@@ -886,7 +886,7 @@ std::string CSmartPlaylistRule::FormatWhereClause(const std::string &negate, con
         field = GetField(FieldOrigYear, strType);
       else
         field = GetField(m_field, strType);
-      query = FormatYearQuery(field, param, parameter);      
+      query = FormatYearQuery(field, param, parameter);
     }
   }
   else if (strType == "albums")
@@ -1306,7 +1306,7 @@ bool CSmartPlaylist::Load(const CVariant &obj)
 
   // now any limits
   if (obj.isMember("limit") && (obj["limit"].isInteger() || obj["limit"].isUnsignedInteger()) && obj["limit"].asUnsignedInteger() > 0)
-    m_limit = (unsigned int)obj["limit"].asUnsignedInteger();
+    m_limit = static_cast<unsigned int>(obj["limit"].asUnsignedInteger());
 
   // and order
   if (obj.isMember("order") && obj["order"].isMember("method") && obj["order"]["method"].isString())

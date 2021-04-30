@@ -144,7 +144,7 @@ bool CAAudioUnitSink::open(AudioStreamBasicDescription outputFormat)
   m_outputLatency = 0.0;
   m_bufferDuration= 0.0;
   m_outputVolume  = 1.0;
-  m_sampleRate    = (unsigned int)outputFormat.mSampleRate;
+  m_sampleRate = static_cast<unsigned int>(outputFormat.mSampleRate);
   m_frameSize     = outputFormat.mChannelsPerFrame * outputFormat.mBitsPerChannel / 8;
 
   /* TODO: Reduce the size of this buffer, pre-calculate the size based on how large

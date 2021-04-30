@@ -103,7 +103,7 @@ public:
 #endif // ! TARGET_WINDOWS
 
     unsigned int ydpi = 72; // 72 points to the inch is the freetype default
-    unsigned int xdpi = (unsigned int)MathUtils::round_int(ydpi * aspect);
+    unsigned int xdpi = static_cast<unsigned int>(MathUtils::round_int(ydpi) * aspect);
 
     // we set our screen res currently to 96dpi in both directions (windows default)
     // we cache our characters (for rendering speed) so it's probably

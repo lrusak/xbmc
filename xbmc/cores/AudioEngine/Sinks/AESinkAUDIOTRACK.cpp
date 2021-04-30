@@ -427,7 +427,7 @@ bool CAESinkAUDIOTRACK::Initialize(AEAudioFormat &format, std::string &device)
       return false;
     }
 
-    m_min_buffer_size = (unsigned int) min_buffer;
+    m_min_buffer_size = static_cast<unsigned int>(min_buffer);
     CLog::Log(LOGDEBUG, "Minimum size we need for stream: %u", m_min_buffer_size);
     double rawlength_in_seconds = 0.0;
     int multiplier = 1;
@@ -792,7 +792,7 @@ unsigned int CAESinkAUDIOTRACK::AddPackets(uint8_t **data, unsigned int frames, 
         {
           CLog::Log(LOGDEBUG, "Error writing full package to sink, left: %d", size_left);
           // Let AE wait some ms to come back
-          unsigned int written_frames = (unsigned int) (written/m_format.m_frameSize);
+          unsigned int written_frames = static_cast<unsigned int>((written / m_format.m_frameSize));
           return written_frames;
         }
       }

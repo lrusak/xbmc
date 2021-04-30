@@ -212,7 +212,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchAc3InStereoWithoutPassthroughFormats)
   AEAudioFormat srcFormat = getAC3AEFormat();
   //match ac3 in streamformats without dedicated passthrough format (bitstream)
   formatIdx = findMatchingFormat(stereoFormatsWithoutPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)1);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(1));
 }
 
 TEST(TestAESinkDARWINOSXScoreStream, MatchAc3InAllWithPassthroughFormats)
@@ -236,7 +236,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchAc3InAllWithoutPassthroughFormats)
   AEAudioFormat srcFormat = getAC3AEFormat();
   //match ac3 in streamformats without dedicated passthrough format (bitstream)
   formatIdx = findMatchingFormat(allFormatsWithoutPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)1);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(1));
 }
 
 TEST(TestAESinkDARWINOSXScoreStream, MatchFloatStereo22050InStereoWithPassthroughFormats)
@@ -247,7 +247,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchFloatStereo22050InStereoWithPassthroug
   // match stereo float 22050hz
   AEAudioFormat srcFormat = getStereo22050AEFormat();
   formatIdx = findMatchingFormat(stereoFormatsWithPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)8);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(8));
 }
 
 
@@ -260,7 +260,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchFloatStereo22050InStereoWithoutPassthr
   AEAudioFormat srcFormat = getStereo22050AEFormat();
 
   formatIdx = findMatchingFormat(stereoFormatsWithoutPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)8);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(8));
 }
 
 TEST(TestAESinkDARWINOSXScoreStream, MatchFloatStereo22050InAllWithPassthroughFormats)
@@ -271,7 +271,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchFloatStereo22050InAllWithPassthroughFo
   // match stereo float 22050hz
   AEAudioFormat srcFormat = getStereo22050AEFormat();
   formatIdx = findMatchingFormat(allFormatsWithPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)8);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(8));
 }
 
 
@@ -284,7 +284,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchFloatStereo22050InAllWithoutPassthroug
   AEAudioFormat srcFormat = getStereo22050AEFormat();
 
   formatIdx = findMatchingFormat(allFormatsWithoutPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)8);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(8));
 }
 
 TEST(TestAESinkDARWINOSXScoreStream, MatchFloatStereo48000InStereoWithPassthroughFormats)
@@ -295,7 +295,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchFloatStereo48000InStereoWithPassthroug
   // match stereo float 48000hz
   AEAudioFormat srcFormat = getStereo48000AEFormat();
   formatIdx = findMatchingFormat(stereoFormatsWithPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)7);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(7));
 }
 
 
@@ -308,7 +308,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchFloatStereo48000InStereoWithoutPassthr
   AEAudioFormat srcFormat = getStereo48000AEFormat();
 
   formatIdx = findMatchingFormat(stereoFormatsWithoutPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)7);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(7));
 }
 
 TEST(TestAESinkDARWINOSXScoreStream, MatchFloatStereo48000InAllWithPassthroughFormats)
@@ -319,7 +319,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchFloatStereo48000InAllWithPassthroughFo
   // match stereo float 48000hz
   AEAudioFormat srcFormat = getStereo48000AEFormat();
   formatIdx = findMatchingFormat(allFormatsWithPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)7);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(7));
 }
 
 
@@ -332,7 +332,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchFloatStereo48000InAllWithoutPassthroug
   AEAudioFormat srcFormat = getStereo48000AEFormat();
 
   formatIdx = findMatchingFormat(allFormatsWithoutPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)7);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(7));
 }
 
 TEST(TestAESinkDARWINOSXScoreStream, MatchFloat5_1_96000InStereoWithPassthroughFormats)
@@ -343,7 +343,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchFloat5_1_96000InStereoWithPassthroughF
   // match lpcm float 96000hz
   AEAudioFormat srcFormat = getLPCM96000AEFormat();
   formatIdx = findMatchingFormat(stereoFormatsWithPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)6);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(6));
 }
 
 
@@ -356,7 +356,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchFloat5_1_96000InStereoWithoutPassthrou
   AEAudioFormat srcFormat = getLPCM96000AEFormat();
 
   formatIdx = findMatchingFormat(stereoFormatsWithoutPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)6);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(6));
 }
 
 TEST(TestAESinkDARWINOSXScoreStream, MatchFloat5_1_96000InAllWithPassthroughFormats)
@@ -367,7 +367,7 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchFloat5_1_96000InAllWithPassthroughForm
   // match lpcm float 96000hz
   AEAudioFormat srcFormat = getLPCM96000AEFormat();
   formatIdx = findMatchingFormat(allFormatsWithPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)15);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(15));
 }
 
 
@@ -380,5 +380,5 @@ TEST(TestAESinkDARWINOSXScoreStream, MatchFloat5_1_96000InAllWithoutPassthroughF
   AEAudioFormat srcFormat = getLPCM96000AEFormat();
 
   formatIdx = findMatchingFormat(allFormatsWithoutPassthrough, srcFormat);
-  EXPECT_EQ(formatIdx, (unsigned int)15);
+  EXPECT_EQ(formatIdx, static_cast<unsigned int>(15));
 }

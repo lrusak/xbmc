@@ -33,11 +33,9 @@ UInt32 _strtoul(const char *str, int size, int base)
 void _ultostr(char *str, UInt32 val)
 {
   str[0] = '\0';
-  sprintf(str, "%c%c%c%c",
-          (unsigned int) val >> 24,
-          (unsigned int) val >> 16,
-          (unsigned int) val >> 8,
-          (unsigned int) val);
+  sprintf(str, "%c%c%c%c", static_cast<unsigned int>(val) >> 24,
+          static_cast<unsigned int>(val) >> 16, static_cast<unsigned int>(val) >> 8,
+          static_cast<unsigned int>(val));
 }
 
 kern_return_t SMCOpen(void)

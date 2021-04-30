@@ -208,10 +208,10 @@ bool CAESinkDARWINOSX::Initialize(AEAudioFormat &format, std::string &device)
         requestedSourceId = deviceInstance.sourceId;
         if (requestedStreamIndex != INT_MAX)
           CLog::Log(LOGINFO, "%s pseudo device - requesting stream %d", __FUNCTION__,
-                    (unsigned int)requestedStreamIndex);
+                    static_cast<unsigned int>(requestedStreamIndex));
         if (requestedSourceId != INT_MAX)
           CLog::Log(LOGINFO, "%s device - requesting audiosource %d", __FUNCTION__,
-                    (unsigned int)requestedSourceId);
+                    static_cast<unsigned int>(requestedSourceId));
         break;
       }
     }
@@ -237,7 +237,9 @@ bool CAESinkDARWINOSX::Initialize(AEAudioFormat &format, std::string &device)
     {
       numOutputChannels = std::min((size_t)format.m_channelLayout.Count(), (size_t)devEnum.GetNumPlanes());
       m_planes = numOutputChannels;
-      CLog::Log(LOGDEBUG, "%s Found planar audio with %u channels using %u of them.", __FUNCTION__, (unsigned int)devEnum.GetNumPlanes(), (unsigned int)numOutputChannels);
+      CLog::Log(LOGDEBUG, "%s Found planar audio with %u channels using %u of them.", __FUNCTION__,
+                static_cast<unsigned int>(devEnum.GetNumPlanes()),
+                static_cast<unsigned int>(numOutputChannels));
     }
   }
   else
@@ -278,7 +280,10 @@ bool CAESinkDARWINOSX::Initialize(AEAudioFormat &format, std::string &device)
   }
 
   std::string formatString;
-  CLog::Log(LOGDEBUG, "%s: Selected stream[%u] - id: 0x%04X, Physical Format: %s %s", __FUNCTION__, (unsigned int)m_outputBufferIndex, (unsigned int)outputStream, StreamDescriptionToString(outputFormat, formatString), passthrough ? "passthrough" : "");
+  CLog::Log(LOGDEBUG, "%s: Selected stream[%u] - id: 0x%04X, Physical Format: %s %s", __FUNCTION__,
+            static_cast<unsigned int>(m_outputBufferIndex), static_cast<unsigned int>(outputStream),
+            StreamDescriptionToString(outputFormat, formatString),
+            passthrough ? "passthrough" : "");
 
   m_device.Open(deviceID);
   SetHogMode(passthrough);

@@ -254,7 +254,7 @@ void CEventServer::ProcessPacket(CAddress& addr, int pSize)
 
   if ( iter == m_clients.end() )
   {
-    if ( m_clients.size() >= (unsigned int)m_iMaxClients)
+    if (m_clients.size() >= static_cast<unsigned int>(m_iMaxClients))
     {
       CLog::Log(LOGWARNING, "ES: Cannot accept any more clients, maximum client count reached");
       delete packet;

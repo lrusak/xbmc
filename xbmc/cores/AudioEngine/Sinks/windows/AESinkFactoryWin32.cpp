@@ -121,7 +121,8 @@ std::vector<RendererDetail> CAESinkFactoryWin::GetRendererDetails()
       goto failed;
     }
 
-    details.uiChannelMask = std::max(varName.uintVal, (unsigned int)KSAUDIO_SPEAKER_STEREO);
+    details.uiChannelMask =
+        std::max(varName.uintVal, static_cast<unsigned int>(KSAUDIO_SPEAKER_STEREO));
     PropVariantClear(&varName);
 
     if (pDevice->GetId(&pwszID) == S_OK)

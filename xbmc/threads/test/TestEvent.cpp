@@ -74,7 +74,7 @@ public:
     if (timeout == -1)
       result = event.wait();
     else
-      result = event.wait((unsigned int)timeout);
+      result = event.wait(static_cast<unsigned int>(timeout));
     waiting = false;
   }
 };

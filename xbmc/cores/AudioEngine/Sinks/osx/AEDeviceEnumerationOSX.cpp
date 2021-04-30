@@ -506,8 +506,8 @@ std::string AEDeviceEnumerationOSX::getExtraDisplayNameForStream(UInt32 streamId
     extraName << startChannel + numChannels - 1;
     CLog::Log(LOGINFO,
               "%s adding stream %d as pseudo device with start channel %d and %d channels total",
-              __FUNCTION__, (unsigned int)streamIdx, (unsigned int)startChannel,
-              (unsigned int)numChannels);
+              __FUNCTION__, static_cast<unsigned int>(streamIdx),
+              static_cast<unsigned int>(startChannel), static_cast<unsigned int>(numChannels));
     return extraName.str();
   }
 
@@ -783,7 +783,8 @@ void AEDeviceEnumerationOSX::GetAEChannelMap(CAEChannelInfo &channelMap, unsigne
   // start the mapping action
   // the number of channels to be added to the outgoing channelmap
   // this is CA_MAX_CHANNELS at max and might be lower for some output devices (channelsPerFrame)
-  unsigned int numChannelsToMap = std::min((unsigned int)CA_MAX_CHANNELS, (unsigned int)channelsPerFrame);
+  unsigned int numChannelsToMap = std::min(static_cast<unsigned int>(CA_MAX_CHANNELS),
+                                           static_cast<unsigned int>(channelsPerFrame));
 
   // if there was a map fetched we force the number of
   // channels to map to channelsPerFrame (this allows mapping

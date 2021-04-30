@@ -92,7 +92,8 @@ void CGUILabelControl::UpdateInfo(const CGUIListItem *item)
         ch |= (1 << 16);
       text.push_back(ch);
     }
-    if (m_bShowCursor && m_iCursorPos >= 0 && (unsigned int)m_iCursorPos <= utf16.size())
+    if (m_bShowCursor && m_iCursorPos >= 0 &&
+        static_cast<unsigned int>(m_iCursorPos) <= utf16.size())
     {
       unsigned int ch = L'|';
       if ((++m_dwCounter % 50) <= 25)

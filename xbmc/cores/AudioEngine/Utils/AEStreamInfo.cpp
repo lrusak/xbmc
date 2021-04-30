@@ -793,7 +793,7 @@ unsigned int CAEStreamParser::SyncTrueHD(uint8_t *data, unsigned int size)
         continue;
 
       /* if there is not enough data left to verify the packet, just return the skip amount */
-      if (left < (unsigned int)m_substreams * 4)
+      if (left < static_cast<unsigned int>(m_substreams) * 4)
         return skip;
 
       /* verify the parity */

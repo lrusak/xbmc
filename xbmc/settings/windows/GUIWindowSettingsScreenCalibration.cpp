@@ -155,12 +155,12 @@ bool CGUIWindowSettingsScreenCalibration::OnMessage(CGUIMessage& message)
       else
       {
         SET_CONTROL_HIDDEN(CONTROL_VIDEO);
-        m_iCurRes = (unsigned int)-1;
+        m_iCurRes = static_cast<unsigned int>(-1);
         CServiceBroker::GetWinSystem()->GetGfxContext().GetAllowedResolutions(m_Res);
         // find our starting resolution
         m_iCurRes = FindCurrentResolution();
       }
-      if (m_iCurRes==(unsigned int)-1)
+      if (m_iCurRes == static_cast<unsigned int>(-1))
       {
         CLog::Log(
             LOGERROR, "CALIBRATION: Reported current resolution: %d",

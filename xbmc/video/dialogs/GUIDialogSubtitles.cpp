@@ -496,7 +496,7 @@ void CGUIDialogSubtitles::OnDownloadComplete(const CFileItemList *items, const s
   g_LangCodeExpander.ConvertToISO6391(language, strSubLang);
 
   // Iterate over all items to transfer
-  for (unsigned int i = 0; i < vecFiles.size() && i < (unsigned int) items->Size(); i++)
+  for (unsigned int i = 0; i < vecFiles.size() && i < static_cast<unsigned int>(items->Size()); i++)
   {
     std::string strUrl = items->Get(i)->GetPath();
     std::string strFileName = URIUtils::GetFileName(vecFiles[i]);

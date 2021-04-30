@@ -1236,7 +1236,7 @@ ssize_t CCurlFile::Write(const void* lpBuf, size_t uiBufSize)
 
 bool CCurlFile::CReadState::ReadString(char *szLine, int iLineLength)
 {
-  unsigned int want = (unsigned int)iLineLength;
+  unsigned int want = static_cast<unsigned int>(iLineLength);
 
   if((m_fileSize == 0 || m_filePos < m_fileSize) && FillBuffer(want) != FILLBUFFER_OK)
     return false;

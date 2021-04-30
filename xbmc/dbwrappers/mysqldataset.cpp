@@ -1487,7 +1487,9 @@ void MysqlDataset::make_deletion() {
 }
 
 void MysqlDataset::fill_fields() {
-  if ((db == NULL) || (result.record_header.empty()) || (result.records.size() < (unsigned int)frecno)) return;
+  if ((db == NULL) || (result.record_header.empty()) ||
+      (result.records.size() < static_cast<unsigned int>(frecno)))
+    return;
 
   if (fields_object->size() == 0) // Filling columns name
   {
@@ -1782,7 +1784,7 @@ void MysqlDataset::next(void) {
 
 void MysqlDataset::free_row(void)
 {
-  if (frecno < 0 || (unsigned int)frecno >= result.records.size())
+  if (frecno < 0 || static_cast<unsigned int>(frecno) >= result.records.size())
     return;
 
   sql_record *row = result.records[frecno];

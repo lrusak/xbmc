@@ -244,7 +244,8 @@ bool PAPlayer::OpenFile(const CFileItem& file, const CPlayerOptions &options)
   if (m_streams.size() == 2)
   {
     //do a short crossfade on trackskip, set to max 2 seconds for these prev/next transitions
-    m_upcomingCrossfadeMS = std::min(m_defaultCrossfadeMS, (unsigned int)MAX_SKIP_XFADE_TIME);
+    m_upcomingCrossfadeMS =
+        std::min(m_defaultCrossfadeMS, static_cast<unsigned int>(MAX_SKIP_XFADE_TIME));
 
     //start transition to next track
     StreamInfo* si = m_streams.front();

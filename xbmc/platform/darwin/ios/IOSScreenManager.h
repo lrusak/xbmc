@@ -30,7 +30,7 @@
 // init the screenmanager with our eaglview
 //- (id)      initWithView:(IOSEAGLView *)view;
 // change to screen with the given mode (might also change only the mode on the same screen)
-- (bool)    changeScreen: (unsigned int)screenIdx withMode:(UIScreenMode *)mode;
+- (bool)changeScreen:static_cast<unsigned int>(screenIdx)withMode:(UIScreenMode*)mode;
 // called when app detects disconnection of external screen - will move xbmc to the internal screen then
 - (void)    screenDisconnect;
 // wrapper for g_Windowing.UpdateResolutions();
@@ -38,9 +38,9 @@
 // fades the screen from black back to full alpha after delaySecs seconds
 - (void)    fadeFromBlack:(CGFloat) delaySecs;
 // returns true if switching to screenIdx will change from internal to external screen
-- (bool)    willSwitchToExternal:(unsigned int) screenIdx;
+- (bool)willSwitchToExternal:static_cast<unsigned int>(screenIdx);
 // returns true if switching to screenIdx will change from external to internal screen
-- (bool)    willSwitchToInternal:(unsigned int) screenIdx;
+- (bool)willSwitchToInternal:static_cast<unsigned int>(screenIdx);
 // singleton access
 + (id)      sharedInstance;
 @end

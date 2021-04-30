@@ -128,7 +128,7 @@ bool CInputManager::ProcessMouse(int windowId)
     return true;
 
   // Retrieve the corresponding action
-  CKey key(mousekey, (unsigned int)0);
+  CKey key(mousekey, static_cast<unsigned int>(0));
   CAction mouseaction = m_buttonTranslator->GetAction(windowId, key);
 
   // Deactivate mouse if non-mouse action

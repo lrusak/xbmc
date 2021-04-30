@@ -257,7 +257,7 @@ int CEncoderFFmpeg::Encode(int nNumBytesRead, uint8_t* pbtStream)
   while(nNumBytesRead > 0)
   {
     unsigned int space = m_NeededBytes - m_BufferSize;
-    unsigned int copy  = (unsigned int)nNumBytesRead > space ? space : nNumBytesRead;
+    unsigned int copy = static_cast<unsigned int>(nNumBytesRead) > space ? space : nNumBytesRead;
 
     memcpy(&m_Buffer[m_BufferSize], pbtStream, copy);
     m_BufferSize  += copy;

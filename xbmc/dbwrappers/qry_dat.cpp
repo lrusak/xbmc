@@ -422,34 +422,34 @@ int field_value::get_asInt() const {
 unsigned int field_value::get_asUInt() const {
     switch (field_type) {
     case ft_String: {
-      return (unsigned int)atoi(str_value.c_str());
+      return static_cast<unsigned int>(atoi(str_value.c_str()));
     }
     case ft_Boolean:{
-      return (unsigned int)bool_value;
+      return static_cast<unsigned int>(bool_value);
     }
     case ft_Char: {
-      return (unsigned int)char_value;
+      return static_cast<unsigned int>(char_value);
     }
     case ft_Short: {
-       return (unsigned int)short_value;
+      return static_cast<unsigned int>(short_value);
     }
     case ft_UShort: {
-       return (unsigned int)ushort_value;
+      return static_cast<unsigned int>(ushort_value);
     }
     case ft_Int: {
-      return (unsigned int)int_value;
+      return static_cast<unsigned int>(int_value);
     }
     case ft_UInt: {
       return uint_value;
     }
     case ft_Float: {
-      return (unsigned int)float_value;
+      return static_cast<unsigned int>(float_value);
     }
     case ft_Double: {
-      return (unsigned int)double_value;
+      return static_cast<unsigned int>(double_value);
     }
     case ft_Int64: {
-      return (unsigned int)int64_value;
+      return static_cast<unsigned int>(int64_value);
     }
     default:
       return 0;

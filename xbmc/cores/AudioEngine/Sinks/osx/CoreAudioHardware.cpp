@@ -78,7 +78,10 @@ void CCoreAudioHardware::ResetStream(AudioStreamID streamId)
   {
     if (desc.mFormatID == 'IAC3' || desc.mFormatID == kAudioFormat60958AC3)
     {
-      CLog::Log(LOGDEBUG, "CCoreAudioHardware::ResetStream stream 0x%x is in encoded format.. setting to LPCM", (unsigned int)streamId);
+      CLog::Log(
+          LOGDEBUG,
+          "CCoreAudioHardware::ResetStream stream 0x%x is in encoded format.. setting to LPCM",
+          static_cast<unsigned int>(streamId));
 
       StreamFormatList availableFormats;
       if (stream.GetAvailablePhysicalFormats(&availableFormats))

@@ -150,6 +150,6 @@ void CGUIDialogExtendedProgressBar::UpdateState(unsigned int currentTime)
   if (fProgress > -1.0f)
   {
     SET_CONTROL_VISIBLE(CONTROL_PROGRESS);
-    CONTROL_SELECT_ITEM(CONTROL_PROGRESS, (unsigned int)fProgress);
+    CONTROL_SELECT_ITEM(CONTROL_PROGRESS, static_cast<unsigned int>(fProgress));
   }
 }

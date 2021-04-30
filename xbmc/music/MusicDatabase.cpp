@@ -4769,7 +4769,7 @@ void CMusicDatabase::DeleteCDDBInfo()
     {
       if (i.second == strSelectedAlbum)
       {
-        std::string strFile = StringUtils::Format("%x.cddb", (unsigned int)i.first);
+        std::string strFile = StringUtils::Format("%x.cddb", static_cast<unsigned int>(i.first));
         CFile::Delete(URIUtils::AddFileToFolder(m_profileManager.GetCDDBFolder(), strFile));
         break;
       }
@@ -5490,7 +5490,7 @@ bool CMusicDatabase::GetArtistsByWhere(
     const dbiplus::query_data& data = m_pDS->get_result_set().records;
     for (const auto& i : results)
     {
-      unsigned int targetRow = (unsigned int)i.at(FieldRow).asInteger();
+      unsigned int targetRow = static_cast<unsigned int>(i.at(FieldRow).asInteger());
       const dbiplus::sql_record* const record = data.at(targetRow);
 
       try
@@ -5719,7 +5719,7 @@ bool CMusicDatabase::GetAlbumsByWhere(
     const dbiplus::query_data& data = m_pDS->get_result_set().records;
     for (const auto& i : results)
     {
-      unsigned int targetRow = (unsigned int)i.at(FieldRow).asInteger();
+      unsigned int targetRow = static_cast<unsigned int>(i.at(FieldRow).asInteger());
       const dbiplus::sql_record* const record = data.at(targetRow);
 
       try
@@ -6147,7 +6147,7 @@ bool CMusicDatabase::GetSongsFullByWhere(
     int count = 0;
     for (const auto& i : results)
     {
-      unsigned int targetRow = (unsigned int)i.at(FieldRow).asInteger();
+      unsigned int targetRow = static_cast<unsigned int>(i.at(FieldRow).asInteger());
       const dbiplus::sql_record* const record = data.at(targetRow);
 
       try
@@ -6294,7 +6294,7 @@ bool CMusicDatabase::GetSongsByWhere(
     int count = 0;
     for (const auto& i : results)
     {
-      unsigned int targetRow = (unsigned int)i.at(FieldRow).asInteger();
+      unsigned int targetRow = static_cast<unsigned int>(i.at(FieldRow).asInteger());
       const dbiplus::sql_record* const record = data.at(targetRow);
 
       try

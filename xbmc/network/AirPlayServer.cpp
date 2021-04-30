@@ -1087,7 +1087,9 @@ int CAirPlayServer::CTCPClient::ProcessRequest( std::string& responseHeader,
 
       if (showPhoto)
       {
-        if ((writtenBytes > 0 && (unsigned int)writtenBytes == m_httpParser->getContentLength()) || !receivePhoto)
+        if ((writtenBytes > 0 &&
+             static_cast<unsigned int>(writtenBytes) == m_httpParser->getContentLength()) ||
+            !receivePhoto)
         {
           if (!receivePhoto && !XFILE::CFile::Exists(tmpFileName))
           {

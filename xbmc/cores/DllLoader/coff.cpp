@@ -812,7 +812,7 @@ void CoffLoader::PrintSection(SectionHeader_t *ScnHdr, char* data)
       if ((i % 16) == 0)
         printf("\n  %08X: ", i);
       char ch = data[i];
-      printf("%02X ", (unsigned int)ch);
+      printf("%02X ", static_cast<unsigned int>(ch));
     }
     printf("\n\n");
   }

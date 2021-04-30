@@ -1472,7 +1472,7 @@ bool CUtil::MakeShortenPath(std::string StrInput, std::string& StrOutput, size_t
   }
   // replace any additional /../../ with just /../ if necessary
   std::string replaceDots = StringUtils::Format("..%c..", cDelim);
-  while (StrInput.size() > (unsigned int)iTextMaxLength)
+  while (StrInput.size() > static_cast<unsigned int>(iTextMaxLength))
     if (!StringUtils::Replace(StrInput, replaceDots, ".."))
       break;
   // finally, truncate our string to force inside our max text length,
@@ -1480,7 +1480,7 @@ bool CUtil::MakeShortenPath(std::string StrInput, std::string& StrOutput, size_t
 
   // eg end up with:
   // "smb://../Playboy Swimsuit Cal.."
-  if (iTextMaxLength > 2 && StrInput.size() > (unsigned int)iTextMaxLength)
+  if (iTextMaxLength > 2 && StrInput.size() > static_cast<unsigned int>(iTextMaxLength))
   {
     StrInput.erase(iTextMaxLength - 2);
     StrInput += "..";
@@ -1573,8 +1573,8 @@ void CUtil::InitRandomSeed()
   // Init random seed
   int64_t now;
   now = CurrentHostCounter();
-  unsigned int seed = (unsigned int)now;
-//  CLog::Log(LOGDEBUG, "%s - Initializing random seed with %u", __FUNCTION__, seed);
+  unsigned int seed = static_cast<unsigned int>(now);
+  //  CLog::Log(LOGDEBUG, "%s - Initializing random seed with %u", __FUNCTION__, seed);
   srand(seed);
 }
 

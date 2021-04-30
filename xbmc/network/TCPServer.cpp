@@ -676,7 +676,8 @@ void CTCPServer::CWebSocketClient::Send(const char *data, unsigned int size)
 
   std::vector<const CWebSocketFrame *> frames = msg->GetFrames();
   for (unsigned int index = 0; index < frames.size(); index++)
-    CTCPClient::Send(frames.at(index)->GetFrameData(), (unsigned int)frames.at(index)->GetFrameLength());
+    CTCPClient::Send(frames.at(index)->GetFrameData(),
+                     static_cast<unsigned int>(frames.at(index)->GetFrameLength()));
 }
 
 void CTCPServer::CWebSocketClient::PushBuffer(CTCPServer *host, const char *buffer, int length)
@@ -692,7 +693,8 @@ void CTCPServer::CWebSocketClient::PushBuffer(CTCPServer *host, const char *buff
       if (send)
       {
         for (unsigned int index = 0; index < frames.size(); index++)
-          Send(frames.at(index)->GetFrameData(), (unsigned int)frames.at(index)->GetFrameLength());
+          Send(frames.at(index)->GetFrameData(),
+               static_cast<unsigned int>(frames.at(index)->GetFrameLength()));
       }
       else
       {
@@ -718,7 +720,7 @@ void CTCPServer::CWebSocketClient::Disconnect()
     {
       const CWebSocketFrame *closeFrame = m_websocket->Close();
       if (closeFrame)
-        Send(closeFrame->GetFrameData(), (unsigned int)closeFrame->GetFrameLength());
+        Send(closeFrame->GetFrameData(), static_cast<unsigned int>(closeFrame->GetFrameLength()));
     }
 
     if (m_websocket->GetState() == WebSocketStateClosed)

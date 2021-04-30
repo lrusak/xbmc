@@ -20,17 +20,17 @@ int rand_r (unsigned int *seed)
 
     next *= 1103515245;
     next += 12345;
-    result = (unsigned int) (next / 65536) % 2048;
+    result = static_cast<unsigned int>((next) / 65536) % 2048;
 
     next *= 1103515245;
     next += 12345;
     result <<= 10;
-    result ^= (unsigned int) (next / 65536) % 1024;
+    result ^= static_cast<unsigned int>((next) / 65536) % 1024;
 
     next *= 1103515245;
     next += 12345;
     result <<= 10;
-    result ^= (unsigned int) (next / 65536) % 1024;
+    result ^= static_cast<unsigned int>((next) / 65536) % 1024;
 
     *seed = next;
 

@@ -264,7 +264,7 @@ bool CPicture::CreateTiledThumb(const std::vector<std::string> &files, const std
   if (!files.size())
     return false;
 
-  unsigned int num_across = (unsigned int)ceil(sqrt(static_cast<float>(files.size())));
+  unsigned int num_across = static_cast<unsigned int>(ceil(sqrt(static_cast<float>(files.size()))));
   unsigned int num_down = (files.size() + num_across - 1) / num_across;
 
   unsigned int imageRes = CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_imageRes;

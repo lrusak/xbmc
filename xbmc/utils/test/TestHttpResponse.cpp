@@ -26,7 +26,7 @@ TEST(TestHttpResponse, General)
   a.SetContent(content.c_str(), content.length());
 
   response = a.Create();;
-  EXPECT_EQ((unsigned int)210, response.size());
+  EXPECT_EQ(static_cast<unsigned int>(210), response.size());
 
   refstr = "HTTP/1.1 200 OK\r\n"
            "date: Sun, 01 Jul 2012 00:00:00 -0400\r\n"

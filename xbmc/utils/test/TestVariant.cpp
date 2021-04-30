@@ -24,7 +24,7 @@ TEST(TestVariant, VariantTypeInteger)
 
 TEST(TestVariant, VariantTypeUnsignedInteger)
 {
-  CVariant a((unsigned int)0), b((uint64_t)1);
+  CVariant a(static_cast<unsigned int>(0)), b((uint64_t)1);
 
   EXPECT_TRUE(a.isUnsignedInteger());
   EXPECT_EQ(CVariant::VariantTypeUnsignedInteger, a.type());

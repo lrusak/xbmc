@@ -264,7 +264,7 @@ bool CEventClient::OnPacketHELO(CEventPacket *packet)
   unsigned short dport;
   if (!ParseUInt16(payload, psize, dport))
     return false;
-  m_iRemotePort = (unsigned int)dport;
+  m_iRemotePort = static_cast<unsigned int>(dport);
 
   // 2 x reserved uint32 (8 bytes)
   unsigned int reserved;

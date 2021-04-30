@@ -460,7 +460,7 @@ JSONRPC_STATUS CVideoLibrary::GetGenres(const std::string &method, ITransportLay
     return InternalError;
 
   /* need to set strTitle in each item*/
-  for (unsigned int i = 0; i < (unsigned int)items.Size(); i++)
+  for (unsigned int i = 0; i < static_cast<unsigned int>(items.Size()); i++)
     items[i]->GetVideoInfoTag()->m_strTitle = items[i]->GetLabel();
 
   HandleFileItemList("genreid", false, "genres", items, parameterObject, result);

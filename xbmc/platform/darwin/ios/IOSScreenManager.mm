@@ -51,7 +51,7 @@ static CEvent screenChangeEvent;
 }
 //--------------------------------------------------------------
 // the real screen/mode change method
-- (void) setScreen:(unsigned int) screenIdx withMode:(UIScreenMode *)mode
+- (void)setScreen:static_cast<unsigned int>(screenIdx)withMode:(UIScreenMode*)mode
 {
     UIScreen *newScreen = [[UIScreen screens] objectAtIndex:screenIdx];
     bool toExternal = false;
@@ -148,7 +148,7 @@ static CEvent screenChangeEvent;
   }];
 }
 //--------------------------------------------------------------
-- (bool) changeScreen: (unsigned int)screenIdx withMode:(UIScreenMode *)mode
+- (bool)changeScreen:static_cast<unsigned int>(screenIdx)withMode:(UIScreenMode*)mode
 {
   //screen has changed - get the new screen
   if(screenIdx >= [[UIScreen screens] count])
@@ -184,7 +184,7 @@ static CEvent screenChangeEvent;
   return true;
 }
 //--------------------------------------------------------------
-- (bool) willSwitchToExternal:(unsigned int) screenIdx
+- (bool)willSwitchToExternal:static_cast<unsigned int>(screenIdx)
 {
   if(_screenIdx == 0 && screenIdx != _screenIdx)
   {
@@ -193,7 +193,7 @@ static CEvent screenChangeEvent;
   return false;
 }
 //--------------------------------------------------------------
-- (bool) willSwitchToInternal:(unsigned int) screenIdx
+- (bool)willSwitchToInternal:static_cast<unsigned int>(screenIdx)
 {
   if(_screenIdx != 0 && screenIdx == 0)
   {

@@ -93,7 +93,7 @@ namespace XbmcThreads
         }
         else
         {
-          EndTime endTime((unsigned int)milliseconds);
+          EndTime endTime(static_cast<unsigned int>(milliseconds));
           for (bool notdone = true; notdone && ret == true;
                ret = (notdone = (!predicate)) ? ((milliseconds = endTime.MillisLeft()) != 0) : true)
             cond.wait(lock,milliseconds);

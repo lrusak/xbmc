@@ -164,10 +164,11 @@ void Dataset::parse_sql(std::string &sql) {
 		int idx=0; int next_idx=0;
 		while ((idx = sql.find(fpattern,next_idx))>=0) {
 		       	   next_idx=idx+fpattern.size();
-			       if (sql.length() > ((unsigned int)next_idx))
-			       if(isalnum(sql[next_idx])  || sql[next_idx]=='_') {
-			       	   continue;
-			       	}
+                           if (sql.length() > (static_cast<unsigned int>(next_idx)))
+                             if (isalnum(sql[next_idx]) || sql[next_idx] == '_')
+                             {
+                               continue;
+                             }
 			      sql.replace(idx,fpattern.size(),by_what);
 		}//while
     }//for
@@ -178,10 +179,11 @@ void Dataset::parse_sql(std::string &sql) {
 		int idx=0; int next_idx=0;
 		while ((idx = sql.find(fpattern,next_idx))>=0) {
 		       	   next_idx=idx+fpattern.size();
-			       if (sql.length() > ((unsigned int)next_idx))
-			       if(isalnum(sql[next_idx]) || sql[next_idx]=='_') {
-			       	   continue;
-			       	}
+                           if (sql.length() > (static_cast<unsigned int>(next_idx)))
+                             if (isalnum(sql[next_idx]) || sql[next_idx] == '_')
+                             {
+                               continue;
+                             }
 			      sql.replace(idx,fpattern.size(),by_what);
 			}//while
   } //for

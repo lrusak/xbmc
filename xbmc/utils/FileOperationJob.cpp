@@ -247,7 +247,7 @@ bool CFileOperationJob::CFileOperation::ExecuteOperation(CFileOperationJob *base
   base->m_currentFile = CURL(m_strFileA).GetFileNameWithoutPath();
   base->m_currentOperation = GetActionString(m_action);
 
-  if (base->ShouldCancel((unsigned int)current, 100))
+  if (base->ShouldCancel(static_cast<unsigned int>(current), 100))
     return false;
 
   base->SetText(base->GetCurrentFile());

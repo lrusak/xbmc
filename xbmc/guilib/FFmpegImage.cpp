@@ -311,7 +311,7 @@ AVFrame* CFFmpegImage::ExtractFrame()
       // only values between including 0 and including 8
       // http://sylvana.net/jpegcrop/exif_orientation.html
       if (orientation >= 0 && orientation <= 8)
-        m_orientation = (unsigned int)orientation;
+        m_orientation = static_cast<unsigned int>(orientation);
     }
   }
   av_packet_unref(&pkt);
@@ -592,7 +592,7 @@ bool CFFmpegImage::CreateThumbnailFromSurface(unsigned char* bufferin, unsigned 
     CleanupLocalOutputBuffer();
     return false;
   }
-  internalBufOutSize = (unsigned int) size;
+  internalBufOutSize = static_cast<unsigned int>(size);
 
   tdm.intermediateBuffer = (uint8_t*) av_malloc(internalBufOutSize);
   if (!tdm.intermediateBuffer)
@@ -737,7 +737,7 @@ std::shared_ptr<Frame> CFFmpegImage::ReadFrame()
   if (avframe == nullptr)
     return nullptr;
   std::shared_ptr<Frame> frame(new Frame());
-  frame->m_delay = (unsigned int)avframe->pkt_duration;
+  frame->m_delay = static_cast<unsigned int>(avframe->pkt_duration);
   frame->m_pitch = avframe->width * 4;
   frame->m_pImage = (unsigned char*) av_malloc(avframe->height * frame->m_pitch);
   DecodeFrame(avframe, avframe->width, avframe->height, frame->m_pitch, frame->m_pImage);

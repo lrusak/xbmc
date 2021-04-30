@@ -1143,7 +1143,8 @@ void CGUIBaseContainer::UpdateAutoScrolling(unsigned int currentTime)
   {
     if (m_lastRenderTime)
       m_autoScrollDelayTime += currentTime - m_lastRenderTime;
-    if (m_autoScrollDelayTime > (unsigned int)m_autoScrollMoveTime && !m_scroller.IsScrolling())
+    if (m_autoScrollDelayTime > static_cast<unsigned int>(m_autoScrollMoveTime) &&
+        !m_scroller.IsScrolling())
     { // delay is finished - start moving
       m_autoScrollDelayTime = 0;
       // Move up or down whether reversed moving is true or false
@@ -1283,7 +1284,7 @@ bool CGUIBaseContainer::GetCondition(int condition, int data) const
   case CONTAINER_SUBITEM:
     {
       CGUIListItemLayout *layout = GetFocusedLayout();
-      return layout ? (layout->GetFocusedItem() == (unsigned int)data) : false;
+      return layout ? (layout->GetFocusedItem() == static_cast<unsigned int>(data)) : false;
     }
   case CONTAINER_SCROLLING:
     return ((m_scrollTimer.IsRunning() && m_scrollTimer.GetElapsedMilliseconds() > std::max(m_scroller.GetDuration(), SCROLLING_THRESHOLD)) || m_pageChangeTimer.IsRunning());

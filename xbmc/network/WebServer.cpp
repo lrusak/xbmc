@@ -1052,7 +1052,7 @@ ssize_t CWebServer::ContentReaderCallback(void* cls, uint64_t pos, char* buf, si
   {
     // put together the end-boundary
     std::string endBoundary = HttpRangeUtils::GenerateMultipartBoundaryEnd(context->boundary);
-    if ((unsigned int)max != endBoundary.size())
+    if (static_cast<unsigned int>(max) != endBoundary.size())
       return -1;
 
     // copy the boundary into the buffer

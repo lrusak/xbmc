@@ -537,8 +537,8 @@ bool JSONSchemaTypeDefinition::Parse(const CVariant &value, bool isParameter /* 
       }
     }
 
-    minItems = (unsigned int)value["minItems"].asUnsignedInteger(0);
-    maxItems = (unsigned int)value["maxItems"].asUnsignedInteger(0);
+    minItems = static_cast<unsigned int>(value["minItems"].asUnsignedInteger(0));
+    maxItems = static_cast<unsigned int>(value["maxItems"].asUnsignedInteger(0));
   }
 
   if (HasType(type, NumberValue) || HasType(type, IntegerValue))
@@ -556,7 +556,7 @@ bool JSONSchemaTypeDefinition::Parse(const CVariant &value, bool isParameter /* 
 
     exclusiveMinimum = value["exclusiveMinimum"].asBoolean(false);
     exclusiveMaximum = value["exclusiveMaximum"].asBoolean(false);
-    divisibleBy = (unsigned int)value["divisibleBy"].asUnsignedInteger(0);
+    divisibleBy = static_cast<unsigned int>(value["divisibleBy"].asUnsignedInteger(0));
   }
 
   if (HasType(type, StringValue))

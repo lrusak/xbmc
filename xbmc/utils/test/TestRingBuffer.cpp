@@ -17,7 +17,7 @@ TEST(TestRingBuffer, General)
   unsigned int i;
 
   EXPECT_TRUE(a.Create(20));
-  EXPECT_EQ((unsigned int)20, a.getSize());
+  EXPECT_EQ(static_cast<unsigned int>(20), a.getSize());
   memset(data, 0, sizeof(data));
   for (i = 0; i < a.getSize(); i++)
     EXPECT_TRUE(a.WriteData(data, 1));

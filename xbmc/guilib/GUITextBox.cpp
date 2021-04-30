@@ -133,7 +133,8 @@ void CGUITextBox::Process(unsigned int currentTime, CDirtyRegionList &dirtyregio
     {
       if (m_lastRenderTime)
         m_autoScrollDelayTime += currentTime - m_lastRenderTime;
-      if (m_autoScrollDelayTime > (unsigned int)m_autoScrollDelay && m_scrollSpeed == 0)
+      if (m_autoScrollDelayTime > static_cast<unsigned int>(m_autoScrollDelay) &&
+          m_scrollSpeed == 0)
       { // delay is finished - start scrolling
         MarkDirtyRegion();
         if (m_offset < static_cast<int>(m_lines.size()) - m_itemsPerPage)
@@ -215,7 +216,8 @@ void CGUITextBox::Render()
     {
       if (m_font)
       {
-        float textHeight = m_font->GetTextHeight(std::min((unsigned int)m_lines.size(), m_itemsPerPage));
+        float textHeight = m_font->GetTextHeight(
+            std::min(static_cast<unsigned int>(m_lines.size()), m_itemsPerPage));
 
         if (textHeight <= m_renderHeight)
           posY += (m_renderHeight - textHeight) * 0.5f;

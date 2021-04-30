@@ -842,7 +842,7 @@ public:
 {
 }
 //--------------------------------------------------------------
-- (bool) changeScreen: (unsigned int)screenIdx withMode:(UIScreenMode *)mode
+- (bool)changeScreen:static_cast<unsigned int>(screenIdx)withMode:(UIScreenMode*)mode
 {
   bool ret = false;
 

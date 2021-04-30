@@ -1409,7 +1409,7 @@ unsigned int CVideoInfoTag::GetStaticDuration() const
 
 unsigned int CVideoInfoTag::GetDurationFromMinuteString(const std::string &runtime)
 {
-  unsigned int duration = (unsigned int)str2uint64(runtime);
+  unsigned int duration = static_cast<unsigned int>(str2uint64(runtime));
   if (!duration)
   { // failed for some reason, or zero
     duration = strtoul(runtime.c_str(), NULL, 10);

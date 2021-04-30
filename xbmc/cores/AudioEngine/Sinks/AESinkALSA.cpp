@@ -803,7 +803,7 @@ bool CAESinkALSA::InitializeHW(const ALSAConfig &inconfig, ALSAConfig &outconfig
   outconfig.periodSize   = fragments * periodSize;
   outconfig.frameSize    = snd_pcm_frames_to_bytes(m_pcm, 1);
 
-  m_bufferSize = (unsigned int)bufferSize;
+  m_bufferSize = static_cast<unsigned int>(bufferSize);
   m_timeout = std::ceil((double)(bufferSize * 1000) / static_cast<double>(sampleRate));
 
   CLog::Log(LOGDEBUG, "CAESinkALSA::InitializeHW - Setting timeout to %d ms", m_timeout);
@@ -892,9 +892,9 @@ unsigned int CAESinkALSA::AddPackets(uint8_t **data, unsigned int frames, unsign
   while (data_left > 0)
   {
     if (m_fragmented)
-      amount = std::min((unsigned int) data_left, m_originalPeriodSize);
+      amount = std::min(static_cast<unsigned int>(data_left), m_originalPeriodSize);
     else // take care as we can come here a second time if the sink does not eat all data
-      amount = (unsigned int) data_left;
+      amount = static_cast<unsigned int>(data_left);
 
     int ret = snd_pcm_writei(m_pcm, buffer, amount);
     if (ret < 0)
