@@ -140,7 +140,7 @@ bool CInputStreamAddon::Open()
   if (CreateInstance(&m_struct) != ADDON_STATUS_OK || !m_struct.toAddon->open)
     return false;
 
-  INPUTSTREAM_PROPERTY props = {0};
+  INPUTSTREAM_PROPERTY props = {};
   std::map<std::string, std::string> propsMap;
   for (auto &key : m_fileItemProps)
   {
@@ -352,7 +352,7 @@ std::vector<CDemuxStream*> CInputStreamAddon::GetStreams() const
 {
   std::vector<CDemuxStream*> streams;
 
-  INPUTSTREAM_IDS streamIDs = {0};
+  INPUTSTREAM_IDS streamIDs = {};
   bool ret = m_struct.toAddon->get_stream_ids(&m_struct, &streamIDs);
   if (!ret || streamIDs.m_streamCount > INPUTSTREAM_MAX_STREAM_COUNT)
     return streams;

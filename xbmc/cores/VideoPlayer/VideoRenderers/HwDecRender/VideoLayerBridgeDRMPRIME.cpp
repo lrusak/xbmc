@@ -83,8 +83,8 @@ bool CVideoLayerBridgeDRMPRIME::Map(CVideoBufferDRMPRIME* buffer)
   }
 
   AVDRMFrameDescriptor* descriptor = buffer->GetDescriptor();
-  uint32_t handles[4] = {0}, pitches[4] = {0}, offsets[4] = {0}, flags = 0;
-  uint64_t modifier[4] = {0};
+  uint32_t handles[4] = {}, pitches[4] = {}, offsets[4] = {}, flags = 0;
+  uint64_t modifier[4] = {};
   int ret;
 
   // convert Prime FD to GEM handle

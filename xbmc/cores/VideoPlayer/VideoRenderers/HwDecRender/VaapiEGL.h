@@ -114,7 +114,7 @@ private:
   struct MappedTexture
   {
     EGLImageKHR eglImage{EGL_NO_IMAGE_KHR};
-    GLuint glTexture{0};
+    GLuint glTexture{};
   };
 
   InteropInfo m_interop;

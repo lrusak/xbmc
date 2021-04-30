@@ -99,7 +99,7 @@ void CPVRGUIInfo::ClearQualityInfo(PVR_SIGNAL_STATUS& qualityInfo)
 
 void CPVRGUIInfo::ClearDescrambleInfo(PVR_DESCRAMBLE_INFO& descrambleInfo)
 {
-  descrambleInfo = {0};
+  descrambleInfo = {};
 }
 
 void CPVRGUIInfo::Start()
@@ -1568,7 +1568,8 @@ void CPVRGUIInfo::CharInfoBackendNumber(std::string& strValue) const
   size_t numBackends = m_backendProperties.size();
 
   if (numBackends > 0)
-    strValue = StringUtils::Format("{0} {1} {2}", m_iCurrentActiveClient + 1, g_localizeStrings.Get(20163).c_str(), numBackends);
+    strValue = StringUtils::Format("{} {1} {2}", m_iCurrentActiveClient + 1,
+                                   g_localizeStrings.Get(20163).c_str(), numBackends);
   else
     strValue = g_localizeStrings.Get(14023);
 }

@@ -240,7 +240,7 @@ void FillRectangle(CWindowDecorator::Buffer& buffer, std::uint32_t color, CRectI
 
 void DrawHorizontalLine(CWindowDecorator::Surface& surface, std::uint32_t color, CPointInt position, int length)
 {
-  for (int i{0}; i < surface.scale; i++)
+  for (int i{}; i < surface.scale; i++)
   {
     DrawHorizontalLine(surface.buffer, color, position * surface.scale + CPointInt{0, i}, length * surface.scale);
   }
@@ -248,7 +248,7 @@ void DrawHorizontalLine(CWindowDecorator::Surface& surface, std::uint32_t color,
 
 void DrawAngledLine(CWindowDecorator::Surface& surface, std::uint32_t color, CPointInt position, int length, int stride)
 {
-  for (int i{0}; i < surface.scale; i++)
+  for (int i{}; i < surface.scale; i++)
   {
     DrawLineWithStride(surface.buffer, color, position * surface.scale + CPointInt{i, 0}, length * surface.scale, surface.buffer.size.Width() + stride);
   }
@@ -264,7 +264,7 @@ void DrawVerticalLine(CWindowDecorator::Surface& surface, std::uint32_t color, C
  */
 void DrawRectangle(CWindowDecorator::Surface& surface, std::uint32_t color, CRectInt rect)
 {
-  for (int i{0}; i < surface.scale; i++)
+  for (int i{}; i < surface.scale; i++)
   {
     DrawRectangle(surface.buffer, color, {rect.P1() * surface.scale + CPointInt{i, i}, (rect.P2() + CPointInt{1, 1}) * surface.scale - CPointInt{i, i} - CPointInt{1, 1}});
   }
@@ -454,7 +454,7 @@ void CWindowDecorator::OnPointerEnter(CSeat* seat,
   // Reset first so we ignore events for surfaces we don't handle
   seatState.currentSurface = SURFACE_COUNT;
   CSingleLock lock(m_mutex);
-  for (std::size_t i{0}; i < m_borderSurfaces.size(); i++)
+  for (std::size_t i{}; i < m_borderSurfaces.size(); i++)
   {
     if (m_borderSurfaces[i].surface.wlSurface == surface)
     {
@@ -530,7 +530,7 @@ void CWindowDecorator::OnTouchDown(CSeat* seat,
   }
   auto& seatState = seatStateI->second;
   CSingleLock lock(m_mutex);
-  for (std::size_t i{0}; i < m_borderSurfaces.size(); i++)
+  for (std::size_t i{}; i < m_borderSurfaces.size(); i++)
   {
     if (m_borderSurfaces[i].surface.wlSurface == surface)
     {
@@ -928,7 +928,7 @@ CWindowDecorator::Buffer CWindowDecorator::GetBuffer(CSizeInt size)
 
 void CWindowDecorator::AllocateBuffers()
 {
-  for (std::size_t i{0}; i < m_borderSurfaces.size(); i++)
+  for (std::size_t i{}; i < m_borderSurfaces.size(); i++)
   {
     auto& borderSurface = m_borderSurfaces[i];
     if (!borderSurface.surface.buffer.data)
