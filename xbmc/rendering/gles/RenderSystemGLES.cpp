@@ -283,8 +283,8 @@ void CRenderSystemGLES::SetCameraPosition(const CPoint &camera, int screenWidth,
 
   CPoint offset = camera - CPoint(screenWidth*0.5f, screenHeight*0.5f);
 
-  float w = (float)m_viewPort[2]*0.5f;
-  float h = (float)m_viewPort[3]*0.5f;
+  float w = static_cast<float>(m_viewPort[2] * 0.5f);
+  float h = static_cast<float>(m_viewPort[3] * 0.5f);
 
   glMatrixModview->LoadIdentity();
   glMatrixModview->Translatef(-(w + offset.x - stereoFactor), +(h + offset.y), 0);
@@ -372,7 +372,7 @@ void CRenderSystemGLES::SetScissors(const CRect &rect)
 
 void CRenderSystemGLES::ResetScissors()
 {
-  SetScissors(CRect(0, 0, (float)m_width, (float)m_height));
+  SetScissors(CRect(0, 0, static_cast<float>(m_width), static_cast<float>(m_height)));
 }
 
 void CRenderSystemGLES::InitialiseShaders()

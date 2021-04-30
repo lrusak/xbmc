@@ -53,7 +53,7 @@ JSONRPC_STATUS CApplicationOperations::SetVolume(const std::string &method, ITra
     int oldVolume = static_cast<int>(g_application.GetVolumePercent());
     int volume = static_cast<int>(parameterObject["volume"].asInteger());
 
-    g_application.SetVolume((float)volume, true);
+    g_application.SetVolume(static_cast<float>(volume), true);
 
     up = oldVolume < volume;
   }

@@ -545,7 +545,7 @@ namespace XBMCAddon
         throw WindowException("Dialog not created.");
 
       if (percent >= 0 && percent <= 100)
-        pHandle->SetPercentage((float)percent);
+        pHandle->SetPercentage(static_cast<float>(percent));
       if (!heading.empty())
         pHandle->SetTitle(heading);
       if (!message.empty())

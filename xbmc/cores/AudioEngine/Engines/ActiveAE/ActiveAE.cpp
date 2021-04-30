@@ -220,9 +220,9 @@ float CEngineStats::GetWaterLevel()
 {
   CSingleLock lock(m_lock);
   if (m_pcmOutput)
-    return (float)m_bufferedSamples / m_sinkSampleRate;
+    return static_cast<float>(m_bufferedSamples) / m_sinkSampleRate;
   else
-    return (float)m_bufferedSamples * m_sinkFormat.m_streamInfo.GetDuration() / 1000;
+    return static_cast<float>(m_bufferedSamples) * m_sinkFormat.m_streamInfo.GetDuration() / 1000;
 }
 
 void CEngineStats::SetSuspended(bool state)

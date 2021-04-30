@@ -458,15 +458,15 @@ float CVariant::asFloat(float fallback) const
   switch (m_type)
   {
     case VariantTypeDouble:
-      return (float)m_data.dvalue;
+      return static_cast<float>(m_data.dvalue);
     case VariantTypeInteger:
-      return (float)m_data.integer;
+      return static_cast<float>(m_data.integer);
     case VariantTypeUnsignedInteger:
-      return (float)m_data.unsignedinteger;
+      return static_cast<float>(m_data.unsignedinteger);
     case VariantTypeString:
-      return (float)str2double(*m_data.string, fallback);
+      return static_cast<float>(str2double(*m_data.string), fallback);
     case VariantTypeWideString:
-      return (float)str2double(*m_data.wstring, fallback);
+      return static_cast<float>(str2double(*m_data.wstring), fallback);
     default:
       return fallback;
   }

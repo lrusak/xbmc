@@ -42,7 +42,7 @@ RESOLUTION_INFO::RESOLUTION_INFO(int width, int height, float aspect, const std:
   iBlanking = 0;
   iScreenWidth = width;
   iScreenHeight = height;
-  fPixelRatio = aspect ? ((float)width)/height / aspect : 1.0f;
+  fPixelRatio = aspect ? (static_cast<float>(width) / height) / aspect : 1.0f;
   bFullScreen = true;
   fRefreshRate = 0;
   dwFlags = iSubtitles = 0;
@@ -389,7 +389,7 @@ float CResolutionUtils::RefreshWeight(float refresh, float fps)
   if (round < 1)
     weight = (fps - refresh) / fps;
   else
-    weight = (float)fabs(div / round - 1.0);
+    weight = static_cast<float>(fabs(div) / round - 1.0);
 
   // punish higher refreshrates and prefer better matching
   // e.g. 30 fps content at 60 hz is better than

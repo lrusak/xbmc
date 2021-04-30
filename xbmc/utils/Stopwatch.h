@@ -76,7 +76,7 @@ public:
   float GetElapsedSeconds() const
   {
     int64_t totalTicks = (m_isRunning ? GetTicks() : m_stopTick) - m_startTick;
-    return (float)totalTicks * m_timerPeriod;
+    return static_cast<float>(totalTicks) * m_timerPeriod;
   }
 
   /*!

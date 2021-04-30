@@ -178,18 +178,18 @@ CSlideEffect::CSlideEffect(const TiXmlElement *node) : CAnimEffect(node, EFFECT_
   {
     std::vector<std::string> commaSeparated = StringUtils::Split(startPos, ",");
     if (commaSeparated.size() > 1)
-      m_startY = (float)atof(commaSeparated[1].c_str());
+      m_startY = static_cast<float>(atof(commaSeparated[1].c_str()));
     if (!commaSeparated.empty())
-      m_startX = (float)atof(commaSeparated[0].c_str());
+      m_startX = static_cast<float>(atof(commaSeparated[0].c_str()));
   }
   const char *endPos = node->Attribute("end");
   if (endPos)
   {
     std::vector<std::string> commaSeparated = StringUtils::Split(endPos, ",");
     if (commaSeparated.size() > 1)
-      m_endY = (float)atof(commaSeparated[1].c_str());
+      m_endY = static_cast<float>(atof(commaSeparated[1].c_str()));
     if (!commaSeparated.empty())
-      m_endX = (float)atof(commaSeparated[0].c_str());
+      m_endX = static_cast<float>(atof(commaSeparated[0].c_str()));
   }
 }
 
@@ -218,9 +218,9 @@ CRotateEffect::CRotateEffect(const TiXmlElement *node, EFFECT_TYPE effect) : CAn
     {
       std::vector<std::string> commaSeparated = StringUtils::Split(centerPos, ",");
       if (commaSeparated.size() > 1)
-        m_center.y = (float)atof(commaSeparated[1].c_str());
+        m_center.y = static_cast<float>(atof(commaSeparated[1].c_str()));
       if (!commaSeparated.empty())
-        m_center.x = (float)atof(commaSeparated[0].c_str());
+        m_center.x = static_cast<float>(atof(commaSeparated[0].c_str()));
     }
   }
 }

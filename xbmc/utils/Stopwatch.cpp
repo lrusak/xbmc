@@ -29,7 +29,7 @@ CStopWatch::CStopWatch(bool useFrameTime /*=false*/)
   if (m_useFrameTime)
     m_timerPeriod = 1.0f / 1000.0f; //frametime is in milliseconds
   else
-    m_timerPeriod = 1.0f / (float)CurrentHostFrequency();
+    m_timerPeriod = 1.0f / static_cast<float>(CurrentHostFrequency());
 #endif
 }
 

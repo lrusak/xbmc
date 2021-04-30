@@ -164,9 +164,11 @@ void CGUIDialogTeletext::SetCoordinates()
   CServiceBroker::GetWinSystem()->GetGfxContext().SetScalingResolution(m_coordsRes, m_needsScaling);
 
   left = CServiceBroker::GetWinSystem()->GetGfxContext().ScaleFinalXCoord(0, 0);
-  right = CServiceBroker::GetWinSystem()->GetGfxContext().ScaleFinalXCoord((float)m_coordsRes.iWidth, 0);
+  right = CServiceBroker::GetWinSystem()->GetGfxContext().ScaleFinalXCoord(
+      static_cast<float>(m_coordsRes.iWidth), 0);
   top = CServiceBroker::GetWinSystem()->GetGfxContext().ScaleFinalYCoord(0, 0);
-  bottom = CServiceBroker::GetWinSystem()->GetGfxContext().ScaleFinalYCoord(0, (float)m_coordsRes.iHeight);
+  bottom = CServiceBroker::GetWinSystem()->GetGfxContext().ScaleFinalYCoord(
+      0, static_cast<float>(m_coordsRes.iHeight));
 
   if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_VIDEOPLAYER_TELETEXTSCALE))
   {

@@ -83,7 +83,8 @@ void CGUIButtonControl::Process(unsigned int currentTime, CDirtyRegionList &dirt
         alphaChannel = 63 - (alphaCounter % 64);
 
       alphaChannel += 192;
-      alphaChannel = (unsigned int)((float)m_alpha * (float)alphaChannel / 255.0f);
+      alphaChannel =
+          (unsigned int)(static_cast<float>(m_alpha) * static_cast<float>(alphaChannel) / 255.0f);
     }
     if (m_imgFocus->SetAlpha((unsigned char)alphaChannel))
       MarkDirtyRegion();

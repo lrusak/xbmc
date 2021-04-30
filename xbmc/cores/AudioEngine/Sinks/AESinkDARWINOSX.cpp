@@ -318,7 +318,8 @@ bool CAESinkDARWINOSX::Initialize(AEAudioFormat &format, std::string &device)
 
   unsigned int num_buffers = 4;
   m_buffer = new AERingBuffer(num_buffers * format.m_frames * m_frameSizePerPlane, m_planes);
-  CLog::Log(LOGDEBUG, "%s: using buffer size: %u (%f ms)", __FUNCTION__, m_buffer->GetMaxSize(), (float)m_buffer->GetMaxSize() / (m_framesPerSecond * m_frameSizePerPlane));
+  CLog::Log(LOGDEBUG, "%s: using buffer size: %u (%f ms)", __FUNCTION__, m_buffer->GetMaxSize(),
+            static_cast<float>(m_buffer->GetMaxSize()) / (m_framesPerSecond * m_frameSizePerPlane));
 
   if (!passthrough)
     format.m_dataFormat = (m_planes > 1) ? AE_FMT_FLOATP : AE_FMT_FLOAT;
@@ -498,7 +499,8 @@ OSStatus CAESinkDARWINOSX::renderCallback(AudioDeviceID inDevice, const AudioTim
        We reverse the float->S16LE conversion done in the stream or device */
       static const float mul = 1.0f / (INT16_MAX + 1);
 
-      size_t wanted = outOutputData->mBuffers[0].mDataByteSize / sizeof(float) * sizeof(int16_t);
+      size_t wanted =
+          outOutputData->mBuffers[0].mDataByteSize / sizeofstatic_cast<float>(*) sizeof(int16_t);
       size_t bytes = std::min((size_t)sink->m_buffer->GetReadSize(), wanted);
       for (unsigned int j = 0; j < bytes / sizeof(int16_t); j++)
       {

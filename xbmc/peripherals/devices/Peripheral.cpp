@@ -354,7 +354,7 @@ float CPeripheral::GetSettingFloat(const std::string& strKey) const
     std::shared_ptr<CSettingNumber> floatSetting =
         std::static_pointer_cast<CSettingNumber>((*it).second.m_setting);
     if (floatSetting)
-      return (float)floatSetting->GetValue();
+      return static_cast<float>(floatSetting->GetValue());
   }
 
   return 0;

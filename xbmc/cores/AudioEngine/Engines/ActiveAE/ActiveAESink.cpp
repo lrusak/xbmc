@@ -1100,8 +1100,8 @@ void CActiveAESink::GenerateNoise()
     {
       do
       {
-        R1 = (float) rand() / (float) RAND_MAX;
-        R2 = (float) rand() / (float) RAND_MAX;
+        R1 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        R2 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
       }
       while(R1 == 0.0f);
 

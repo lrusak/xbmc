@@ -381,7 +381,9 @@ void CGUIWindowSlideShow::Process(unsigned int currentTime, CDirtyRegionList &re
 
   // if we haven't processed yet, we should mark the whole screen
   if (!HasProcessed())
-    regions.push_back(CDirtyRegion(CRect(0.0f, 0.0f, (float)CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth(), (float)CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight())));
+    regions.push_back(CDirtyRegion(CRect(
+        0.0f, 0.0f, static_cast<float>(CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth()),
+        static_cast<float>(CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight()))));
 
   if (m_iCurrentSlide < 0 || m_iCurrentSlide >= static_cast<int>(m_slides.size()))
     m_iCurrentSlide = 0;
@@ -461,7 +463,9 @@ void CGUIWindowSlideShow::Process(unsigned int currentTime, CDirtyRegionList &re
 
   if (m_bErrorMessage)
   { // hack, just mark it all
-    regions.push_back(CDirtyRegion(CRect(0.0f, 0.0f, (float)CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth(), (float)CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight())));
+    regions.push_back(CDirtyRegion(CRect(
+        0.0f, 0.0f, static_cast<float>(CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth()),
+        static_cast<float>(CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight()))));
     return;
   }
 
@@ -479,9 +483,8 @@ void CGUIWindowSlideShow::Process(unsigned int currentTime, CDirtyRegionList &re
       // load using the background loader
       int maxWidth, maxHeight;
 
-      GetCheckedSize((float)res.iWidth * m_fZoom,
-        (float)res.iHeight * m_fZoom,
-        maxWidth, maxHeight);
+      GetCheckedSize(static_cast<float>(res.iWidth) * m_fZoom,
+                     static_cast<float>(res.iHeight) * m_fZoom, maxWidth, maxHeight);
       m_pBackgroundLoader->LoadPic(m_iCurrentPic, m_iCurrentSlide, picturePath, maxWidth, maxHeight);
       m_iLastFailedNextSlide = -1;
       m_bLoadNextPic = false;
@@ -505,9 +508,8 @@ void CGUIWindowSlideShow::Process(unsigned int currentTime, CDirtyRegionList &re
         CLog::Log(LOGDEBUG, "Loading the next image %d: %s", m_iNextSlide, item->GetPath().c_str());
 
       int maxWidth, maxHeight;
-      GetCheckedSize((float)res.iWidth * m_fZoom,
-                     (float)res.iHeight * m_fZoom,
-                     maxWidth, maxHeight);
+      GetCheckedSize(static_cast<float>(res.iWidth) * m_fZoom,
+                     static_cast<float>(res.iHeight) * m_fZoom, maxWidth, maxHeight);
       m_pBackgroundLoader->LoadPic(1 - m_iCurrentPic, m_iNextSlide, picturePath, maxWidth, maxHeight);
     }
   }
@@ -625,7 +627,9 @@ void CGUIWindowSlideShow::Process(unsigned int currentTime, CDirtyRegionList &re
     MarkDirtyRegion();
   }
   CGUIWindow::Process(currentTime, regions);
-  m_renderRegion.SetRect(0, 0, (float)CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth(), (float)CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight());
+  m_renderRegion.SetRect(
+      0, 0, static_cast<float>(CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth()),
+      static_cast<float>(CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight()));
 }
 
 void CGUIWindowSlideShow::Render()
@@ -1161,7 +1165,8 @@ void CGUIWindowSlideShow::OnLoadPic(
       if (URIUtils::HasExtension(strHostName, ".cbr|.cbz"))
       {
         m_Image[iPic].m_bIsComic = true;
-        m_Image[iPic].Move((float)m_Image[iPic].GetOriginalWidth(),(float)m_Image[iPic].GetOriginalHeight());
+        m_Image[iPic].Move(static_cast<float>(m_Image[iPic].GetOriginalWidth()),
+                           static_cast<float>(m_Image[iPic].GetOriginalHeight()));
       }
     }
   }

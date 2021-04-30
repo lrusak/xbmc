@@ -379,9 +379,9 @@ bool CEventClient::OnPacketBUTTON(CEventPacket *packet)
   if(flags & PTB_USE_AMOUNT)
   {
     if(flags & PTB_AXIS)
-      famount = (float)amount/65535.0f*2.0f-1.0f;
+      famount = static_cast<float>(amount / 65535.0f * 2.0f - 1.0f);
     else
-      famount = (float)amount/65535.0f;
+      famount = static_cast<float>(amount / 65535.0f);
   }
   else
     famount = (active ? 1.0f : 0.0f);

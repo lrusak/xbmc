@@ -171,7 +171,7 @@ void CAudioSinkAE::SetDynamicRangeCompression(long drc)
 {
   CSingleLock lock (m_critSection);
   if (m_pAudioStream)
-    m_pAudioStream->SetAmplification(powf(10.0f, (float)drc / 2000.0f));
+    m_pAudioStream->SetAmplification(powf(10.0f, static_cast<float>(drc) / 2000.0f));
 }
 
 void CAudioSinkAE::Pause()

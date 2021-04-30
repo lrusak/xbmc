@@ -84,14 +84,14 @@ TEST(TestVariant, VariantTypeWideString)
 
 TEST(TestVariant, VariantTypeDouble)
 {
-  CVariant a((float)0.0f), b(static_cast<double>(0.1f));
+  CVariant a(static_cast<float>(0.0f)), b(static_cast<double>(0.1f));
 
   EXPECT_TRUE(a.isDouble());
   EXPECT_EQ(CVariant::VariantTypeDouble, a.type());
   EXPECT_TRUE(b.isDouble());
   EXPECT_EQ(CVariant::VariantTypeDouble, b.type());
 
-  EXPECT_EQ((float)0.0f, a.asDouble());
+  EXPECT_EQ(static_cast<float>(0.0f), a.asDouble());
   EXPECT_EQ(static_cast<double>(0.1f), b.asDouble());
 }
 

@@ -70,7 +70,7 @@ public:
     // value will mean the text starts to the right
     pixelPos = -initialPos;
     // privates:
-    m_averageFrameTime = 1000.f / fabs((float)defaultSpeed);
+    m_averageFrameTime = 1000.f / fabs(static_cast<float>(defaultSpeed));
     m_lastFrameTime = 0;
     m_textWidth = 0;
     m_totalWidth = 0;

@@ -337,9 +337,9 @@ inline float CAEUtil::SoftClamp(const float x)
     static const double k = 0.9f;
     /* perform a soft clamp */
     if (x >  k)
-      x = (float) (tanh((x - k) / (1 - k)) * (1 - k) + k);
+      x = static_cast<float>((tanh((x)-k) / (1 - k)) * (1 - k) + k);
     else if (x < -k)
-      x = (float) (tanh((x + k) / (1 - k)) * (1 - k) - k);
+      x = static_cast<float>((tanh((x) + k) / (1 - k)) * (1 - k) - k);
 
     /* hard clamp anything still outside the bounds */
     if (x >  1.0f)

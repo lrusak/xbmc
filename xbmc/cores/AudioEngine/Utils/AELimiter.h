@@ -34,10 +34,7 @@ class CAELimiter
       return m_amplify;
     }
 
-    void SetSamplerate(int samplerate)
-    {
-      m_samplerate = (float)samplerate;
-    }
+    void SetSamplerate(int samplerate) { m_samplerate = static_cast<float>(samplerate); }
 
     float Run(float* frame[AE_CH_MAX], int channels, int offset = 0, bool planar = false);
 };

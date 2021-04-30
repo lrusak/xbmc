@@ -633,7 +633,8 @@ bool CD3DEffect::SetFloatArray(LPCSTR handle, const float* val, unsigned int cou
 {
   if (m_effect)
   {
-    return S_OK == m_effect->GetVariableByName(handle)->SetRawValue(val, 0, sizeof(float) * count);
+    return S_OK == m_effect->GetVariableByName(handle)->SetRawValue(
+                       val, 0, sizeofstatic_cast<float>(*) count);
   }
   return false;
 }

@@ -738,9 +738,10 @@ bool CCoreAudioDevice::SetNominalSampleRate(Float64 sampleRate)
   OSStatus ret = AudioObjectSetPropertyData(m_DeviceId, &propertyAddress, 0, NULL, sizeof(Float64), &sampleRate);
   if (ret != noErr)
   {
-    CLog::Log(LOGERROR, "CCoreAudioDevice::SetNominalSampleRate: "
-      "Unable to set current device sample rate to %0.0f. Error = %s",
-      (float)sampleRate, GetError(ret).c_str());
+    CLog::Log(LOGERROR,
+              "CCoreAudioDevice::SetNominalSampleRate: "
+              "Unable to set current device sample rate to %0.0f. Error = %s",
+              static_cast<float>(sampleRate), GetError(ret).c_str());
     return false;
   }
   if (m_SampleRateRestore == 0.0f)

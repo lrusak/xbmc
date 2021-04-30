@@ -75,9 +75,9 @@ CAction::CAction(int actionID, const std::string& name, const CKey& key) : m_nam
   m_holdTime = key.GetHeld();
   // get the action amounts of the analog buttons
   if (key.GetButtonCode() == KEY_BUTTON_LEFT_ANALOG_TRIGGER)
-    m_amount[0] = (float)key.GetLeftTrigger() / 255.0f;
+    m_amount[0] = static_cast<float>(key.GetLeftTrigger()) / 255.0f;
   else if (key.GetButtonCode() == KEY_BUTTON_RIGHT_ANALOG_TRIGGER)
-    m_amount[0] = (float)key.GetRightTrigger() / 255.0f;
+    m_amount[0] = static_cast<float>(key.GetRightTrigger()) / 255.0f;
   else if (key.GetButtonCode() == KEY_BUTTON_LEFT_THUMB_STICK)
   {
     m_amount[0] = key.GetLeftThumbX();

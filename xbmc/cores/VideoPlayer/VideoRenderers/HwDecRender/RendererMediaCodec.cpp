@@ -131,7 +131,7 @@ bool CRendererMediaCodec::RenderHook(int index)
       glUniform1i(fieldLoc, 0);
     else if(m_currentField == FIELD_BOT)
       glUniform1i(fieldLoc, 1);
-    glUniform1f(stepLoc, 1.0f / (float)plane.texheight);
+    glUniform1f(stepLoc, 1.0f / static_cast<float>(plane.texheight));
   }
   else
     renderSystem->EnableGUIShader(SM_TEXTURE_RGBA_OES);

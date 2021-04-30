@@ -40,8 +40,8 @@ CBaseRenderer::~CBaseRenderer() = default;
 
 float CBaseRenderer::GetAspectRatio() const
 {
-  float width = (float)m_sourceWidth;
-  float height = (float)m_sourceHeight;
+  float width = static_cast<float>(m_sourceWidth);
+  float height = static_cast<float>(m_sourceHeight);
   return m_sourceFrameRatio * width / height * m_sourceHeight / m_sourceWidth;
 }
 
@@ -190,9 +190,9 @@ void CBaseRenderer::CalcNormalRenderRect(float offsetX, float offsetY, float wid
   else if (verticalShift < -1.0f)
     posY += shiftRange * (verticalShift + 1.0f);
 
-  m_destRect.x1 = (float)MathUtils::round_int(posX + offsetX);
+  m_destRect.x1 = static_cast<float>(MathUtils::round_int(posX) + offsetX);
   m_destRect.x2 = m_destRect.x1 + MathUtils::round_int(newWidth);
-  m_destRect.y1 = (float)MathUtils::round_int(posY + offsetY);
+  m_destRect.y1 = static_cast<float>(MathUtils::round_int(posY) + offsetY);
   m_destRect.y2 = m_destRect.y1 + MathUtils::round_int(newHeight);
 
   // clip as needed
@@ -226,7 +226,7 @@ void CBaseRenderer::CalcNormalRenderRect(float offsetX, float offsetY, float wid
 //***************************************************************************************
 void CBaseRenderer::CalculateFrameAspectRatio(unsigned int desired_width, unsigned int desired_height)
 {
-  m_sourceFrameRatio = (float)desired_width / desired_height;
+  m_sourceFrameRatio = static_cast<float>(desired_width) / desired_height;
 
   // Check whether mplayer has decided that the size of the video file should be changed
   // This indicates either a scaling has taken place (which we didn't ask for) or it has
@@ -236,7 +236,7 @@ void CBaseRenderer::CalculateFrameAspectRatio(unsigned int desired_width, unsign
     return ;
 
   // mplayer is scaling in one or both directions.  We must alter our Source Pixel Ratio
-  float imageFrameRatio = (float)m_sourceWidth / m_sourceHeight;
+  float imageFrameRatio = static_cast<float>(m_sourceWidth) / m_sourceHeight;
 
   // OK, most sources will be correct now, except those that are intended
   // to be displayed on non-square pixel based output devices (ie PAL or NTSC TVs)
@@ -287,8 +287,8 @@ void CBaseRenderer::ManageRenderArea()
 
   m_sourceRect.x1 = 0.0f;
   m_sourceRect.y1 = 0.0f;
-  m_sourceRect.x2 = (float)m_sourceWidth;
-  m_sourceRect.y2 = (float)m_sourceHeight;
+  m_sourceRect.x2 = static_cast<float>(m_sourceWidth);
+  m_sourceRect.y2 = static_cast<float>(m_sourceHeight);
 
   unsigned int stereo_mode  = CONF_FLAGS_STEREO_MODE_MASK(m_iFlags);
   int          stereo_view  = CServiceBroker::GetWinSystem()->GetGfxContext().GetStereoView();
@@ -372,8 +372,8 @@ void CBaseRenderer::SetViewMode(int viewMode)
               m_videoSettings.m_ViewMode == ViewModeNormal);
 
   // Splitres scaling factor
-  float xscale = (float)info.iScreenWidth  / (float)info.iWidth;
-  float yscale = (float)info.iScreenHeight / (float)info.iHeight;
+  float xscale = static_cast<float>(info.iScreenWidth) / static_cast<float>(info.iWidth);
+  float yscale = static_cast<float>(info.iScreenHeight) / static_cast<float>(info.iHeight);
 
   screenWidth   *= xscale;
   screenHeight  *= yscale;

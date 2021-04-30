@@ -272,7 +272,7 @@ bool CJpegParse::Process (const char *picFileName)
   // File exists and successfully opened. Start processing
   // Gather all information about the file
 
-/*    // Get file name...
+  /*    // Get file name...
   CStdString tmp, urlFName, path;
   CURL url(picFileName);
   url.GetURLWithoutUserDetails(urlFName);
@@ -284,7 +284,7 @@ bool CJpegParse::Process (const char *picFileName)
   // ...then size...
   __stat64 fileStat;
   CFile::Stat(picFileName, &fileStat);
-  float fileSize = (float)fileStat.st_size;
+  float fileSize = static_cast<float>(fileStat.st_size);
   tmp = "";
   if (fileSize > 1024)
   {

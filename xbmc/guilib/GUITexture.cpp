@@ -322,8 +322,8 @@ bool CGUITexture::AllocResources()
     m_texture = texture;
     changed = true;
   }
-  m_frameWidth = (float)m_texture.m_width;
-  m_frameHeight = (float)m_texture.m_height;
+  m_frameWidth = static_cast<float>(m_texture.m_width);
+  m_frameHeight = static_cast<float>(m_texture.m_height);
 
   // load the diffuse texture (if necessary)
   if (!m_info.diffuse.empty())

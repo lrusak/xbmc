@@ -459,34 +459,34 @@ unsigned int field_value::get_asUInt() const {
 float field_value::get_asFloat() const {
     switch (field_type) {
     case ft_String: {
-      return (float)atof(str_value.c_str());
+      return static_cast<float>(atof(str_value.c_str()));
     }
     case ft_Boolean:{
-      return (float)bool_value;
+      return static_cast<float>(bool_value);
     }
     case ft_Char: {
-      return (float)char_value;
+      return static_cast<float>(char_value);
     }
     case ft_Short: {
-       return (float)short_value;
+      return static_cast<float>(short_value);
     }
     case ft_UShort: {
-       return (float)ushort_value;
+      return static_cast<float>(ushort_value);
     }
     case ft_Int: {
-      return (float)int_value;
+      return static_cast<float>(int_value);
     }
     case ft_UInt: {
-      return (float)uint_value;
+      return static_cast<float>(uint_value);
     }
     case ft_Float: {
       return float_value;
     }
     case ft_Double: {
-      return (float)double_value;
+      return static_cast<float>(double_value);
     }
     case ft_Int64: {
-      return (float)int64_value;
+      return static_cast<float>(int64_value);
     }
     default:
       return 0.0;

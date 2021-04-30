@@ -954,7 +954,8 @@ bool CDVDVideoCodecFFmpeg::GetPictureCommon(VideoPicture* pVideoPicture)
     aspect_ratio = av_q2d(pixel_aspect) * pVideoPicture->iWidth / pVideoPicture->iHeight;
 
   if (aspect_ratio <= 0.0)
-    aspect_ratio = (float)pVideoPicture->iWidth / (float)pVideoPicture->iHeight;
+    aspect_ratio =
+        static_cast<float>(pVideoPicture->iWidth) / static_cast<float>(pVideoPicture->iHeight);
 
   if (m_DAR != aspect_ratio)
   {

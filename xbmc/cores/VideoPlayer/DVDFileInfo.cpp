@@ -388,7 +388,7 @@ bool CDVDFileInfo::DemuxerToStreamDetails(const std::shared_ptr<CDVDInputStream>
       p->m_iHeight = vstream->iHeight;
       p->m_fAspect = static_cast<float>(vstream->fAspect);
       if (p->m_fAspect == 0.0f)
-        p->m_fAspect = (float)p->m_iWidth / p->m_iHeight;
+        p->m_fAspect = static_cast<float>(p->m_iWidth) / p->m_iHeight;
       p->m_strCodec = pDemux->GetStreamCodecName(stream->demuxerId, stream->uniqueId);
       p->m_iDuration = pDemux->GetStreamLength();
       p->m_strStereoMode = vstream->stereo_mode;

@@ -596,12 +596,18 @@ void CPeripherals::GetSettingsFromMappingsFile(
     }
     else if (strSettingsType == "float")
     {
-      float fValue =
-          currentNode->Attribute("value") ? (float)atof(currentNode->Attribute("value")) : 0;
-      float fMin = currentNode->Attribute("min") ? (float)atof(currentNode->Attribute("min")) : 0;
-      float fStep =
-          currentNode->Attribute("step") ? (float)atof(currentNode->Attribute("step")) : 0;
-      float fMax = currentNode->Attribute("max") ? (float)atof(currentNode->Attribute("max")) : 0;
+      float fValue = currentNode->Attribute("value")
+                         ? static_cast<float>(atof(currentNode->Attribute("value")))
+                         : 0;
+      float fMin = currentNode->Attribute("min")
+                       ? static_cast<float>(atof(currentNode->Attribute("min")))
+                       : 0;
+      float fStep = currentNode->Attribute("step")
+                        ? static_cast<float>(atof(currentNode->Attribute("step")))
+                        : 0;
+      float fMax = currentNode->Attribute("max")
+                       ? static_cast<float>(atof(currentNode->Attribute("max")))
+                       : 0;
       setting = std::make_shared<CSettingNumber>(strKey, iLabelId, fValue, fMin, fStep, fMax);
     }
     else if (StringUtils::EqualsNoCase(strSettingsType, "enum"))

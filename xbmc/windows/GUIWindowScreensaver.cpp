@@ -27,7 +27,9 @@ void CGUIWindowScreensaver::Process(unsigned int currentTime, CDirtyRegionList &
 {
   MarkDirtyRegion();
   CGUIWindow::Process(currentTime, regions);
-  m_renderRegion.SetRect(0, 0, (float)CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth(), (float)CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight());
+  m_renderRegion.SetRect(
+      0, 0, static_cast<float>(CServiceBroker::GetWinSystem()->GetGfxContext().GetWidth()),
+      static_cast<float>(CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight()));
 }
 
 void CGUIWindowScreensaver::Render()

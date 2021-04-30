@@ -1251,7 +1251,8 @@ void CVideoPlayer::Prepare()
   {
     if (m_playerOptions.startpercent > 0 && m_pDemuxer)
     {
-      int playerStartTime = (int)( ( (float) m_pDemuxer->GetStreamLength() ) * ( m_playerOptions.startpercent/(float)100 ) );
+      int playerStartTime = (int)((static_cast<float>(m_pDemuxer->GetStreamLength())) *
+                                  (m_playerOptions.startpercent / static_cast<float>(100)));
       starttime = m_Edl.RestoreCutTime(playerStartTime);
     }
     else
@@ -3195,13 +3196,13 @@ float CVideoPlayer::GetPercentage()
   if (!iTotalTime)
     return 0.0f;
 
-  return GetTime() * 100 / (float)iTotalTime;
+  return GetTime() * 100 / static_cast<float>(iTotalTime);
 }
 
 float CVideoPlayer::GetCachePercentage()
 {
   CSingleLock lock(m_StateSection);
-  return (float) (m_State.cache_offset * 100); // NOTE: Percentage returned is relative
+  return static_cast<float>((m_State.cache_offset) * 100); // NOTE: Percentage returned is relative
 }
 
 void CVideoPlayer::SetAVDelay(float fValue)
@@ -3223,7 +3224,7 @@ void CVideoPlayer::SetSubTitleDelay(float fValue)
 
 float CVideoPlayer::GetSubTitleDelay()
 {
-  return (float) -m_VideoPlayerVideo->GetSubtitleDelay() / DVD_TIME_BASE;
+  return static_cast<float>(-m_VideoPlayerVideo->GetSubtitleDelay()) / DVD_TIME_BASE;
 }
 
 bool CVideoPlayer::GetSubtitleVisible()

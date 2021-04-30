@@ -149,7 +149,7 @@ void CGUIControlProfilerItem::SaveToXML(TiXmlElement *parent)
     xmlControl->SetAttribute("id", str.c_str());
   }
 
-  float pct = (float)GetTotalTime() / (float)m_pProfiler->GetTotalTime();
+  float pct = static_cast<float>(GetTotalTime()) / static_cast<float>(m_pProfiler->GetTotalTime());
   if (pct > 0.01f)
   {
     std::string str = StringUtils::Format("%.0f", pct * 100.0f);

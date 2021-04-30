@@ -4548,7 +4548,7 @@ float CApplication::GetCachePercentage() const
     // Note that the player returns a relative cache percentage and we want an absolute percentage
     if (m_stackHelper.IsPlayingRegularStack())
     {
-      float stackedTotalTime = (float) GetTotalTime();
+      float stackedTotalTime = static_cast<float>(GetTotalTime());
       // We need to take into account the stack's total time vs. currently playing file's total time
       if (stackedTotalTime > 0.0f)
         return std::min( 100.0f, GetPercentage() + (m_appPlayer.GetCachePercentage() * m_appPlayer.GetTotalTime() * 0.001f / stackedTotalTime ) );

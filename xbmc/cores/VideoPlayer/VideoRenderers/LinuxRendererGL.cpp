@@ -1664,7 +1664,8 @@ bool CLinuxRendererGL::RenderCapture(CRenderCapture* capture)
   saveRotatedCoords();//backup current m_rotatedDestCoords
 
   // new video rect is capture size
-  m_destRect.SetRect(0, 0, (float)capture->GetWidth(), (float)capture->GetHeight());
+  m_destRect.SetRect(0, 0, static_cast<float>(capture->GetWidth()),
+                     static_cast<float>(capture->GetHeight()));
   MarkDirty();
   syncDestRectToRotatedPoints();//syncs the changed destRect to m_rotatedDestCoords
 
@@ -2582,8 +2583,10 @@ bool CLinuxRendererGL::Supports(ESCALINGMETHOD method)
       method == VS_SCALINGMETHOD_LANCZOS3)
   {
     // if scaling is below level, avoid hq scaling
-    float scaleX = fabs(((float)m_sourceWidth - m_destRect.Width())/m_sourceWidth)*100;
-    float scaleY = fabs(((float)m_sourceHeight - m_destRect.Height())/m_sourceHeight)*100;
+    float scaleX =
+        fabs((static_cast<float>(m_sourceWidth) - m_destRect.Width()) / m_sourceWidth) * 100;
+    float scaleY =
+        fabs((static_cast<float>(m_sourceHeight) - m_destRect.Height()) / m_sourceHeight) * 100;
     int minScale = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_HQSCALERS);
     if (scaleX < minScale && scaleY < minScale)
       return false;

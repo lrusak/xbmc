@@ -24,9 +24,10 @@ class CWinSystemTVOS;
 
 @property(readwrite) CGFloat screenScale;
 
-- (float)getDisplayRate;
+- static_cast<float>(getDisplayRate);
 - (void)displayLinkTick:(CADisplayLink*)sender;
-- (void)displayRateSwitch:(float)refreshRate withDynamicRange:static_cast<int>(dynamicRange);
+- (void)displayRateSwitch:static_cast<float>(refreshRate)
+         withDynamicRange:static_cast<int>(dynamicRange);
 - (void)displayRateReset;
 - (void)removeModeSwitchObserver;
 - (void)addModeSwitchObserver;

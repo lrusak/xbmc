@@ -39,7 +39,7 @@
 
 @implementation NSData (GZIP)
 
-- (NSData *)gzippedDataWithCompressionLevel:(float)level
+- (NSData*)gzippedDataWithCompressionLevel:static_cast<float>(level)
 {
     if (self.length == 0 || [self isGzippedData])
     {

@@ -467,7 +467,7 @@ bool CFFmpegImage::DecodeFrame(AVFrame* frame, unsigned int width, unsigned int 
   AVPixelFormat pixFormat = ConvertFormats(frame);
 
   // assumption quadratic maximums e.g. 2048x2048
-  float ratio = m_width / (float)m_height;
+  float ratio = m_width / static_cast<float>(m_height);
   unsigned int nHeight = m_originalHeight;
   unsigned int nWidth = m_originalWidth;
   if (nHeight > height)

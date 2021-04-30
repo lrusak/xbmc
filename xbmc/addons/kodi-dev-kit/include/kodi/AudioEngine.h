@@ -295,7 +295,7 @@ public:
   /// format.SetDataFormat(AUDIOENGINE_FMT_FLOATP); /* The stream's data format (eg, AUDIOENGINE_FMT_S16LE) */
   /// format.SetChannelLayout(std::vector<AudioEngineChannel>(AUDIOENGINE_CH_FL, AUDIOENGINE_CH_FR)); /* The stream's channel layout */
   /// format.SetSampleRate(48000); /* The stream's sample rate (eg, 48000) */
-  /// format.SetFrameSize(sizeof(float)*2); /* The size of one frame in bytes */
+  /// format.SetFrameSize(sizeofstatic_cast<float>(*2)); /* The size of one frame in bytes */
   /// format.SetFramesAmount(882); /* The number of samples in one frame */
   ///
   /// kodi::audioengine::CAEStream* stream = new kodi::audioengine::CAEStream(format, AUDIO_STREAM_AUTOSTART);

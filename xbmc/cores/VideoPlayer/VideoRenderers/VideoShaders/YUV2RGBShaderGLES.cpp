@@ -222,8 +222,8 @@ bool YUV2RGBBobShader::OnEnabled()
     return false;
 
   glUniform1i(m_hField, m_field);
-  glUniform1f(m_hStepX, 1.0f / (float)m_width);
-  glUniform1f(m_hStepY, 1.0f / (float)m_height);
+  glUniform1f(m_hStepX, 1.0f / static_cast<float>(m_width));
+  glUniform1f(m_hStepY, 1.0f / static_cast<float>(m_height));
   VerifyGLState();
   return true;
 }

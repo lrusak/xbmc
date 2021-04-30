@@ -403,7 +403,8 @@ void CWinSystemX11::UpdateResolutions()
       }
 
       if (mode.h > 0 && mode.w > 0 && out->hmm > 0 && out->wmm > 0)
-        res.fPixelRatio = ((float)out->wmm/(float)mode.w) / (((float)out->hmm/(float)mode.h));
+        res.fPixelRatio = (static_cast<float>(out->wmm / (float)mode.w)) /
+                          ((static_cast<float>(out->hmm / (float)mode.h)));
       else
         res.fPixelRatio = 1.0f;
 
@@ -437,7 +438,8 @@ bool CWinSystemX11::HasCalibration(const RESOLUTION_INFO &resInfo)
 
   float fPixRatio;
   if (resInfo.iHeight>0 && resInfo.iWidth>0 && out->hmm>0 && out->wmm>0)
-    fPixRatio = ((float)out->wmm/(float)resInfo.iWidth) / (((float)out->hmm/(float)resInfo.iHeight));
+    fPixRatio = (static_cast<float>(out->wmm / (float)resInfo.iWidth)) /
+                ((static_cast<float>(out->hmm / (float)resInfo.iHeight)));
   else
     fPixRatio = 1.0f;
 
@@ -671,8 +673,8 @@ bool CWinSystemX11::SetWindow(int width, int height, bool fullscreen, const std:
     // we can't trust values after an xrr event
     if (m_bIsInternalXrr && m_MouseX >= 0 && m_MouseY >= 0)
     {
-      mouseX = (float)m_MouseX/m_nWidth;
-      mouseY = (float)m_MouseY/m_nHeight;
+      mouseX = static_cast<float>(m_MouseX / m_nWidth);
+      mouseY = static_cast<float>(m_MouseY / m_nHeight);
     }
     else if (!m_windowDirty)
     {
@@ -687,8 +689,8 @@ bool CWinSystemX11::SetWindow(int width, int height, bool fullscreen, const std:
 
       if (isInWin)
       {
-        mouseX = (float)win_x_return/m_nWidth;
-        mouseY = (float)win_y_return/m_nHeight;
+        mouseX = static_cast<float>(win_x_return / m_nWidth);
+        mouseY = static_cast<float>(win_y_return / m_nHeight);
       }
     }
 

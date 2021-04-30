@@ -171,7 +171,8 @@ bool CInertialScrollingHandler::ProcessInertialScroll(float frameTime)
 
     // decrease based on negative acceleration
     // calc the overall inertial scrolling time in secs
-    float absoluteInertialTime = (CTimeUtils::GetFrameTime() - m_inertialStartTime) / (float)1000;
+    float absoluteInertialTime =
+        (CTimeUtils::GetFrameTime() - m_inertialStartTime) / static_cast<float>(1000);
 
     // as long as we aren't over the overall inertial scroll time - do the deacceleration
     if (absoluteInertialTime < m_timeToZero)

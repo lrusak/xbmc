@@ -734,7 +734,7 @@ void CAirPlayServer::restoreVolume()
 
   if (ServerInstance && ServerInstance->m_origVolume != -1 && CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::SETTING_SERVICES_AIRPLAYVOLUMECONTROL))
   {
-    g_application.SetVolume((float)ServerInstance->m_origVolume);
+    g_application.SetVolume(static_cast<float>(ServerInstance->m_origVolume));
     ServerInstance->m_origVolume = -1;
   }
 }
@@ -825,7 +825,7 @@ int CAirPlayServer::CTCPClient::ProcessRequest( std::string& responseHeader,
   else if (uri == "/volume")
   {
       const char* found = strstr(queryString.c_str(), "volume=");
-      float volume = found ? (float)strtod(found + strlen("volume="), NULL) : 0;
+      float volume = found ? static_cast<float>(strtod(found) + strlen("volume="), NULL) : 0;
 
       CLog::Log(LOGDEBUG, "AIRPLAY: got request %s with volume %f", uri.c_str(), volume);
 
@@ -878,7 +878,7 @@ int CAirPlayServer::CTCPClient::ProcessRequest( std::string& responseHeader,
         {
           double tmpDouble = 0;
           plist_get_real_val(tmpNode, &tmpDouble);
-          position = (float)tmpDouble;
+          position = static_cast<float>(tmpDouble);
         }
 
         tmpNode = plist_dict_get_item(dict, "Content-Location");
@@ -945,7 +945,7 @@ int CAirPlayServer::CTCPClient::ProcessRequest( std::string& responseHeader,
         start += startPosition.size();
         int end = body.find('\n', start);
         std::string positionStr = body.substr(start, end - start);
-        position = (float)atof(positionStr.c_str());
+        position = static_cast<float>(atof(positionStr.c_str()));
       }
     }
 
@@ -985,8 +985,10 @@ int CAirPlayServer::CTCPClient::ProcessRequest( std::string& responseHeader,
 
       if (g_application.GetAppPlayer().GetTotalTime())
       {
-        float position = ((float) g_application.GetAppPlayer().GetTime()) / 1000;
-        responseBody = StringUtils::Format("duration: %.6f\r\nposition: %.6f\r\n", (float)g_application.GetAppPlayer().GetTotalTime() / 1000, position);
+        float position = (static_cast<float>(g_application.GetAppPlayer().GetTime())) / 1000;
+        responseBody = StringUtils::Format(
+            "duration: %.6f\r\nposition: %.6f\r\n",
+            static_cast<float>(g_application.GetAppPlayer().GetTotalTime()) / 1000, position);
       }
       else
       {
@@ -1121,8 +1123,8 @@ int CAirPlayServer::CTCPClient::ProcessRequest( std::string& responseHeader,
     {
       if (g_application.GetAppPlayer().GetTotalTime())
       {
-        position = ((float) g_application.GetAppPlayer().GetTime()) / 1000;
-        duration = ((float) g_application.GetAppPlayer().GetTotalTime()) / 1000;
+        position = (static_cast<float>(g_application.GetAppPlayer().GetTime())) / 1000;
+        duration = (static_cast<float>(g_application.GetAppPlayer().GetTotalTime())) / 1000;
         playing = !g_application.GetAppPlayer().IsPaused();
         cachePosition = position + (duration * g_application.GetAppPlayer().GetCachePercentage() / 100.0f);
       }

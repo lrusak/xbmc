@@ -207,7 +207,7 @@ bool CGUIControlGroupList::OnMessage(CGUIMessage& message)
     {
       if (message.GetSenderId() == m_pageControl)
       { // it's from our page control
-        ScrollTo((float)message.GetParam1());
+        ScrollTo(static_cast<float>(message.GetParam1()));
         return true;
       }
     }

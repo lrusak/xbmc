@@ -387,7 +387,7 @@ void CGUIImage::SetInfo(const GUIINFO::CGUIInfoLabel &info)
 
 unsigned char CGUIImage::GetFadeLevel(unsigned int time) const
 {
-  float amount = (float)time / m_crossFadeTime;
+  float amount = static_cast<float>(time) / m_crossFadeTime;
   // we want a semi-transparent image, so we need to use a more complicated
   // fade technique.  Assuming a black background (not generally true, but still...)
   // we have

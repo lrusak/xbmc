@@ -220,7 +220,7 @@ bool CGUISliderControl::OnMessage(CGUIMessage& message)
     switch (message.GetMessage())
     {
     case GUI_MSG_ITEM_SELECT:
-      SetPercentage( (float)message.GetParam1() );
+      SetPercentage(static_cast<float>(message.GetParam1()));
       return true;
       break;
 
@@ -421,7 +421,7 @@ float CGUISliderControl::GetPercentage(RangeSelector selector /* = RangeSelector
 void CGUISliderControl::SetIntValue(int iValue, RangeSelector selector /* = RangeSelectorLower */, bool updateCurrent /* = false */)
 {
   if (m_iType == SLIDER_CONTROL_TYPE_FLOAT)
-    SetFloatValue((float)iValue, selector, updateCurrent);
+    SetFloatValue(static_cast<float>(iValue), selector, updateCurrent);
   else if (m_iType == SLIDER_CONTROL_TYPE_INT)
   {
     if (iValue > m_iEnd) iValue = m_iEnd;
@@ -446,7 +446,7 @@ void CGUISliderControl::SetIntValue(int iValue, RangeSelector selector /* = Rang
     }
   }
   else
-    SetPercentage((float)iValue, selector, updateCurrent);
+    SetPercentage(static_cast<float>(iValue), selector, updateCurrent);
 }
 
 int CGUISliderControl::GetIntValue(RangeSelector selector /* = RangeSelectorLower */) const
@@ -495,7 +495,7 @@ float CGUISliderControl::GetFloatValue(RangeSelector selector /* = RangeSelector
   if (m_iType == SLIDER_CONTROL_TYPE_FLOAT)
     return m_floatValues[selector];
   else if (m_iType == SLIDER_CONTROL_TYPE_INT)
-    return (float)m_intValues[selector];
+    return static_cast<float>(m_intValues[selector]);
   else
     return m_percentValues[selector];
 }
@@ -503,7 +503,7 @@ float CGUISliderControl::GetFloatValue(RangeSelector selector /* = RangeSelector
 void CGUISliderControl::SetIntInterval(int iInterval)
 {
   if (m_iType == SLIDER_CONTROL_TYPE_FLOAT)
-    m_fInterval = (float)iInterval;
+    m_fInterval = static_cast<float>(iInterval);
   else
     m_iInterval = iInterval;
 }
@@ -519,7 +519,7 @@ void CGUISliderControl::SetFloatInterval(float fInterval)
 void CGUISliderControl::SetRange(int iStart, int iEnd)
 {
   if (m_iType == SLIDER_CONTROL_TYPE_FLOAT)
-    SetFloatRange((float)iStart,(float)iEnd);
+    SetFloatRange(static_cast<float>(iStart), static_cast<float>(iEnd));
   else
   {
     m_intValues[0] = m_iStart = iStart;

@@ -164,8 +164,9 @@ bool CAutoSwitch::ByThumbPercent(bool bHideParentDirItems, int iPercent, const C
     if (pItem->HasArt("thumb"))
     {
       iNumThumbs++;
-      float fTempPercent = ( (float)iNumThumbs / (float)iNumItems ) * (float)100;
-      if (fTempPercent >= (float)iPercent)
+      float fTempPercent = (static_cast<float>(iNumThumbs) / static_cast<float>(iNumItems)) *
+                           static_cast<float>(100);
+      if (fTempPercent >= static_cast<float>(iPercent))
       {
         bThumbs = true;
         break;
@@ -181,7 +182,7 @@ bool CAutoSwitch::ByThumbPercent(bool bHideParentDirItems, int iPercent, const C
 bool CAutoSwitch::ByFileCount(const CFileItemList& vecItems)
 {
   if (vecItems.Size() == 0) return false;
-  float fPercent = (float)vecItems.GetFileCount() / vecItems.Size();
+  float fPercent = static_cast<float>(vecItems.GetFileCount()) / vecItems.Size();
   return (fPercent > 0.25);
 }
 
@@ -228,5 +229,5 @@ float CAutoSwitch::MetadataPercentage(const CFileItemList &vecItems)
     if(item->IsParentFolder())
       total--;
   }
-  return (total != 0) ? ((float)count / total) : 0.0f;
+  return (total != 0) ? (static_cast<float>(count) / total) : 0.0f;
 }
