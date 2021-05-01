@@ -303,11 +303,11 @@ unsigned int CActiveAEStream::AddData(const uint8_t* const *data, unsigned int o
         {
           m_currentBuffer->pkt->nb_samples += minFrames;
           m_bufferedTime +=
-              static_cast<double>(minFrames) / m_currentBuffer->pkt->config.sample_rate;
+              static_cast<float>(minFrames / m_currentBuffer->pkt->config.sample_rate);
         }
         else
         {
-          m_bufferedTime += m_format.m_streamInfo.GetDuration() / 1000;
+          m_bufferedTime += static_cast<float>(m_format.m_streamInfo.GetDuration() / 1000);
           m_currentBuffer->pkt->nb_samples += minFrames;
           rawPktComplete = true;
         }
@@ -741,7 +741,7 @@ void CActiveAEStreamBuffers::SetRR(double rr, double atempoThreshold)
 double CActiveAEStreamBuffers::GetRR()
 {
   double tempo = m_resampleBuffers->GetRR();
-  tempo /= m_atempoBuffers->GetTempo();
+  tempo /= static_cast<double>(m_atempoBuffers->GetTempo());
   return tempo;
 }
 

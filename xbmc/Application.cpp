@@ -2256,8 +2256,8 @@ void CApplication::FrameMove(bool processEvents, bool processGUI)
     float frameTime = m_frameTime.GetElapsedSeconds();
     m_frameTime.StartZero();
     // never set a frametime less than 2 fps to avoid problems when debugging and on breaks
-    if( frameTime > 0.5 )
-      frameTime = 0.5;
+    if (frameTime > 0.5f)
+      frameTime = 0.5f;
 
     if (processGUI && m_renderGUI)
     {
@@ -2799,7 +2799,7 @@ bool CApplication::PlayFile(CFileItem item, const std::string& player, bool bRes
           }
         }
 
-        if (options.starttime == 0.0f && item.HasVideoInfoTag())
+        if (options.starttime == 0.0 && item.HasVideoInfoTag())
         {
           // No resume point is set, but check if this item is part of a multi-episode file
           const CVideoInfoTag *tag = item.GetVideoInfoTag();
@@ -2831,7 +2831,8 @@ bool CApplication::PlayFile(CFileItem item, const std::string& player, bool bRes
   }
 
   // a disc image might be Blu-Ray disc
-  if (!(options.startpercent > 0.0f || options.starttime > 0.0f) && (item.IsBDFile() || item.IsDiscImage()))
+  if (!(options.startpercent > 0.0 || options.starttime > 0.0) &&
+      (item.IsBDFile() || item.IsDiscImage()))
   {
     //check if we must show the simplified bd menu
     if (!CGUIDialogSimpleMenu::ShowPlaySelection(item))
@@ -3034,7 +3035,7 @@ void CApplication::OnPlayerCloseFile(const CFileItem &file, const CBookmark &boo
   float percent = 0.0f;
 
   // Make sure we don't reset existing bookmark etc. on eg. player start failure
-  if (bookmark.timeInSeconds == 0.0f)
+  if (bookmark.timeInSeconds == 0.0)
     return;
 
   if (m_stackHelper.GetRegisteredStack(fileItem) != nullptr && m_stackHelper.GetRegisteredStackTotalTimeMs(fileItem) > 0)
@@ -3062,7 +3063,8 @@ void CApplication::OnPlayerCloseFile(const CFileItem &file, const CBookmark &boo
 
   if (advancedSettings->m_videoIgnorePercentAtEnd > 0 &&
       bookmark.totalTimeInSeconds - bookmark.timeInSeconds <
-        0.01f * advancedSettings->m_videoIgnorePercentAtEnd * bookmark.totalTimeInSeconds)
+          0.01 * static_cast<double>(advancedSettings->m_videoIgnorePercentAtEnd) *
+              bookmark.totalTimeInSeconds)
   {
     resumeBookmark.timeInSeconds = -1.0f;
   }
@@ -4532,7 +4534,7 @@ float CApplication::GetPercentage() const
     if (m_stackHelper.IsPlayingRegularStack())
     {
       double totalTime = GetTotalTime();
-      if (totalTime > 0.0f)
+      if (totalTime > 0.0)
         return (float)(GetTime() / totalTime * 100);
     }
     else
@@ -4561,12 +4563,12 @@ float CApplication::GetCachePercentage() const
 
 void CApplication::SeekPercentage(float percent)
 {
-  if (m_appPlayer.IsPlaying() && (percent >= 0.0))
+  if (m_appPlayer.IsPlaying() && (percent >= 0.0f))
   {
     if (!m_appPlayer.CanSeek())
       return;
     if (m_stackHelper.IsPlayingRegularStack())
-      SeekTime(percent * 0.01 * GetTotalTime());
+      SeekTime(static_cast<double>(percent) * 0.01 * GetTotalTime());
     else
       m_appPlayer.SeekPercentage(percent);
   }
