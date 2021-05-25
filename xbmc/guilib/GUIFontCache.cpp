@@ -121,15 +121,12 @@ void CGUIFontCacheEntry<Position, Value>::Assign(const CGUIFontCacheKey<Position
 
 template<class Position, class Value>
 CGUIFontCache<Position, Value>::CGUIFontCache(CGUIFontTTF& font)
-  : m_impl(new CGUIFontCacheImpl<Position, Value>(this)), m_font(font)
+  : m_impl(std::make_unique<CGUIFontCacheImpl<Position, Value>>(this)), m_font(font)
 {
 }
 
 template<class Position, class Value>
-CGUIFontCache<Position, Value>::~CGUIFontCache()
-{
-  delete m_impl;
-}
+CGUIFontCache<Position, Value>::~CGUIFontCache() = default;
 
 template<class Position, class Value>
 Value& CGUIFontCache<Position, Value>::Lookup(Position& pos,
@@ -141,8 +138,8 @@ Value& CGUIFontCache<Position, Value>::Lookup(Position& pos,
                                               std::chrono::steady_clock::time_point now,
                                               bool& dirtyCache)
 {
-  if (m_impl == nullptr)
-    m_impl = new CGUIFontCacheImpl<Position, Value>(this);
+  if (!m_impl)
+    m_impl = std::make_unique<CGUIFontCacheImpl<Position, Value>>(this);
 
   return m_impl->Lookup(pos, colors, text, alignment, maxPixelWidth, scrolling, now, dirtyCache);
 }
