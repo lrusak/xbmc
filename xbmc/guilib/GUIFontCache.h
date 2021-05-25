@@ -37,25 +37,33 @@ template<class Position>
 struct CGUIFontCacheKey
 {
   Position m_pos;
-  std::vector<UTILS::Color> &m_colors;
-  vecText &m_text;
+  std::vector<UTILS::Color> m_colors;
+  vecText m_text;
   uint32_t m_alignment;
   float m_maxPixelWidth;
   bool m_scrolling;
-  const TransformMatrix &m_matrix;
+  const TransformMatrix m_matrix;
   float m_scaleX;
   float m_scaleY;
 
   CGUIFontCacheKey(Position pos,
-                   std::vector<UTILS::Color> &colors, vecText &text,
-                   uint32_t alignment, float maxPixelWidth,
-                   bool scrolling, const TransformMatrix &matrix,
-                   float scaleX, float scaleY) :
-    m_pos(pos),
-    m_colors(colors), m_text(text),
-    m_alignment(alignment), m_maxPixelWidth(maxPixelWidth),
-    m_scrolling(scrolling), m_matrix(matrix),
-    m_scaleX(scaleX), m_scaleY(scaleY)
+                   std::vector<UTILS::Color> colors,
+                   vecText text,
+                   uint32_t alignment,
+                   float maxPixelWidth,
+                   bool scrolling,
+                   const TransformMatrix matrix,
+                   float scaleX,
+                   float scaleY)
+    : m_pos(pos),
+      m_colors(colors),
+      m_text(text),
+      m_alignment(alignment),
+      m_maxPixelWidth(maxPixelWidth),
+      m_scrolling(scrolling),
+      m_matrix(matrix),
+      m_scaleX(scaleX),
+      m_scaleY(scaleY)
   {}
 };
 
@@ -73,19 +81,16 @@ struct CGUIFontCacheEntry
                      std::chrono::steady_clock::time_point now)
     : m_cache(cache),
       m_key(key.m_pos,
-            *new std::vector<UTILS::Color>,
-            *new vecText,
+            key.m_colors,
+            key.m_text,
             key.m_alignment,
             key.m_maxPixelWidth,
             key.m_scrolling,
-            m_matrix,
+            key.m_matrix,
             key.m_scaleX,
             key.m_scaleY),
       m_lastUsed(now)
   {
-    m_key.m_colors.assign(key.m_colors.begin(), key.m_colors.end());
-    m_key.m_text.assign(key.m_text.begin(), key.m_text.end());
-    m_matrix = key.m_matrix;
   }
 
   ~CGUIFontCacheEntry();
