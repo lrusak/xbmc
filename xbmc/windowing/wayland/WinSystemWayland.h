@@ -94,9 +94,7 @@ public:
   // winevents override
   bool MessagePump() override;
 
-protected:
-  std::unique_ptr<KODI::WINDOWING::IOSScreenSaver> GetOSScreenSaverImpl() override;
-  CSizeInt GetBufferSize() const { return m_bufferSize; }
+  // todo: sort out a better way instead of making these methods public
   std::unique_ptr<CConnection> const& GetConnection()
   {
     return m_connection;
@@ -105,6 +103,11 @@ protected:
   {
     return m_surface;
   }
+  //
+
+protected:
+  std::unique_ptr<KODI::WINDOWING::IOSScreenSaver> GetOSScreenSaverImpl() override;
+  CSizeInt GetBufferSize() const { return m_bufferSize; }
 
   void PrepareFramePresentation();
   void FinishFramePresentation();

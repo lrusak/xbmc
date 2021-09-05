@@ -63,5 +63,9 @@ if(OPENGLES_FOUND)
   list(APPEND HEADERS WinSystemWaylandEGLContextGLES.h)
 endif()
 
+if(VULKAN_FOUND)
+  list(APPEND SOURCES WinSystemWaylandVulkanContext.cpp)
+  list(APPEND HEADERS WinSystemWaylandVulkanContext.h)
+endif()
 
 core_add_library(windowing_WAYLAND)
