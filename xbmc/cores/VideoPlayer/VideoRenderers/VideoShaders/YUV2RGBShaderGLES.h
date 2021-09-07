@@ -81,6 +81,7 @@ class BaseYUV2RGBGLSLShader : public CGLSLShaderProgram
     CConvertMatrix m_convMatrix;
 
     // shader attribute handles
+    GLint m_oesTex{-1};
     GLint m_hYTex{-1};
     GLint m_hUTex{-1};
     GLint m_hVTex{-1};
