@@ -124,6 +124,8 @@ bool CRenderSystemGLES::InitRenderSystem()
   CLog::Log(LOGDEBUG, "OpenGL(ES): framebuffer size: red: {} green: {} blue: {} alpha: {}", red,
             green, blue, alpha);
 
+  m_shaderCache = std::make_unique<CShaderCache>();
+
   return true;
 }
 
@@ -170,6 +172,8 @@ bool CRenderSystemGLES::DestroyRenderSystem()
   ClearBuffers(0);
   glFinish();
   PresentRenderImpl(true);
+
+  m_shaderCache.reset();
 
   ReleaseShaders();
   m_bRenderCreated = false;
