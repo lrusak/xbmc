@@ -19,9 +19,15 @@
  */
 
 #include "RenderBufferFBO.h"
+
+#include "ServiceBroker.h"
 #include "cores/RetroPlayer/rendering/RenderContext.h"
 #include "cores/RetroPlayer/rendering/RenderVideoSettings.h"
+#include "utils/BufferObjectFactory.h"
+#include "utils/EGLImage.h"
 #include "utils/log.h"
+#include "windowing/WinSystem.h"
+#include "windowing/linux/WinSystemEGL.h"
 
 using namespace KODI;
 using namespace RETRO;
@@ -29,6 +35,18 @@ using namespace RETRO;
 CRenderBufferFBO::CRenderBufferFBO(CRenderContext &context) :
   m_context(context)
 {
+  auto winSystem =
+      dynamic_cast<KODI::WINDOWING::LINUX::CWinSystemEGL*>(CServiceBroker::GetWinSystem());
+  if (!winSystem)
+    throw std::runtime_error("this shouldn't happen!");
+
+  m_eglImage = std::make_unique<CEGLImage>(winSystem);
+  if (!m_eglImage)
+    throw std::runtime_error("something is terribly wrong");
+
+  m_buffer = CBufferObject::GetBufferObject(false);
+  if (!m_buffer)
+    throw std::runtime_error("buffer object creation failed");
 }
 
 bool CRenderBufferFBO::Allocate(AVPixelFormat format, unsigned int width, unsigned int height)
@@ -38,13 +56,16 @@ bool CRenderBufferFBO::Allocate(AVPixelFormat format, unsigned int width, unsign
   m_width = width;
   m_height = height;
 
+  if (!CreateDMABuf())
+    return false;
+
   if (!CreateTexture())
     return false;
 
-  if (!CreateFramebuffer())
+  if (!CreateRenderbuffer())
     return false;
 
-  if (!CreateDepthbuffer())
+  if (!CreateFramebuffer())
     return false;
 
   return CheckFrameBufferStatus();
@@ -52,9 +73,7 @@ bool CRenderBufferFBO::Allocate(AVPixelFormat format, unsigned int width, unsign
 
 void CRenderBufferFBO::DeleteTexture()
 {
-  if (glIsTexture(m_texture.tex_id))
-    glDeleteTextures(1, &m_texture.tex_id);
-
+  glDeleteTextures(1, &m_texture.tex_id);
   m_texture.tex_id = 0;
 
   glDeleteFramebuffers(1, &m_texture.fbo_id);
@@ -66,21 +85,39 @@ void CRenderBufferFBO::DeleteTexture()
 
 bool CRenderBufferFBO::UploadTexture()
 {
+  if (!glIsTexture(m_texture.tex_id))
+    glGenTextures(1, &m_texture.tex_id);
+
+  m_eglImage->UploadImage(m_textureTarget);
+
   return true;
 }
 
 bool CRenderBufferFBO::CreateTexture()
 {
-  glGenTextures(1, &m_texture.tex_id);
+  return true;
+}
 
-  glBindTexture(m_textureTarget, m_texture.tex_id);
-  glTexParameterf(m_textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameterf(m_textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameterf(m_textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameterf(m_textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexImage2D(m_textureTarget, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+bool CRenderBufferFBO::CreateDMABuf()
+{
+  if (!m_buffer->CreateBufferObject(m_width * m_height * 4))
+    return false;
 
-  glBindTexture(m_textureTarget, 0);
+  std::array<CEGLImage::EglPlane, CEGLImage::MAX_NUM_PLANES> planes;
+  planes[0].fd = m_buffer->GetFd();
+  planes[0].offset = 0;
+  planes[0].pitch = m_width * 4;
+  planes[0].modifier = DRM_FORMAT_MOD_LINEAR;
+
+  CEGLImage::EglAttrs attributes;
+
+  attributes.format = DRM_FORMAT_RGBA8888;
+  attributes.height = m_height;
+  attributes.width = m_width;
+  attributes.planes = planes;
+
+  if (!m_eglImage->CreateImage(attributes))
+    return false;
 
   return true;
 }
@@ -89,22 +126,17 @@ bool CRenderBufferFBO::CreateFramebuffer()
 {
   glGenFramebuffers(1, &m_texture.fbo_id);
   glBindFramebuffer(GL_FRAMEBUFFER, m_texture.fbo_id);
-
-  glFramebufferTexture2D(GL_FRAMEBUFFER,
-                         GL_COLOR_ATTACHMENT0,
-                         GL_TEXTURE_2D,
-                         m_texture.tex_id,
-                         0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+                            m_texture.rbo_id);
 
   return true;
 }
 
-bool CRenderBufferFBO::CreateDepthbuffer()
+bool CRenderBufferFBO::CreateRenderbuffer()
 {
   glGenRenderbuffers(1, &m_texture.rbo_id);
   glBindRenderbuffer(GL_RENDERBUFFER, m_texture.rbo_id);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_width, m_height);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_texture.rbo_id);
+  m_eglImage->AttachRenderBufferStorage(GL_RENDERBUFFER);
 
   return true;
 }

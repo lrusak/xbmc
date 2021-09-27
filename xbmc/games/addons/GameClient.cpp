@@ -230,6 +230,11 @@ bool CGameClient::OpenFile(const CFileItem& file,
 
   GAME_ERROR error = GAME_ERROR_FAILED;
 
+  if (!InitializeGameplay(file.GetPath(), streamManager, input))
+  {
+    return false;
+  }
+
   try
   {
     LogError(error = m_struct.toAddon->LoadGame(&m_struct, path.c_str()), "LoadGame()");
@@ -245,10 +250,10 @@ bool CGameClient::OpenFile(const CFileItem& file,
     return false;
   }
 
-  if (!InitializeGameplay(file.GetPath(), streamManager, input))
-  {
-    return false;
-  }
+  // if (!InitializeGameplay(file.GetPath(), streamManager, input))
+  // {
+  //   return false;
+  // }
 
   return true;
 }
@@ -583,7 +588,10 @@ void CGameClient::LogException(const char* strFunctionName) const
 
 void CGameClient::HardwareContextReset()
 {
-  try { LogError(m_struct.toAddon.HwContextReset(), "HwContextReset()"); }
+  try
+  {
+    LogError(m_struct.toAddon->HwContextReset(&m_struct), "HwContextReset()");
+  }
   catch (...) { LogException("HwContextReset()"); }
 }
 

@@ -19,12 +19,13 @@
  */
 
 #include "RenderBufferPoolFBO.h"
-#include "RenderBufferFBO.h"
 
+#include "RenderBufferFBO.h"
+#include "ServiceBroker.h"
 #include "cores/RetroPlayer/rendering/RenderContext.h"
 #include "utils/log.h"
-#include "ServiceBroker.h"
-#include "windowing/gbm/WinSystemGbmGLESContext.h"
+#include "windowing/WinSystem.h"
+#include "windowing/linux/WinSystemEGL.h"
 
 using namespace KODI;
 using namespace RETRO;
@@ -52,7 +53,8 @@ IRenderBuffer *CRenderBufferPoolFBO::CreateRenderBuffer(void *header /* = nullpt
 
 bool CRenderBufferPoolFBO::CreateContext()
 {
-  CWinSystemGbmEGLContext *winSystem = dynamic_cast<CWinSystemGbmEGLContext*>(CServiceBroker::GetWinSystem());
+  auto winSystem =
+      dynamic_cast<KODI::WINDOWING::LINUX::CWinSystemEGL*>(CServiceBroker::GetWinSystem());
 
   m_eglDisplay = winSystem->GetEGLDisplay();
 

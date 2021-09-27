@@ -42,7 +42,8 @@ class IGameInputCallback;
  * \ingroup games
  * \brief Helper class to have "C" struct created before other parts becomes his pointer.
  */
-class CGameClient : public IHwFramebufferCallback
+class CGameClientStruct
+{
 public:
   CGameClientStruct()
   {
@@ -91,7 +92,9 @@ public:
  * from 1,200 lines to just over 600. Reducing this further is the challenge.
  * You must now choose whether to accept.
  */
-class CGameClient : public ADDON::CAddonDll, private CGameClientStruct
+class CGameClient : public ADDON::CAddonDll,
+                    private CGameClientStruct,
+                    public IHwFramebufferCallback
 {
 public:
   explicit CGameClient(const ADDON::AddonInfoPtr& addonInfo);

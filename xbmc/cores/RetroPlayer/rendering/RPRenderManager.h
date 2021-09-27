@@ -87,9 +87,14 @@ public:
                 unsigned int width,
                 unsigned int height,
                 unsigned int orientationDegCW);
+
+  void RenderFrame();
+
   void Flush();
 
   uintptr_t GetCurrentFramebuffer();
+
+  bool Create();
 
   // Functions called from the player
   void SetSpeed(double speed);

@@ -124,9 +124,9 @@ std::unique_ptr<IGameClientStream> CGameClientStreams::CreateStream(
       gameStream.reset(new CGameClientStreamSwFramebuffer);
       break;
     }
-    case GAME_STREAM_SW_FRAMEBUFFER:
+    case GAME_STREAM_HW_FRAMEBUFFER:
     {
-      gameStream.reset(new CGameClientStreamSwFramebuffer);
+      gameStream.reset(new CGameClientStreamHwFramebuffer(m_gameClient));
       break;
     }
     default:

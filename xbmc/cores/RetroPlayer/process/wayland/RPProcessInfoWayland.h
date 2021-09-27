@@ -19,6 +19,9 @@ class CRPProcessInfoWayland : public CRPProcessInfo
 public:
   CRPProcessInfoWayland();
 
+  // Implementation of CRPProcessInfo
+  HwProcedureAddress GetHwProcedureAddress(const char* symbol) override;
+
   static CRPProcessInfo* Create();
   static void Register();
 };

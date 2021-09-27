@@ -21,8 +21,12 @@
 
 #include "cores/RetroPlayer/buffers/BaseRenderBuffer.h"
 
+#include <memory>
+
 #include "system_gl.h"
 
+class CBufferObject;
+class CEGLImage;
 namespace KODI
 {
 namespace RETRO
@@ -34,9 +38,9 @@ namespace RETRO
   public:
     struct texture
     {
-      GLuint tex_id;
       GLuint fbo_id;
       GLuint rbo_id;
+      GLuint tex_id;
     };
 
     CRenderBufferFBO(CRenderContext &context);
@@ -61,11 +65,15 @@ namespace RETRO
     const GLenum m_textureTarget = GL_TEXTURE_2D; //! @todo
 
   private:
-    void DeleteTexture();
+    bool CreateDMABuf();
     bool CreateTexture();
+    void DeleteTexture();
     bool CreateFramebuffer();
-    bool CreateDepthbuffer();
+    bool CreateRenderbuffer();
     bool CheckFrameBufferStatus();
+
+    std::unique_ptr<CEGLImage> m_eglImage;
+    std::unique_ptr<CBufferObject> m_buffer;
   };
 }
 }
