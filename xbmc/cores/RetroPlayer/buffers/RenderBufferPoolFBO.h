@@ -21,13 +21,8 @@
 
 #include "cores/RetroPlayer/buffers/BaseRenderBufferPool.h"
 
-#include <gbm.h>
-
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-
-#include "utils/EGLImage.h"
-#include "utils/BufferObject.h"
 
 namespace KODI
 {
@@ -63,7 +58,6 @@ namespace RETRO
     EGLConfig m_eglConfig;
     EGLSurface m_eglSurface = EGL_NO_SURFACE;
     EGLContext m_eglContext = EGL_NO_CONTEXT;
-    //gbm_surface *m_surface = nullptr;
 
   private:
     std::unique_ptr<CRenderBufferFBO> m_renderBuffer{nullptr};

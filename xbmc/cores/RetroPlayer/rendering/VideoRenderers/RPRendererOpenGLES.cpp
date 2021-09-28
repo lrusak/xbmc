@@ -249,6 +249,9 @@ void CRPRendererOpenGLES::Render(uint8_t alpha)
 
   glBindTexture(m_textureTarget, renderBuffer->TextureID());
 
+  // CLog::Log(LOGDEBUG, "Render(): {} tex_id: {}", fmt::ptr(renderBuffer), renderBuffer->TextureID());
+  // CLog::Log(LOGDEBUG, "Render(): {} fbo_id: {}", fmt::ptr(renderBuffer), renderBuffer->GetCurrentFramebuffer());
+
   GLint filter = GL_NEAREST;
   if (GetRenderSettings().VideoSettings().GetScalingMethod() == SCALINGMETHOD::LINEAR)
     filter = GL_LINEAR;
@@ -290,6 +293,15 @@ void CRPRendererOpenGLES::Render(uint8_t alpha)
   vertex[0].v1 = vertex[1].v1 = rect.y1;
   vertex[1].u1 = vertex[2].u1 = rect.x2;
   vertex[2].v1 = vertex[3].v1 = rect.y2;
+
+  // for (int i = 0; i < 4; i++)
+  // {
+  //   CLog::Log(LOGDEBUG, "vertex: {}", i);
+  //   CLog::Log(LOGDEBUG, "\tx: {} y: {} z: {}", vertex[i].x, vertex[i].y, vertex[i].z);
+  //   CLog::Log(LOGDEBUG, "\tu: {} v: {}", vertex[i].u1, vertex[i].v1);
+  // }
+
+  // CLog::Log(LOGDEBUG, "r: {} g: {} b: {} a: {}", colour[0], colour[1], colour[2], colour[3]);
 
   glBindBuffer(GL_ARRAY_BUFFER, m_mainVertexVBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(PackedVertex) * 4, &vertex[0], GL_STATIC_DRAW);

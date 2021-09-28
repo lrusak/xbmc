@@ -52,18 +52,19 @@ bool CGameClientStreamHwFramebuffer::GetBuffer(unsigned int width, unsigned int 
   if (buffer.type != GAME_STREAM_HW_FRAMEBUFFER)
     return false;
 
-  if (!m_contextReset)
-  {
-    m_callback.HardwareContextReset();
-    m_contextReset = true;
-  }
-
   if (m_stream != nullptr)
   {
     RETRO::HwFramebufferBuffer hwFramebufferBuffer;
     if (m_stream->GetStreamBuffer(0, 0, static_cast<RETRO::StreamBuffer&>(hwFramebufferBuffer)))
     {
       buffer.hw_framebuffer.framebuffer = hwFramebufferBuffer.framebuffer;
+
+      if (!m_contextReset)
+      {
+        m_callback.HardwareContextReset();
+        m_contextReset = true;
+      }
+
       return true;
     }
   }

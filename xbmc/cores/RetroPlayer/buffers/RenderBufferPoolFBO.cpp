@@ -48,7 +48,7 @@ IRenderBuffer *CRenderBufferPoolFBO::CreateRenderBuffer(void *header /* = nullpt
       return nullptr;
   }
 
-  return new CRenderBufferFBO(m_context, m_eglDisplay);
+  return new CRenderBufferFBO(m_context);
 }
 
 bool CRenderBufferPoolFBO::CreateContext()
@@ -97,37 +97,14 @@ bool CRenderBufferPoolFBO::CreateContext()
     return false;
   }
 
-  // m_surface = gbm_surface_create(winSystem->GetGBMDevice(),
-  //                                m_width,
-  //                                m_height,
-  //                                GBM_FORMAT_ARGB8888,
-  //                                GBM_BO_USE_RENDERING);
-
-  // if (!m_surface)
-  // {
-  //   CLog::Log(LOGERROR, "failed to create gbm surface");
-  //   return false;
-  // }
-
-  // const EGLint window_attribs[] =
-  // {
-  //   EGL_RENDER_BUFFER, EGL_SINGLE_BUFFER, EGL_NONE
-  // };
-
-  // m_eglSurface = eglCreateWindowSurface(m_eglDisplay, m_eglConfig, (EGLNativeWindowType)m_surface, NULL); //window_attribs);
-  // if (m_eglSurface == EGL_NO_SURFACE)
-  // {
-  //   CLog::Log(LOGERROR, "failed to create egl window surface");
-  //   return false;
-  // }
-
   int client_version = 2;
 
   const EGLint context_attribs[] = {
     EGL_CONTEXT_CLIENT_VERSION, client_version, EGL_NONE
   };
 
-  m_eglContext = eglCreateContext(m_eglDisplay, m_eglConfig, EGL_NO_CONTEXT, context_attribs);
+  m_eglContext =
+      eglCreateContext(m_eglDisplay, m_eglConfig, winSystem->GetEGLContext(), context_attribs);
   if (m_eglContext == EGL_NO_CONTEXT)
   {
     CLog::Log(LOGERROR, "failed to create EGL context");
@@ -139,6 +116,8 @@ bool CRenderBufferPoolFBO::CreateContext()
     CLog::Log(LOGERROR, "Failed to make context current");
     return false;
   }
+
+  CLog::Log(LOGDEBUG, "EGL CONTEXT SUCCESS");
 
   return true;
 }
@@ -163,6 +142,9 @@ IRenderBuffer* CRenderBufferPoolFBO::GetBuffer(unsigned int width, unsigned int 
 
   if (m_renderBuffer)
     m_renderBuffer->Acquire(GetPtr());
+
+  CLog::Log(LOGDEBUG, "GetBuffer(): {} fbo_id: {}", fmt::ptr(m_renderBuffer.get()),
+            m_renderBuffer->GetCurrentFramebuffer());
 
   return m_renderBuffer.get();
 }

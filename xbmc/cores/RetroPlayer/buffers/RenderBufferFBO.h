@@ -28,8 +28,6 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-class CBufferObject;
-class CEGLImage;
 namespace KODI
 {
 namespace RETRO
@@ -46,8 +44,8 @@ namespace RETRO
       GLuint tex_id;
     };
 
-    CRenderBufferFBO(CRenderContext &context, EGLDisplay eglDisplay);
-    ~CRenderBufferFBO() override = default;
+    CRenderBufferFBO(CRenderContext& context);
+    ~CRenderBufferFBO() override;
 
     // implementation of IRenderBuffer via CRenderBufferSysMem
     bool UploadTexture() override;
@@ -68,16 +66,11 @@ namespace RETRO
     const GLenum m_textureTarget = GL_TEXTURE_2D; //! @todo
 
   private:
-    bool CreateDMABuf();
-    void CreateTexture();
+    bool CreateTexture();
     void DeleteTexture();
     bool CreateFramebuffer();
     bool CreateRenderbuffer();
     bool CheckFrameBufferStatus();
-
-    std::unique_ptr<CEGLImage> m_egl;
-    std::unique_ptr<CEGLImage> m_eglImage;
-    std::unique_ptr<CBufferObject> m_buffer;
   };
 }
 }

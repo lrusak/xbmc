@@ -23,30 +23,20 @@
 #include "ServiceBroker.h"
 #include "cores/RetroPlayer/rendering/RenderContext.h"
 #include "cores/RetroPlayer/rendering/RenderVideoSettings.h"
-#include "utils/BufferObjectFactory.h"
-#include "utils/EGLImage.h"
 #include "utils/log.h"
 #include "windowing/WinSystem.h"
 #include "windowing/linux/WinSystemEGL.h"
 
-// #include "Util.h"
-// #include "utils/URIUtils.h"
-// #include "pictures/Picture.h"
-// #include "URL.h"
-
 using namespace KODI;
 using namespace RETRO;
 
-CRenderBufferFBO::CRenderBufferFBO(CRenderContext &context, EGLDisplay eglDisplay) :
-  m_context(context)
+CRenderBufferFBO::CRenderBufferFBO(CRenderContext& context) : m_context(context)
 {
-  m_eglImage = std::make_unique<CEGLImage>(eglDisplay);
-  if (!m_eglImage)
-    throw std::runtime_error("something is terribly wrong");
+}
 
-  m_buffer = CBufferObject::GetBufferObject(true);
-  if (!m_buffer)
-    throw std::runtime_error("buffer object creation failed");
+CRenderBufferFBO::~CRenderBufferFBO()
+{
+  DeleteTexture();
 }
 
 bool CRenderBufferFBO::Allocate(AVPixelFormat format, unsigned int width, unsigned int height)
@@ -56,16 +46,13 @@ bool CRenderBufferFBO::Allocate(AVPixelFormat format, unsigned int width, unsign
   m_width = width;
   m_height = height;
 
-  if (!CreateDMABuf())
-    return false;
-
-  // if (!CreateTexture())
-  //   return false;
-
-  if (!CreateRenderbuffer())
+  if (!CreateTexture())
     return false;
 
   if (!CreateFramebuffer())
+    return false;
+
+  if (!CreateRenderbuffer())
     return false;
 
   CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: allocate FBO buffer: {} fbo_id: {}", fmt::ptr(this), m_texture.fbo_id);
@@ -85,51 +72,17 @@ void CRenderBufferFBO::DeleteTexture()
   m_texture.rbo_id = 0;
 }
 
-// bool CRenderBufferFBO::UploadTexture()
-// {
-//   if (!glIsTexture(m_texture.tex_id))
-//     glGenTextures(1, &m_texture.tex_id);
-
-//   m_eglImage->UploadImage(m_textureTarget);
-
-//   return true;
-// }
-
-// bool CRenderBufferFBO::CreateTexture()
-// {
-//   return true;
-// }
-
-bool CRenderBufferFBO::CreateDMABuf()
-{
-  if (!m_buffer->CreateBufferObject(m_width * m_height * 4))
-    return false;
-
-  std::array<CEGLImage::EglPlane, CEGLImage::MAX_NUM_PLANES> planes;
-  planes[0].fd = m_buffer->GetFd();
-  planes[0].offset = 0;
-  planes[0].pitch = m_width * 4;
-  planes[0].modifier = DRM_FORMAT_MOD_LINEAR;
-
-  CEGLImage::EglAttrs attributes;
-
-  attributes.format = DRM_FORMAT_XRGB8888;
-  attributes.height = m_height;
-  attributes.width = m_width;
-  attributes.planes = planes;
-
-  if (!m_eglImage->CreateImage(attributes))
-    return false;
-
-  return true;
-}
-
 bool CRenderBufferFBO::CreateFramebuffer()
 {
   glGenFramebuffers(1, &m_texture.fbo_id);
   glBindFramebuffer(GL_FRAMEBUFFER, m_texture.fbo_id);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
-                            m_texture.rbo_id);
+
+  // attach the texture to FBO color attachment point
+  glFramebufferTexture2D(GL_FRAMEBUFFER, // 1. fbo target: GL_FRAMEBUFFER
+                         GL_COLOR_ATTACHMENT0, // 2. attachment point
+                         GL_TEXTURE_2D, // 3. tex target: GL_TEXTURE_2D
+                         m_texture.tex_id, // 4. tex ID
+                         0); // 5. mipmap level: 0(base){
 
   return true;
 }
@@ -138,7 +91,10 @@ bool CRenderBufferFBO::CreateRenderbuffer()
 {
   glGenRenderbuffers(1, &m_texture.rbo_id);
   glBindRenderbuffer(GL_RENDERBUFFER, m_texture.rbo_id);
-  m_eglImage->AttachRenderBufferStorage(GL_RENDERBUFFER);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_width, m_height);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_texture.fbo_id);
+
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_texture.rbo_id);
 
   return true;
 }
@@ -148,89 +104,37 @@ bool CRenderBufferFBO::CheckFrameBufferStatus()
   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   if(status != GL_FRAMEBUFFER_COMPLETE)
   {
-    CLog::Log(LOGERROR, "RetroPlayer[RENDER]: Unable to create FBO - status: %d", status);
+    CLog::Log(LOGERROR, "RetroPlayer[RENDER]: Unable to create FBO - status: {}", status);
     return false;
   }
 
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+  CLog::Log(LOGDEBUG, "CheckFrameBufferStatus(): {} fbo_id: {}", fmt::ptr(this), m_texture.fbo_id);
+
   return true;
 }
 
-void CRenderBufferFBO::CreateTexture()
+bool CRenderBufferFBO::CreateTexture()
 {
+  glBindTexture(GL_TEXTURE_2D, 0);
   glGenTextures(1, &m_texture.tex_id);
 
-  glBindTexture(m_textureTarget, m_texture.tex_id);
+  glBindTexture(GL_TEXTURE_2D, m_texture.tex_id);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glGenerateMipmap(GL_TEXTURE_2D);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
-  glTexParameteri(m_textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(m_textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  glBindTexture(m_textureTarget, 0);
+  return true;
 }
 
 bool CRenderBufferFBO::UploadTexture()
 {
-  if (m_buffer->GetFd() < 0)
-    return false;
-
-  // std::string file =
-  //     CUtil::GetNextFilename(URIUtils::AddFileToFolder("/home/lukas/", "dma-{:05}.png"), 65535);
-
-  // auto memory = m_buffer->GetMemory();
-  // auto stride = m_buffer->GetStride();
-
-  // // test dma contents
-  // if (!CPicture::CreateThumbnailFromSurface(memory, m_width, m_height, stride, file))
-  //   CLog::Log(LOGERROR, "Unable to write dma {}", CURL::GetRedacted(file));
-
-  // m_buffer->ReleaseMemory();
-
-  if (!glIsTexture(m_texture.tex_id))
-    CreateTexture();
-
-  glBindTexture(m_textureTarget, m_texture.tex_id);
-
-  CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: upload FBO buffer: {} fbo_id: {}", fmt::ptr(this), m_texture.fbo_id);
-
-  m_eglImage->UploadImage(m_textureTarget);
-
-  // std::array<CEGLImage::EglPlane, CEGLImage::MAX_NUM_PLANES> planes;
-
-  // planes[0].fd = m_buffer->GetFd();
-  // planes[0].offset = 0;
-  // planes[0].pitch = m_width * 4;
-  // planes[0].modifier = m_buffer->GetModifier();
-
-  // CEGLImage::EglAttrs attribs;
-
-  // attribs.width = m_width;
-  // attribs.height = m_height;
-  // attribs.format = DRM_FORMAT_ARGB8888;
-  // attribs.planes = planes;
-
-  // if (!m_egl)
-  // {
-  //   auto winSystemEGL =
-  //       dynamic_cast<KODI::WINDOWING::LINUX::CWinSystemEGL*>(CServiceBroker::GetWinSystem());
-
-  //   if (winSystemEGL == nullptr)
-  //     throw std::runtime_error("dynamic_cast failed to cast to CWinSystemEGL. This is likely due to "
-  //                             "a build misconfiguration as DMA can only be used with EGL and "
-  //                             "specifically platforms that implement CWinSystemEGL");
-
-  //   m_egl = std::make_unique<CEGLImage>(winSystemEGL->GetEGLDisplay());
-  // }
-
-  // if (m_egl->CreateImage(attribs))
-  //   m_egl->UploadImage(m_textureTarget);
-
-  // m_egl->DestroyImage();
-
-  glBindTexture(m_textureTarget, 0);
+  // CLog::Log(LOGDEBUG, "UploadTexture(): {} fbo_id: {}", fmt::ptr(this), m_texture.fbo_id);
 
   return true;
 }
