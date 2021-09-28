@@ -88,7 +88,7 @@ public:
                 unsigned int height,
                 unsigned int orientationDegCW);
 
-  void RenderFrame();
+  void RenderFrame(uintptr_t framebuffer);
 
   void Flush();
 

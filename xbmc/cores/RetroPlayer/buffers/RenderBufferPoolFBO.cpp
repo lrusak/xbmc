@@ -31,7 +31,7 @@ using namespace KODI;
 using namespace RETRO;
 
 CRenderBufferPoolFBO::CRenderBufferPoolFBO(CRenderContext &context) :
-  m_context(context)
+  m_context(context), m_renderBuffer(nullptr)
 {
 }
 
@@ -48,7 +48,7 @@ IRenderBuffer *CRenderBufferPoolFBO::CreateRenderBuffer(void *header /* = nullpt
       return nullptr;
   }
 
-  return new CRenderBufferFBO(m_context);
+  return new CRenderBufferFBO(m_context, m_eglDisplay);
 }
 
 bool CRenderBufferPoolFBO::CreateContext()
@@ -141,4 +141,34 @@ bool CRenderBufferPoolFBO::CreateContext()
   }
 
   return true;
+}
+
+IRenderBuffer* CRenderBufferPoolFBO::GetBuffer(unsigned int width, unsigned int height)
+{
+  if (!m_bConfigured)
+    return nullptr;
+
+  if (m_renderBuffer)
+    return m_renderBuffer.get();
+
+  CLog::Log(LOGDEBUG,
+            "RetroPlayer[RENDER]: Creating render buffer of size {}x{} for buffer pool", width,
+            height);
+
+  std::unique_ptr<CRenderBufferFBO> renderBufferPtr(static_cast<CRenderBufferFBO*>(CreateRenderBuffer(nullptr)));
+  if (renderBufferPtr->Allocate(m_format, width, height))
+    m_renderBuffer = std::move(renderBufferPtr);
+  else
+    CLog::Log(LOGERROR, "RetroPlayer[RENDER]: Failed to allocate render buffer");
+
+  if (m_renderBuffer)
+    m_renderBuffer->Acquire(GetPtr());
+
+  return m_renderBuffer.get();
+}
+
+void CRenderBufferPoolFBO::Return(IRenderBuffer* buffer)
+{
+  buffer->SetLoaded(false);
+  buffer->SetRendered(false);
 }

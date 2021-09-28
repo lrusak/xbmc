@@ -52,6 +52,8 @@ private:
 
   // Stream parameters
   RETRO::IRetroPlayerStream* m_stream = nullptr;
+
+  bool m_contextReset{false};
 };
 
 } // namespace GAME

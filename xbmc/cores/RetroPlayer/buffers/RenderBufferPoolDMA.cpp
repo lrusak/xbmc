@@ -11,6 +11,8 @@
 #include "RenderBufferDMA.h"
 #include "cores/RetroPlayer/rendering/VideoRenderers/RPRendererDMA.h"
 
+#include "utils/log.h"
+
 #include <drm_fourcc.h>
 
 using namespace KODI;
@@ -22,6 +24,8 @@ CRenderBufferPoolDMA::CRenderBufferPoolDMA(CRenderContext& context) : m_context(
 
 bool CRenderBufferPoolDMA::IsCompatible(const CRenderVideoSettings& renderSettings) const
 {
+  CLog::Log(LOGDEBUG, "CRenderBufferPoolDMA::{}", __FUNCTION__);
+
   if (!CRPRendererDMA::SupportsScalingMethod(renderSettings.GetScalingMethod()))
     return false;
 

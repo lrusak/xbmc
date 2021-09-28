@@ -60,5 +60,7 @@ bool CRetroPlayerRendering::GetStreamBuffer(unsigned int width, unsigned int hei
 
 void CRetroPlayerRendering::AddStreamData(const StreamPacket &packet)
 {
-  m_renderManager.RenderFrame();
+  const HwFramebufferPacket& hwPacket = static_cast<const HwFramebufferPacket&>(packet);
+
+  m_renderManager.RenderFrame(hwPacket.framebuffer);
 }

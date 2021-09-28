@@ -218,7 +218,7 @@ void CRPRenderManager::AddFrame(const uint8_t* data,
   }
 }
 
-void CRPRenderManager::RenderFrame()
+void CRPRenderManager::RenderFrame(uintptr_t framebuffer)
 {
   std::vector<IRenderBuffer*> renderBuffers;
   for (IRenderBufferPool *bufferPool : m_processInfo.GetBufferManager().GetBufferPools())
@@ -255,6 +255,7 @@ uintptr_t CRPRenderManager::GetCurrentFramebuffer()
     if (renderBuffer != nullptr)
     {
       CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: Libretro called GetCurrentFramebuffer");
+      renderBuffer->Release();
       return renderBuffer->GetCurrentFramebuffer();
     }
   }
@@ -491,13 +492,14 @@ void CRPRenderManager::RenderInternal(const std::shared_ptr<CRPBaseRenderer>& re
   {
     bool bUploaded = true;
 
-    if (!renderBuffer->IsLoaded())
-    {
-      bUploaded = renderBuffer->UploadTexture();
-      renderBuffer->SetLoaded(true);
-    }
+    // if (!renderBuffer->IsLoaded())
+    // {
+    renderBuffer->SetLoaded(false);
+    bUploaded = renderBuffer->UploadTexture();
+    renderBuffer->SetLoaded(true);
+    // }
 
-    if (bUploaded)
+    if (renderBuffer->IsLoaded())
       renderer->SetBuffer(renderBuffer);
 
     renderBuffer->Release();
@@ -626,6 +628,9 @@ IRenderBuffer* CRPRenderManager::GetRenderBuffer(IRenderBufferPool* bufferPool)
     renderBuffer = *it;
     renderBuffer->Acquire();
   }
+
+  if (m_renderBuffers.size() > 0)
+    return m_renderBuffers[0];
 
   return renderBuffer;
 }

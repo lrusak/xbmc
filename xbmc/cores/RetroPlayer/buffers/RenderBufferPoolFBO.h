@@ -26,6 +26,9 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
+#include "utils/EGLImage.h"
+#include "utils/BufferObject.h"
+
 namespace KODI
 {
 namespace RETRO
@@ -46,6 +49,9 @@ namespace RETRO
     // implementation of CBaseRenderBufferPool via CRenderBufferPoolSysMem
     IRenderBuffer *CreateRenderBuffer(void *header = nullptr) override;
 
+    IRenderBuffer* GetBuffer(unsigned int width, unsigned int height) override;
+    void Return(IRenderBuffer* buffer) override;
+
   protected:
     bool CreateContext();
 
@@ -58,6 +64,9 @@ namespace RETRO
     EGLSurface m_eglSurface = EGL_NO_SURFACE;
     EGLContext m_eglContext = EGL_NO_CONTEXT;
     //gbm_surface *m_surface = nullptr;
+
+  private:
+    std::unique_ptr<CRenderBufferFBO> m_renderBuffer{nullptr};
   };
 }
 }
