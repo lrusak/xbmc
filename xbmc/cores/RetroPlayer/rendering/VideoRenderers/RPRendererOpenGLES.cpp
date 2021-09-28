@@ -20,6 +20,8 @@
 #include <cstring>
 #include <stddef.h>
 
+#include "rendering/MatrixGL.h"
+
 using namespace KODI;
 using namespace RETRO;
 
@@ -249,6 +251,23 @@ void CRPRendererOpenGLES::Render(uint8_t alpha)
 
   glBindTexture(m_textureTarget, renderBuffer->TextureID());
 
+  CRect viewport;
+  m_context.GetViewPort(viewport);
+
+  glMatrixModview.Push();
+  glMatrixModview->LoadIdentity();
+  glMatrixModview.Load();
+
+  glMatrixProject.Push();
+  glMatrixProject->LoadIdentity();
+  glMatrixProject->Ortho2D(0, viewport.x2, 0, viewport.y2);
+  glMatrixProject.Load();
+
+  // CLog::Log(LOGDEBUG, "l: {} r: {} t: {} b: {}", viewport.x1, viewport.x2, viewport.y1, viewport.y2);
+
+  glViewport(0, 0, viewport.x2, viewport.y2);
+  glScissor(0, 0, viewport.x2, viewport.y2);
+
   // CLog::Log(LOGDEBUG, "Render(): {} tex_id: {}", fmt::ptr(renderBuffer), renderBuffer->TextureID());
   // CLog::Log(LOGDEBUG, "Render(): {} fbo_id: {}", fmt::ptr(renderBuffer), renderBuffer->GetCurrentFramebuffer());
 
@@ -328,4 +347,9 @@ void CRPRendererOpenGLES::Render(uint8_t alpha)
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
   m_context.DisableGUIShader();
+
+  glMatrixModview.PopLoad();
+  glMatrixProject.PopLoad();
+
+  m_context.SetViewPort(viewport);
 }
