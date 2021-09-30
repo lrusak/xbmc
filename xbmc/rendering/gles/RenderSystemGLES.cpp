@@ -8,6 +8,7 @@
 
 #include "RenderSystemGLES.h"
 
+#include "RenderBuffer.h"
 #include "guilib/DirtyRegion.h"
 #include "guilib/GUITextureGLES.h"
 #include "rendering/MatrixGL.h"
@@ -28,7 +29,7 @@
 using namespace std::chrono_literals;
 
 CRenderSystemGLES::CRenderSystemGLES()
- : CRenderSystemBase()
+  : CRenderSystemBase(), m_pool(std::make_shared<CRenderBufferPool>())
 {
 }
 
@@ -138,6 +139,14 @@ bool CRenderSystemGLES::ResetRenderSystem(int width, int height)
   glEnable(GL_BLEND);          // Turn Blending On
   glDisable(GL_DEPTH_TEST);
 
+  if (m_width != 0 && m_height != 0)
+  {
+    if (m_buffer)
+      m_buffer->Release();
+
+    m_buffer = m_pool->GetBuffer(m_width, m_height);
+  }
+
   return true;
 }
 
@@ -151,6 +160,9 @@ bool CRenderSystemGLES::DestroyRenderSystem()
   ClearBuffers(0);
   glFinish();
   PresentRenderImpl(true);
+
+  m_buffer.reset();
+  m_pool.reset();
 
   ReleaseShaders();
   m_bRenderCreated = false;
@@ -173,6 +185,9 @@ bool CRenderSystemGLES::BeginRender()
 
   m_limitedColorRange = useLimited;
 
+  if (m_buffer)
+    m_buffer->BindFrameBuffer();
+
   return true;
 }
 
@@ -180,6 +195,18 @@ bool CRenderSystemGLES::EndRender()
 {
   if (!m_bRenderCreated)
     return false;
+
+  if (m_buffer)
+  {
+    m_buffer->UnbindFrameBuffer();
+
+    m_buffer->BindTexture();
+
+    if (!m_buffer->Render())
+      throw std::runtime_error("whoops!");
+
+    m_buffer->UnbindTexture();
+  }
 
   return true;
 }
@@ -666,4 +693,12 @@ GLint CRenderSystemGLES::GUIShaderGetModel()
     return m_pShader[m_method]->GetModelLoc();
 
   return -1;
+}
+
+uint32_t CRenderSystemGLES::GetDefaultFrameBufferID() const
+{
+  if (m_buffer)
+    return m_buffer->GetFrameBufferID();
+
+  return 0;
 }

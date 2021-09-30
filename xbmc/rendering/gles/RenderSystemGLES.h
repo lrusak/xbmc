@@ -70,6 +70,9 @@ private:
                 "add/remove a mapping?");
 };
 
+class CRenderBuffer;
+class CRenderBufferPool;
+
 class CRenderSystemGLES : public CRenderSystemBase
 {
 public:
@@ -108,6 +111,8 @@ public:
 
   std::string GetShaderPath(const std::string &filename) override { return "GLES/2.0/"; }
 
+  uint32_t GetDefaultFrameBufferID() const override;
+
   void InitialiseShaders();
   void ReleaseShaders();
   void EnableGUIShader(ShaderMethodGLES method);
@@ -140,4 +145,8 @@ protected:
   ShaderMethodGLES m_method = ShaderMethodGLES::SM_DEFAULT;
 
   GLint      m_viewPort[4];
+
+private:
+  std::shared_ptr<CRenderBuffer> m_buffer;
+  std::shared_ptr<CRenderBufferPool> m_pool;
 };
