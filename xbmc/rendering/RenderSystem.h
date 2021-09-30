@@ -77,6 +77,8 @@ public:
 
   virtual void ShowSplash(const std::string& message);
 
+  virtual uint32_t GetDefaultFrameBufferID() const { return 0; }
+
 protected:
   bool                m_bRenderCreated;
   bool                m_bVSync;
