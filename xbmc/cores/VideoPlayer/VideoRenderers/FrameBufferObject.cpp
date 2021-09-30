@@ -17,7 +17,7 @@
 // CFrameBufferObject
 //////////////////////////////////////////////////////////////////////
 
-CFrameBufferObject::CFrameBufferObject()
+CFrameBufferObject::CFrameBufferObject() : m_renderSystem(CServiceBroker::GetRenderSystem())
 {
   m_valid = false;
   m_supported = false;
@@ -26,7 +26,7 @@ CFrameBufferObject::CFrameBufferObject()
 
 bool CFrameBufferObject::IsSupported()
 {
-  if(CServiceBroker::GetRenderSystem()->IsExtSupported("GL_EXT_framebuffer_object"))
+  if (m_renderSystem->IsExtSupported("GL_EXT_framebuffer_object"))
     m_supported = true;
   else
     m_supported = false;

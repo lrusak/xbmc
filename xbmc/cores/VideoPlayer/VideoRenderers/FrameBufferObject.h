@@ -29,6 +29,8 @@
 //     glBindTexture(GL_TEXTURE_2D, fbo->Texture());
 //
 
+class CRenderSystemBase;
+
 class CFrameBufferObject
 {
 public:
@@ -71,6 +73,8 @@ private:
   bool   m_bound;
   bool   m_supported;
   GLuint m_texid = 0;
+
+  CRenderSystemBase* m_renderSystem;
 };
 
 
