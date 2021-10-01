@@ -83,3 +83,4 @@ private:
 extern CMatrixGLStack glMatrixModview;
 extern CMatrixGLStack glMatrixProject;
 extern CMatrixGLStack glMatrixTexture;
+extern CMatrixGLStack glMatrixModviewProjection;

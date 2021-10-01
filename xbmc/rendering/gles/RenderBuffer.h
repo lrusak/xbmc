@@ -36,6 +36,7 @@ public:
   bool IsCompatible(uint32_t width, uint32_t height);
 
   bool Render();
+  bool RenderCube();
 
   void SetPool(std::shared_ptr<CRenderBufferPool> pool) { m_pool = pool; }
 
@@ -47,6 +48,8 @@ private:
   uint32_t m_height{0};
 
   std::shared_ptr<CRenderBufferPool> m_pool;
+
+  uint32_t m_i{0};
 };
 
 class CRenderBufferPool : public std::enable_shared_from_this<CRenderBufferPool>

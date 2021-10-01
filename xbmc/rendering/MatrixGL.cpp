@@ -22,6 +22,7 @@ void Matrix4Mul(float* src_mat_1, const float* src_mat_2);
 CMatrixGLStack glMatrixModview = CMatrixGLStack();
 CMatrixGLStack glMatrixProject = CMatrixGLStack();
 CMatrixGLStack glMatrixTexture = CMatrixGLStack();
+CMatrixGLStack glMatrixModviewProjection = CMatrixGLStack();
 
 CMatrixGL::CMatrixGL(const TransformMatrix &src) noexcept
 {

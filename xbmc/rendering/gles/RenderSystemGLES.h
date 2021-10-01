@@ -33,6 +33,7 @@ enum class ShaderMethodGLES
   SM_TEXTURE_RGBA_BOB,
   SM_TEXTURE_RGBA_BOB_OES,
   SM_TEXTURE_NOALPHA,
+  SM_CUBE,
   SM_MAX
 };
 
@@ -63,6 +64,7 @@ private:
       {ShaderMethodGLES::SM_TEXTURE_RGBA_BOB, "texture rgba bob"},
       {ShaderMethodGLES::SM_TEXTURE_RGBA_BOB_OES, "texture rgba bob OES"},
       {ShaderMethodGLES::SM_TEXTURE_NOALPHA, "texture no alpha"},
+      {ShaderMethodGLES::SM_CUBE, "cube"},
   });
 
   static_assert(static_cast<size_t>(ShaderMethodGLES::SM_MAX) == ShaderMethodGLESMap.size(),
@@ -129,6 +131,10 @@ public:
   GLint GUIShaderGetContrast();
   GLint GUIShaderGetBrightness();
   GLint GUIShaderGetModel();
+
+  GLint GUIShaderGetProjectionMatrix();
+  GLint GUIShaderGetNormalMatrix();
+  GLint GUIShaderGetNormal();
 
 protected:
   virtual void SetVSyncImpl(bool enable) = 0;

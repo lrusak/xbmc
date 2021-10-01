@@ -54,11 +54,17 @@ void CGLESShader::OnCompiledAndLinked()
   m_hModel = glGetUniformLocation(ProgramHandle(), "m_model");
   m_hCoord0Matrix = glGetUniformLocation(ProgramHandle(), "m_coord0Matrix");
 
+  m_hNormalMatrix = glGetUniformLocation(ProgramHandle(), "m_normalMatrix");
+
+  m_hmodprojMatrix = glGetUniformLocation(ProgramHandle(), "m_modelviewproj");
+
   // Vertex attributes
   m_hPos    = glGetAttribLocation(ProgramHandle(),  "m_attrpos");
   m_hCol    = glGetAttribLocation(ProgramHandle(),  "m_attrcol");
   m_hCord0  = glGetAttribLocation(ProgramHandle(),  "m_attrcord0");
   m_hCord1  = glGetAttribLocation(ProgramHandle(),  "m_attrcord1");
+
+  m_hNormal = glGetAttribLocation(ProgramHandle(), "m_normal");
 
   // It's okay to do this only one time. Textures units never change.
   glUseProgram( ProgramHandle() );

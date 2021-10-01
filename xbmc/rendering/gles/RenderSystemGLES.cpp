@@ -202,7 +202,7 @@ bool CRenderSystemGLES::EndRender()
 
     m_buffer->BindTexture();
 
-    if (!m_buffer->Render())
+    if (!m_buffer->RenderCube())
       throw std::runtime_error("whoops!");
 
     m_buffer->UnbindTexture();
@@ -527,6 +527,14 @@ void CRenderSystemGLES::InitialiseShaders()
     m_pShader[ShaderMethodGLES::SM_TEXTURE_NOALPHA].reset();
     CLog::Log(LOGERROR, "GUI Shader gles_shader_texture_noalpha.frag - compile and link failed");
   }
+
+  m_pShader[ShaderMethodGLES::SM_CUBE] = std::make_unique<CGLESShader>("gles_cube.vert", "gles_cube.frag", defines);
+  if (!m_pShader[ShaderMethodGLES::SM_CUBE]->CompileAndLink())
+  {
+    m_pShader[ShaderMethodGLES::SM_CUBE]->Free();
+    m_pShader[ShaderMethodGLES::SM_CUBE].reset();
+    CLog::Log(LOGERROR, "GUI Shader gles_cube.frag - compile and link failed");
+  }
 }
 
 void CRenderSystemGLES::ReleaseShaders()
@@ -578,6 +586,10 @@ void CRenderSystemGLES::ReleaseShaders()
   if (m_pShader[ShaderMethodGLES::SM_TEXTURE_NOALPHA])
     m_pShader[ShaderMethodGLES::SM_TEXTURE_NOALPHA]->Free();
   m_pShader[ShaderMethodGLES::SM_TEXTURE_NOALPHA].reset();
+
+  if (m_pShader[ShaderMethodGLES::SM_CUBE])
+    m_pShader[ShaderMethodGLES::SM_CUBE]->Free();
+  m_pShader[ShaderMethodGLES::SM_CUBE].reset();
 }
 
 void CRenderSystemGLES::EnableGUIShader(ShaderMethodGLES method)
@@ -691,6 +703,30 @@ GLint CRenderSystemGLES::GUIShaderGetModel()
 {
   if (m_pShader[m_method])
     return m_pShader[m_method]->GetModelLoc();
+
+  return -1;
+}
+
+GLint CRenderSystemGLES::GUIShaderGetProjectionMatrix()
+{
+  if (m_pShader[m_method])
+    return m_pShader[m_method]->GetProjectionMatrix();
+
+  return -1;
+}
+
+GLint CRenderSystemGLES::GUIShaderGetNormalMatrix()
+{
+  if (m_pShader[m_method])
+    return m_pShader[m_method]->GetNormalMatrix();
+
+  return -1;
+}
+
+GLint CRenderSystemGLES::GUIShaderGetNormal()
+{
+  if (m_pShader[m_method])
+    return m_pShader[m_method]->GetNormal();
 
   return -1;
 }

@@ -12,10 +12,117 @@
 #include "rendering/MatrixGL.h"
 #include "rendering/RenderSystem.h"
 #include "rendering/gles/RenderSystemGLES.h"
+#include "utils/GLUtils.h"
 #include "utils/log.h"
 
 #include <algorithm>
 #include <stdexcept>
+
+namespace
+{
+
+// clang-format off
+const GLfloat vVertices[] = {
+  // front
+  -1.0f, -1.0f, +1.0f,
+  +1.0f, -1.0f, +1.0f,
+  -1.0f, +1.0f, +1.0f,
+  +1.0f, +1.0f, +1.0f,
+  // back
+  +1.0f, -1.0f, -1.0f,
+  -1.0f, -1.0f, -1.0f,
+  +1.0f, +1.0f, -1.0f,
+  -1.0f, +1.0f, -1.0f,
+  // right
+  +1.0f, -1.0f, +1.0f,
+  +1.0f, -1.0f, -1.0f,
+  +1.0f, +1.0f, +1.0f,
+  +1.0f, +1.0f, -1.0f,
+  // left
+  -1.0f, -1.0f, -1.0f,
+  -1.0f, -1.0f, +1.0f,
+  -1.0f, +1.0f, -1.0f,
+  -1.0f, +1.0f, +1.0f,
+  // top
+  -1.0f, +1.0f, +1.0f,
+  +1.0f, +1.0f, +1.0f,
+  -1.0f, +1.0f, -1.0f,
+  +1.0f, +1.0f, -1.0f,
+  // bottom
+  -1.0f, -1.0f, -1.0f,
+  +1.0f, -1.0f, -1.0f,
+  -1.0f, -1.0f, +1.0f,
+  +1.0f, -1.0f, +1.0f,
+};
+
+const GLfloat vTexCoords[] = {
+  //front
+  1.0f, 1.0f,
+  0.0f, 1.0f,
+  1.0f, 0.0f,
+  0.0f, 0.0f,
+  //back
+  1.0f, 1.0f,
+  0.0f, 1.0f,
+  1.0f, 0.0f,
+  0.0f, 0.0f,
+  //right
+  1.0f, 1.0f,
+  0.0f, 1.0f,
+  1.0f, 0.0f,
+  0.0f, 0.0f,
+  //left
+  1.0f, 1.0f,
+  0.0f, 1.0f,
+  1.0f, 0.0f,
+  0.0f, 0.0f,
+  //top
+  1.0f, 1.0f,
+  0.0f, 1.0f,
+  1.0f, 0.0f,
+  0.0f, 0.0f,
+  //bottom
+  1.0f, 0.0f,
+  0.0f, 0.0f,
+  1.0f, 1.0f,
+  0.0f, 1.0f,
+};
+
+const GLfloat vNormals[] = {
+  // front
+  +0.0f, +0.0f, +1.0f, // forward
+  +0.0f, +0.0f, +1.0f, // forward
+  +0.0f, +0.0f, +1.0f, // forward
+  +0.0f, +0.0f, +1.0f, // forward
+  // back
+  +0.0f, +0.0f, -1.0f, // backward
+  +0.0f, +0.0f, -1.0f, // backward
+  +0.0f, +0.0f, -1.0f, // backward
+  +0.0f, +0.0f, -1.0f, // backward
+  // right
+  +1.0f, +0.0f, +0.0f, // right
+  +1.0f, +0.0f, +0.0f, // right
+  +1.0f, +0.0f, +0.0f, // right
+  +1.0f, +0.0f, +0.0f, // right
+  // left
+  -1.0f, +0.0f, +0.0f, // left
+  -1.0f, +0.0f, +0.0f, // left
+  -1.0f, +0.0f, +0.0f, // left
+  -1.0f, +0.0f, +0.0f, // left
+  // top
+  +0.0f, +1.0f, +0.0f, // up
+  +0.0f, +1.0f, +0.0f, // up
+  +0.0f, +1.0f, +0.0f, // up
+  +0.0f, +1.0f, +0.0f, // up
+  // bottom
+  +0.0f, -1.0f, +0.0f, // down
+  +0.0f, -1.0f, +0.0f, // down
+  +0.0f, -1.0f, +0.0f, // down
+  +0.0f, -1.0f, +0.0f  // down
+};
+// clang-format on
+
+} // namespace
 
 CRenderBuffer::CRenderBuffer()
 {
@@ -185,6 +292,132 @@ bool CRenderBuffer::Render()
   glMatrixProject.PopLoad();
 
   renderSystemGLES->SetViewPort(viewport);
+
+  return true;
+}
+
+bool CRenderBuffer::RenderCube()
+{
+  // CLog::Log(LOGDEBUG, "CRenderBuffer::{} - addr: {}", __FUNCTION__, fmt::ptr(this));
+
+  auto renderSystem = CServiceBroker::GetRenderSystem();
+  if (!renderSystem)
+    return false;
+
+  auto renderSystemGLES = static_cast<CRenderSystemGLES*>(renderSystem);
+  if (!renderSystemGLES)
+    return false;
+
+  glEnable(GL_CULL_FACE);
+
+  glMatrixModview.Push();
+  glMatrixModview->LoadIdentity();
+  glMatrixModview->Translatef(0.0f, 0.0f, -8.0f);
+  glMatrixModview->Rotatef(45.0f + (0.25f * m_i), 1.0f, 0.0f, 0.0f);
+  glMatrixModview->Rotatef(45.0f - (0.5f * m_i), 0.0f, 1.0f, 0.0f);
+  glMatrixModview->Rotatef(10.0f + (0.15f * m_i), 0.0f, 0.0f, 1.0f);
+  glMatrixModview.Load();
+
+  float aspect = static_cast<float>(m_height) / m_width;
+
+  glMatrixProject.Push();
+  glMatrixProject->LoadIdentity();
+  glMatrixProject->Frustum(-2.8f, +2.8f, -2.8f * aspect, +2.8f * aspect, 6.0f, 10.0f);
+  // glMatrixProject->Ortho2D(0, m_width, 0, m_height);
+  glMatrixProject.Load();
+
+  glMatrixModviewProjection.Push();
+  glMatrixModviewProjection->LoadIdentity();
+  std::memcpy(&glMatrixModviewProjection.Get(), &glMatrixProject.Get(), sizeof(CMatrixGL));
+  glMatrixModviewProjection->MultMatrixf(glMatrixModview.Get());
+  glMatrixModviewProjection.Load();
+
+  VerifyGLState();
+
+  CMatrixGL& modview = glMatrixModview.Get();
+
+  float normal[9];
+  normal[0] = modview[0];
+  normal[1] = modview[1];
+  normal[2] = modview[2];
+  normal[3] = modview[4];
+  normal[4] = modview[5];
+  normal[5] = modview[6];
+  normal[6] = modview[8];
+  normal[7] = modview[9];
+  normal[8] = modview[10];
+
+  CRect viewport;
+  renderSystemGLES->GetViewPort(viewport);
+  glViewport(0, 0, m_width, m_height);
+  glScissor(0, 0, m_width, m_height);
+
+  renderSystemGLES->EnableGUIShader(ShaderMethodGLES::SM_CUBE);
+
+  GLint modelMatrix = renderSystemGLES->GUIShaderGetModel();
+  GLint projMatrix = renderSystemGLES->GUIShaderGetProjectionMatrix();
+  GLint normalMatrix = renderSystemGLES->GUIShaderGetNormalMatrix();
+
+  GLint pos = renderSystemGLES->GUIShaderGetPos();
+  GLint normalPos = renderSystemGLES->GUIShaderGetNormal();
+  GLint coord = renderSystemGLES->GUIShaderGetCoord0();
+
+  GLuint positionsoffset = 0;
+  GLuint texcoordsoffset = sizeof(vVertices);
+  GLuint normalsoffset = sizeof(vVertices) + sizeof(vTexCoords);
+
+  GLuint vbo;
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vVertices) + sizeof(vTexCoords) + sizeof(vNormals), 0,
+               GL_STATIC_DRAW);
+  glBufferSubData(GL_ARRAY_BUFFER, positionsoffset, sizeof(vVertices), &vVertices[0]);
+  glBufferSubData(GL_ARRAY_BUFFER, texcoordsoffset, sizeof(vTexCoords), &vTexCoords[0]);
+  glBufferSubData(GL_ARRAY_BUFFER, normalsoffset, sizeof(vNormals), &vNormals[0]);
+  glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*)(intptr_t)positionsoffset);
+  glEnableVertexAttribArray(pos);
+  glVertexAttribPointer(normalPos, 3, GL_FLOAT, GL_FALSE, 0,
+                        (const GLvoid*)(intptr_t)normalsoffset);
+  glEnableVertexAttribArray(normalPos);
+  glVertexAttribPointer(coord, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid*)(intptr_t)texcoordsoffset);
+  glEnableVertexAttribArray(coord);
+
+  /* clear the color buffer */
+  glClearColor(0.0, 0.0, 0.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  const GLfloat* modviewMatrix = glMatrixModview.Get();
+  const GLfloat* modviewprojMatrix = glMatrixModviewProjection.Get();
+
+  glUniformMatrix4fv(modelMatrix, 1, GL_FALSE, modviewMatrix);
+  glUniformMatrix4fv(projMatrix, 1, GL_FALSE, modviewprojMatrix);
+  glUniformMatrix3fv(normalMatrix, 1, GL_FALSE, normal);
+
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
+  glDrawArrays(GL_TRIANGLE_STRIP, 8, 4);
+  glDrawArrays(GL_TRIANGLE_STRIP, 12, 4);
+  glDrawArrays(GL_TRIANGLE_STRIP, 16, 4);
+  glDrawArrays(GL_TRIANGLE_STRIP, 20, 4);
+
+  glDisableVertexAttribArray(pos);
+  glDisableVertexAttribArray(normalPos);
+  glDisableVertexAttribArray(coord);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glDeleteBuffers(1, &vbo);
+
+  glMatrixModview.PopLoad();
+  glMatrixProject.PopLoad();
+  glMatrixModviewProjection.PopLoad();
+
+  renderSystemGLES->SetViewPort(viewport);
+
+  glDisable(GL_CULL_FACE);
+
+  renderSystemGLES->DisableGUIShader();
+
+  m_i++;
 
   return true;
 }
