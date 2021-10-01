@@ -49,7 +49,11 @@ void TestBasicEnvironment::SetUp()
   g_application.m_ServiceManager.reset(new CServiceManager());
 
   if (!CXBMCTestUtils::Instance().SetReferenceFileBasePath())
-    SetUpError();
+  {
+    fprintf(stderr, "failed to SetReferenceFileBasePath()\n");
+    exit(EXIT_FAILURE);
+  }
+
   CXBMCTestUtils::Instance().setTestFileFactoryWriteInputFile(
     XBMC_REF_FILE_PATH("xbmc/filesystem/test/reffile.txt")
   );
@@ -74,7 +78,9 @@ void TestBasicEnvironment::SetUp()
   if (ec)
   {
     TearDown();
-    SetUpError();
+
+    fprintf(stderr, "failed to create temp directory\n");
+    exit(EXIT_FAILURE);
   }
 
   CSpecialProtocol::SetTempPath(m_tempPath);
@@ -91,7 +97,9 @@ void TestBasicEnvironment::SetUp()
   if (!f || !XBMC_DELETETEMPFILE(f))
   {
     TearDown();
-    SetUpError();
+
+    fprintf(stderr, "failed to create or delete temp file\n");
+    exit(EXIT_FAILURE);
   }
 
   const CProfile profile("special://temp");
@@ -110,10 +118,4 @@ void TestBasicEnvironment::TearDown()
 
   m_pSettingsComponent->Deinit();
   m_pSettingsComponent.reset();
-}
-
-void TestBasicEnvironment::SetUpError()
-{
-  fprintf(stderr, "Setup of basic environment failed.\n");
-  exit(EXIT_FAILURE);
 }

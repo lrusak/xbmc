@@ -24,7 +24,6 @@ public:
   void SetUp() override;
   void TearDown() override;
 private:
-  void SetUpError();
   std::string m_tempPath;
   std::unique_ptr<CSettingsComponent> m_pSettingsComponent;
 };
