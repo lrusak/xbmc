@@ -39,8 +39,12 @@ bool CScreenshotSurfaceGLES::Capture()
   if (!gui)
     return false;
 
+  auto renderSystem = CServiceBroker::GetRenderSystem();
+
   std::unique_lock<CCriticalSection> lock(winsystem->GetGfxContext());
+  renderSystem->BeginRender();
   gui->GetWindowManager().Render();
+  renderSystem->EndRender();
 
   //get current viewport
   GLint viewport[4];
