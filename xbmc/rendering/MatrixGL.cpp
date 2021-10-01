@@ -16,6 +16,7 @@
 void Matrix4Mul(float* src_mat_1, const float* src_mat_2);
 #endif
 
+#define _USE_MATH_DEFINES
 #include <cmath>
 
 CMatrixGLStack glMatrixModview = CMatrixGLStack();
@@ -112,8 +113,8 @@ void CMatrixGL::Rotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
     y /= modulus;
     z /= modulus;
   }
-  GLfloat cosine = std::cos(angle);
-  GLfloat sine   = std::sin(angle);
+  GLfloat cosine = std::cos(angle * static_cast<float>(M_PI) / 180.0f);
+  GLfloat sine   = std::sin(angle * static_cast<float>(M_PI) / 180.0f);
   GLfloat cos1   = 1 - cosine;
   GLfloat a = (x*x*cos1) + cosine;
   GLfloat b = (x*y*cos1) - (z*sine);
