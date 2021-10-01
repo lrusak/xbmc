@@ -125,9 +125,9 @@ void CMatrixGL::Rotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
   GLfloat g = (z*x*cos1) - (y*sine);
   GLfloat h = (z*y*cos1) + (x*sine);
   GLfloat i = (z*z*cos1) + cosine;
-  const CMatrixGL matrix{   a,    d,    g, 0.0f,
-                            b,    e,    h, 0.0f,
-                            c,    f,    i, 0.0f,
+  const CMatrixGL matrix{   a,    b,    c, 0.0f,
+                            d,    e,    f, 0.0f,
+                            g,    h,    i, 0.0f,
                          0.0f, 0.0f, 0.0f, 1.0f};
   MultMatrixf(matrix);
 }
