@@ -52,7 +52,7 @@ std::string temp_directory_path(std::error_code &ec)
 {
   wchar_t lpTempPathBuffer[MAX_PATH + 1];
 
-  if (!GetTempPathW(MAX_PATH, lpTempPathBuffer))
+  if (!GetTempPath2(MAX_PATH, lpTempPathBuffer))
   {
     ec.assign(GetLastError(), std::system_category());
     return std::string();
