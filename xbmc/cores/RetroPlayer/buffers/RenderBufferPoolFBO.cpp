@@ -122,35 +122,35 @@ bool CRenderBufferPoolFBO::CreateContext()
   return true;
 }
 
-IRenderBuffer* CRenderBufferPoolFBO::GetBuffer(unsigned int width, unsigned int height)
-{
-  if (!m_bConfigured)
-    return nullptr;
+// IRenderBuffer* CRenderBufferPoolFBO::GetBuffer(unsigned int width, unsigned int height)
+// {
+//   if (!m_bConfigured)
+//     return nullptr;
 
-  if (m_renderBuffer)
-    return m_renderBuffer.get();
+//   if (m_renderBuffer)
+//     return m_renderBuffer.get();
 
-  CLog::Log(LOGDEBUG,
-            "RetroPlayer[RENDER]: Creating render buffer of size {}x{} for buffer pool", width,
-            height);
+//   CLog::Log(LOGDEBUG,
+//             "RetroPlayer[RENDER]: Creating render buffer of size {}x{} for buffer pool", width,
+//             height);
 
-  std::unique_ptr<CRenderBufferFBO> renderBufferPtr(static_cast<CRenderBufferFBO*>(CreateRenderBuffer(nullptr)));
-  if (renderBufferPtr->Allocate(m_format, width, height))
-    m_renderBuffer = std::move(renderBufferPtr);
-  else
-    CLog::Log(LOGERROR, "RetroPlayer[RENDER]: Failed to allocate render buffer");
+//   std::unique_ptr<CRenderBufferFBO> renderBufferPtr(static_cast<CRenderBufferFBO*>(CreateRenderBuffer(nullptr)));
+//   if (renderBufferPtr->Allocate(m_format, width, height))
+//     m_renderBuffer = std::move(renderBufferPtr);
+//   else
+//     CLog::Log(LOGERROR, "RetroPlayer[RENDER]: Failed to allocate render buffer");
 
-  if (m_renderBuffer)
-    m_renderBuffer->Acquire(GetPtr());
+//   if (m_renderBuffer)
+//     m_renderBuffer->Acquire(GetPtr());
 
-  CLog::Log(LOGDEBUG, "GetBuffer(): {} fbo_id: {}", fmt::ptr(m_renderBuffer.get()),
-            m_renderBuffer->GetCurrentFramebuffer());
+//   CLog::Log(LOGDEBUG, "GetBuffer(): {} fbo_id: {}", fmt::ptr(m_renderBuffer.get()),
+//             m_renderBuffer->GetCurrentFramebuffer());
 
-  return m_renderBuffer.get();
-}
+//   return m_renderBuffer.get();
+// }
 
-void CRenderBufferPoolFBO::Return(IRenderBuffer* buffer)
-{
-  buffer->SetLoaded(false);
-  buffer->SetRendered(false);
-}
+// void CRenderBufferPoolFBO::Return(IRenderBuffer* buffer)
+// {
+//   buffer->SetLoaded(false);
+//   buffer->SetRendered(false);
+// }

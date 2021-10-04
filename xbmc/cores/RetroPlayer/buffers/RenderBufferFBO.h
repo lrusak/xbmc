@@ -60,6 +60,11 @@ namespace RETRO
 
     texture m_texture;
 
+    void BindFrameBuffer();
+    void UnbindFrameBuffer();
+
+    bool Render();
+
   protected:
     CRenderContext &m_context;
 

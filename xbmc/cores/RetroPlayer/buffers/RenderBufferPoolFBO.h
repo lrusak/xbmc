@@ -44,8 +44,8 @@ namespace RETRO
     // implementation of CBaseRenderBufferPool via CRenderBufferPoolSysMem
     IRenderBuffer *CreateRenderBuffer(void *header = nullptr) override;
 
-    IRenderBuffer* GetBuffer(unsigned int width, unsigned int height) override;
-    void Return(IRenderBuffer* buffer) override;
+    // IRenderBuffer* GetBuffer(unsigned int width, unsigned int height) override;
+    // void Return(IRenderBuffer* buffer) override;
 
   protected:
     bool CreateContext();

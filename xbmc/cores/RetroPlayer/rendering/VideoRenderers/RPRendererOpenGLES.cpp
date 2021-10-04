@@ -269,7 +269,8 @@ void CRPRendererOpenGLES::Render(uint8_t alpha)
   glScissor(0, 0, viewport.x2, viewport.y2);
 
   // CLog::Log(LOGDEBUG, "Render(): {} tex_id: {}", fmt::ptr(renderBuffer), renderBuffer->TextureID());
-  // CLog::Log(LOGDEBUG, "Render(): {} fbo_id: {}", fmt::ptr(renderBuffer), renderBuffer->GetCurrentFramebuffer());
+  CLog::Log(LOGDEBUG, "Render(): {} fbo_id: {}", fmt::ptr(renderBuffer),
+            renderBuffer->GetCurrentFramebuffer());
 
   GLint filter = GL_NEAREST;
   if (GetRenderSettings().VideoSettings().GetScalingMethod() == SCALINGMETHOD::LINEAR)

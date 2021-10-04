@@ -13,6 +13,7 @@
 #include "RenderTranslator.h"
 #include "cores/RetroPlayer/buffers/IRenderBuffer.h"
 #include "cores/RetroPlayer/buffers/IRenderBufferPool.h"
+#include "cores/RetroPlayer/buffers/RenderBufferFBO.h"
 #include "cores/RetroPlayer/buffers/RenderBufferManager.h"
 #include "cores/RetroPlayer/guibridge/GUIGameSettings.h"
 #include "cores/RetroPlayer/guibridge/GUIRenderTargetFactory.h"
@@ -226,10 +227,30 @@ void CRPRenderManager::RenderFrame(uintptr_t framebuffer)
     if (!bufferPool->HasVisibleRenderer())
       continue;
 
+    CLog::Log(LOGDEBUG, "CRPRenderManager::{} - main fbo addr: {} id: {}", __FUNCTION__,
+              fmt::ptr(m_fboRenderBuffer), m_fboRenderBuffer->GetCurrentFramebuffer());
+
     IRenderBuffer *renderBuffer = bufferPool->GetBuffer(m_maxWidth, m_maxHeight);
     if (renderBuffer != nullptr)
     {
-      renderBuffers.emplace_back(renderBuffer);
+      auto renderBufferFBO = dynamic_cast<CRenderBufferFBO*>(renderBuffer);
+      if (renderBuffer)
+      {
+        CLog::Log(LOGDEBUG, "CRPRenderManager::{} - got fbo addr: {} id: {}", __FUNCTION__,
+                  fmt::ptr(renderBufferFBO), renderBufferFBO->GetCurrentFramebuffer());
+
+        renderBufferFBO->BindFrameBuffer();
+
+        CLog::Log(LOGDEBUG, "CRPRenderManager::{} - render: {} into: {}", __FUNCTION__,
+                  m_fboRenderBuffer->GetCurrentFramebuffer(),
+                  renderBufferFBO->GetCurrentFramebuffer());
+
+        dynamic_cast<CRenderBufferFBO*>(m_fboRenderBuffer)->Render();
+
+        renderBufferFBO->UnbindFrameBuffer();
+
+        renderBuffers.emplace_back(renderBuffer);
+      }
     }
   }
 
@@ -255,7 +276,7 @@ uintptr_t CRPRenderManager::GetCurrentFramebuffer()
     if (renderBuffer != nullptr)
     {
       CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: Libretro called GetCurrentFramebuffer");
-      renderBuffer->Release();
+      m_fboRenderBuffer = renderBuffer;
       return renderBuffer->GetCurrentFramebuffer();
     }
   }
@@ -490,6 +511,9 @@ void CRPRenderManager::RenderInternal(const std::shared_ptr<CRPBaseRenderer>& re
 
   if (renderBuffer != nullptr)
   {
+    CLog::Log(LOGDEBUG, "CRPRenderManager::{} - rendering fbo addr: {} id: {}", __FUNCTION__,
+              fmt::ptr(renderBuffer), renderBuffer->GetCurrentFramebuffer());
+
     bool bUploaded = true;
 
     // if (!renderBuffer->IsLoaded())

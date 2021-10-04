@@ -23,6 +23,7 @@
 #include "ServiceBroker.h"
 #include "cores/RetroPlayer/rendering/RenderContext.h"
 #include "cores/RetroPlayer/rendering/RenderVideoSettings.h"
+#include "rendering/MatrixGL.h"
 #include "utils/log.h"
 #include "windowing/WinSystem.h"
 #include "windowing/linux/WinSystemEGL.h"
@@ -135,6 +136,98 @@ bool CRenderBufferFBO::CreateTexture()
 bool CRenderBufferFBO::UploadTexture()
 {
   // CLog::Log(LOGDEBUG, "UploadTexture(): {} fbo_id: {}", fmt::ptr(this), m_texture.fbo_id);
+
+  return true;
+}
+
+void CRenderBufferFBO::BindFrameBuffer()
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, m_texture.fbo_id);
+}
+
+void CRenderBufferFBO::UnbindFrameBuffer()
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glFinish();
+}
+
+bool CRenderBufferFBO::Render()
+{
+  CLog::Log(LOGDEBUG, "CRenderBufferFBO::{} - addr: {}", __FUNCTION__, fmt::ptr(this));
+
+  glBindTexture(GL_TEXTURE_2D, m_texture.tex_id);
+
+  glMatrixModview.Push();
+  glMatrixModview->LoadIdentity();
+  glMatrixModview.Load();
+
+  glMatrixProject.Push();
+  glMatrixProject->LoadIdentity();
+  glMatrixProject->Ortho2D(0, m_width, 0, m_height);
+  glMatrixProject.Load();
+
+  CRect viewport;
+  m_context.GetViewPort(viewport);
+  glViewport(0, 0, m_width, m_height);
+  glScissor(0, 0, m_width, m_height);
+
+  m_context.EnableGUIShader(GL_SHADER_METHOD::TEXTURE_NOALPHA);
+
+  GLubyte idx[4] = {0, 1, 3, 2}; // determines order of triangle strip
+  GLfloat vert[4][3];
+  GLfloat tex[4][2];
+
+  GLint vertLoc = m_context.GUIShaderGetPos();
+  GLint loc = m_context.GUIShaderGetCoord0();
+  GLint uniColLoc = m_context.GUIShaderGetUniCol();
+
+  glVertexAttribPointer(vertLoc, 3, GL_FLOAT, 0, 0, vert);
+  glVertexAttribPointer(loc, 2, GL_FLOAT, 0, 0, tex);
+
+  glEnableVertexAttribArray(vertLoc);
+  glEnableVertexAttribArray(loc);
+
+  CPoint rect[4];
+  rect[0].x = 0.0f;
+  rect[0].y = 0.0f;
+
+  rect[1].x = static_cast<float>(m_width);
+  rect[1].y = 0.0f;
+
+  rect[2].x = static_cast<float>(m_width);
+  rect[2].y = static_cast<float>(m_height);
+
+  rect[3].x = 0.0f;
+  rect[3].y = static_cast<float>(m_height);
+
+  // Setup vertex position values
+  for (int i = 0; i < 4; i++)
+  {
+    vert[i][0] = rect[i].x;
+    vert[i][1] = rect[i].y;
+    vert[i][2] = 0.0f; // set z to 0
+  }
+
+  // Setup texture coordinates
+  tex[0][0] = tex[3][0] = 0.0f;
+  tex[0][1] = tex[1][1] = 0.0f;
+  tex[1][0] = tex[2][0] = 1.0f;
+  tex[2][1] = tex[3][1] = 1.0f;
+
+  glUniform4f(uniColLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+  glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_BYTE, idx);
+
+  glDisableVertexAttribArray(vertLoc);
+  glDisableVertexAttribArray(loc);
+
+  m_context.DisableGUIShader();
+
+  glMatrixModview.PopLoad();
+  glMatrixProject.PopLoad();
+
+  m_context.SetViewPort(viewport);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
 
   return true;
 }
