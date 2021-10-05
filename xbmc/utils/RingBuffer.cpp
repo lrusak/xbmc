@@ -17,8 +17,6 @@
 /* Constructor */
 CRingBuffer::CRingBuffer()
 {
-  m_buffer = NULL;
-  m_size = 0;
   m_readPtr = 0;
   m_writePtr = 0;
   m_fillCount = 0;
@@ -34,25 +32,15 @@ CRingBuffer::~CRingBuffer()
 bool CRingBuffer::Create(unsigned int size)
 {
   CSingleLock lock(m_critSection);
-  m_buffer = (char*)malloc(size);
-  if (m_buffer != NULL)
-  {
-    m_size = size;
-    return true;
-  }
-  return false;
+  m_buffer = std::vector<uint8_t>(size);
+
+  return true;
 }
 
 /* Free the ring buffer and set all values to NULL or 0 */
 void CRingBuffer::Destroy()
 {
   CSingleLock lock(m_critSection);
-  if (m_buffer != NULL)
-  {
-    free(m_buffer);
-    m_buffer = NULL;
-  }
-  m_size = 0;
   m_readPtr = 0;
   m_writePtr = 0;
   m_fillCount = 0;
@@ -77,19 +65,19 @@ bool CRingBuffer::ReadData(char *buf, unsigned int size)
   {
     return false;
   }
-  if (size + m_readPtr > m_size)
+  if (size + m_readPtr > m_buffer.size())
   {
-    unsigned int chunk = m_size - m_readPtr;
-    memcpy(buf, m_buffer + m_readPtr, chunk);
-    memcpy(buf + chunk, m_buffer, size - chunk);
+    unsigned int chunk = m_buffer.size() - m_readPtr;
+    memcpy(buf, m_buffer.data() + m_readPtr, chunk);
+    memcpy(buf + chunk, m_buffer.data(), size - chunk);
     m_readPtr = size - chunk;
   }
   else
   {
-    memcpy(buf, m_buffer + m_readPtr, size);
+    memcpy(buf, m_buffer.data() + m_readPtr, size);
     m_readPtr += size;
   }
-  if (m_readPtr == m_size)
+  if (m_readPtr == m_buffer.size())
     m_readPtr = 0;
   m_fillCount -= size;
   return true;
@@ -107,7 +95,7 @@ bool CRingBuffer::ReadData(CRingBuffer &rBuf, unsigned int size)
   bool bOk = size <= rBuf.getMaxWriteSize() && size <= getMaxReadSize();
   if (bOk)
   {
-    unsigned int chunksize = std::min(size, m_size - m_readPtr);
+    unsigned int chunksize = std::min(size, static_cast<unsigned int>(m_buffer.size()) - m_readPtr);
     bOk = rBuf.WriteData(&getBuffer()[m_readPtr], chunksize);
     if (bOk && chunksize < size)
       bOk = rBuf.WriteData(&getBuffer()[0], size - chunksize);
@@ -124,23 +112,23 @@ bool CRingBuffer::ReadData(CRingBuffer &rBuf, unsigned int size)
 bool CRingBuffer::WriteData(const char *buf, unsigned int size)
 {
   CSingleLock lock(m_critSection);
-  if (size > m_size - m_fillCount)
+  if (size > m_buffer.size() - m_fillCount)
   {
     return false;
   }
-  if (size + m_writePtr > m_size)
+  if (size + m_writePtr > m_buffer.size())
   {
-    unsigned int chunk = m_size - m_writePtr;
-    memcpy(m_buffer + m_writePtr, buf, chunk);
-    memcpy(m_buffer, buf + chunk, size - chunk);
+    unsigned int chunk = m_buffer.size() - m_writePtr;
+    memcpy(m_buffer.data() + m_writePtr, buf, chunk);
+    memcpy(m_buffer.data(), buf + chunk, size - chunk);
     m_writePtr = size - chunk;
   }
   else
   {
-    memcpy(m_buffer + m_writePtr, buf, size);
+    memcpy(m_buffer.data() + m_writePtr, buf, size);
     m_writePtr += size;
   }
-  if (m_writePtr == m_size)
+  if (m_writePtr == m_buffer.size())
     m_writePtr = 0;
   m_fillCount += size;
   return true;
@@ -152,7 +140,7 @@ bool CRingBuffer::WriteData(const char *buf, unsigned int size)
 bool CRingBuffer::WriteData(CRingBuffer &rBuf, unsigned int size)
 {
   CSingleLock lock(m_critSection);
-  if (m_buffer == NULL)
+  if (m_buffer.empty())
     Create(size);
 
   bool bOk = size <= rBuf.getMaxReadSize() && size <= getMaxWriteSize();
@@ -182,16 +170,16 @@ bool CRingBuffer::SkipBytes(int skipSize)
   {
     return false;
   }
-  if (size + m_readPtr > m_size)
+  if (size + m_readPtr > m_buffer.size())
   {
-    unsigned int chunk = m_size - m_readPtr;
+    unsigned int chunk = m_buffer.size() - m_readPtr;
     m_readPtr = size - chunk;
   }
   else
   {
     m_readPtr += size;
   }
-  if (m_readPtr == m_size)
+  if (m_readPtr == m_buffer.size())
     m_readPtr = 0;
   m_fillCount -= size;
   return true;
@@ -213,13 +201,13 @@ bool CRingBuffer::Copy(CRingBuffer &rBuf)
 /* Our various 'get' methods */
 char *CRingBuffer::getBuffer()
 {
-  return m_buffer;
+  return reinterpret_cast<char*>(m_buffer.data());
 }
 
 unsigned int CRingBuffer::getSize()
 {
   CSingleLock lock(m_critSection);
-  return m_size;
+  return m_buffer.size();
 }
 
 unsigned int CRingBuffer::getReadPtr() const
@@ -242,5 +230,5 @@ unsigned int CRingBuffer::getMaxReadSize()
 unsigned int CRingBuffer::getMaxWriteSize()
 {
   CSingleLock lock(m_critSection);
-  return m_size - m_fillCount;
+  return m_buffer.size() - m_fillCount;
 }

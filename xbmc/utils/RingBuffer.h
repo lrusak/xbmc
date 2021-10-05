@@ -10,11 +10,12 @@
 
 #include "threads/CriticalSection.h"
 
+#include <vector>
+
 class CRingBuffer
 {
   CCriticalSection m_critSection;
-  char *m_buffer;
-  unsigned int m_size;
+  std::vector<uint8_t> m_buffer;
   unsigned int m_readPtr;
   unsigned int m_writePtr;
   unsigned int m_fillCount;
