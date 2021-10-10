@@ -235,8 +235,6 @@ private:
   // Synchronization parameters
   CCriticalSection m_stateMutex;
   CCriticalSection m_bufferMutex;
-
-  IRenderBuffer* m_fboRenderBuffer;
 };
 } // namespace RETRO
 } // namespace KODI
