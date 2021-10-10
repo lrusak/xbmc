@@ -39,8 +39,8 @@ namespace RETRO
   public:
     struct texture
     {
-      GLuint fbo_id;
-      GLuint rbo_id;
+      // GLuint fbo_id;
+      // GLuint rbo_id;
       GLuint tex_id;
     };
 
@@ -55,8 +55,10 @@ namespace RETRO
     size_t GetFrameSize() const override { return 0; }
     uint8_t *GetMemory() override { return nullptr; }
 
+    void Update() override;
+
     GLuint TextureID() const { return m_texture.tex_id; }
-    uintptr_t GetCurrentFramebuffer() override { return m_texture.fbo_id; }
+    uintptr_t GetCurrentFramebuffer() override;
 
     texture m_texture;
 
@@ -68,9 +70,9 @@ namespace RETRO
   private:
     bool CreateTexture();
     void DeleteTexture();
-    bool CreateFramebuffer();
-    bool CreateRenderbuffer();
-    bool CheckFrameBufferStatus();
+    // bool CreateFramebuffer();
+    // bool CreateRenderbuffer();
+    // bool CheckFrameBufferStatus();
   };
 }
 }

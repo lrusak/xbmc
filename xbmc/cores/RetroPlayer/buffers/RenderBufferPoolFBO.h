@@ -24,6 +24,8 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
+#include "system_gl.h"
+
 namespace KODI
 {
 namespace RETRO
@@ -44,8 +46,17 @@ namespace RETRO
     // implementation of CBaseRenderBufferPool via CRenderBufferPoolSysMem
     IRenderBuffer *CreateRenderBuffer(void *header = nullptr) override;
 
-    IRenderBuffer* GetBuffer(unsigned int width, unsigned int height) override;
-    void Return(IRenderBuffer* buffer) override;
+    // IRenderBuffer* GetBuffer(unsigned int width, unsigned int height) override;
+    // void Return(IRenderBuffer* buffer) override;
+
+    bool Configure(uint32_t width, uint32_t height);
+
+    uintptr_t GetCurrentFramebuffer() { return m_fbo_id; }
+
+    void BindFramebuffer();
+    void UnbindFramebuffer();
+
+    bool IsConfigured2() const { return m_bConfigured2; }
 
   protected:
     bool CreateContext();
@@ -60,7 +71,17 @@ namespace RETRO
     EGLContext m_eglContext = EGL_NO_CONTEXT;
 
   private:
-    std::unique_ptr<CRenderBufferFBO> m_renderBuffer{nullptr};
+    bool CreateFramebuffer();
+    bool CreateRenderbuffer();
+    bool CheckFrameBufferStatus();
+
+    uint32_t m_width;
+    uint32_t m_height;
+
+    GLuint m_fbo_id;
+    GLuint m_rbo_id;
+
+    bool m_bConfigured2;
   };
 }
 }

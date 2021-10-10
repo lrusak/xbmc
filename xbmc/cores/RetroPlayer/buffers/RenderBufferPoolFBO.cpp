@@ -30,8 +30,7 @@
 using namespace KODI;
 using namespace RETRO;
 
-CRenderBufferPoolFBO::CRenderBufferPoolFBO(CRenderContext &context) :
-  m_context(context), m_renderBuffer(nullptr)
+CRenderBufferPoolFBO::CRenderBufferPoolFBO(CRenderContext& context) : m_context(context)
 {
 }
 
@@ -51,8 +50,32 @@ IRenderBuffer *CRenderBufferPoolFBO::CreateRenderBuffer(void *header /* = nullpt
   return new CRenderBufferFBO(m_context);
 }
 
+bool CRenderBufferPoolFBO::Configure(uint32_t width, uint32_t height)
+{
+  CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: Configure: {}", fmt::ptr(this));
+
+
+  m_width = width, m_height = height;
+
+  if (!CreateFramebuffer())
+    return false;
+
+  if (!CreateRenderbuffer())
+    return false;
+
+  if (!CheckFrameBufferStatus())
+    return false;
+
+  m_bConfigured2 = true;
+
+  return true;
+}
+
 bool CRenderBufferPoolFBO::CreateContext()
 {
+  CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: CreateContext: {}", fmt::ptr(this));
+
+
   auto winSystem =
       dynamic_cast<KODI::WINDOWING::LINUX::CWinSystemEGL*>(CServiceBroker::GetWinSystem());
 
@@ -122,35 +145,52 @@ bool CRenderBufferPoolFBO::CreateContext()
   return true;
 }
 
-IRenderBuffer* CRenderBufferPoolFBO::GetBuffer(unsigned int width, unsigned int height)
+bool CRenderBufferPoolFBO::CreateFramebuffer()
 {
-  if (!m_bConfigured)
-    return nullptr;
+  glGenFramebuffers(1, &m_fbo_id);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fbo_id);
 
-  if (m_renderBuffer)
-    return m_renderBuffer.get();
-
-  CLog::Log(LOGDEBUG,
-            "RetroPlayer[RENDER]: Creating render buffer of size {}x{} for buffer pool", width,
-            height);
-
-  std::unique_ptr<CRenderBufferFBO> renderBufferPtr(static_cast<CRenderBufferFBO*>(CreateRenderBuffer(nullptr)));
-  if (renderBufferPtr->Allocate(m_format, width, height))
-    m_renderBuffer = std::move(renderBufferPtr);
-  else
-    CLog::Log(LOGERROR, "RetroPlayer[RENDER]: Failed to allocate render buffer");
-
-  if (m_renderBuffer)
-    m_renderBuffer->Acquire(GetPtr());
-
-  CLog::Log(LOGDEBUG, "GetBuffer(): {} fbo_id: {}", fmt::ptr(m_renderBuffer.get()),
-            m_renderBuffer->GetCurrentFramebuffer());
-
-  return m_renderBuffer.get();
+  return true;
 }
 
-void CRenderBufferPoolFBO::Return(IRenderBuffer* buffer)
+bool CRenderBufferPoolFBO::CreateRenderbuffer()
 {
-  buffer->SetLoaded(false);
-  buffer->SetRendered(false);
+  if (m_width == 0 || m_height == 0)
+    throw std::runtime_error("whoops!");
+
+  glGenRenderbuffers(1, &m_rbo_id);
+  glBindRenderbuffer(GL_RENDERBUFFER, m_rbo_id);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_width, m_height);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fbo_id);
+
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo_id);
+
+  return true;
+}
+
+bool CRenderBufferPoolFBO::CheckFrameBufferStatus()
+{
+  GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  if (status != GL_FRAMEBUFFER_COMPLETE)
+  {
+    CLog::Log(LOGERROR, "RetroPlayer[RENDER]: Unable to create FBO - status: {}", status);
+    return false;
+  }
+
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  CLog::Log(LOGDEBUG, "CheckFrameBufferStatus(): {} fbo_id: {}", fmt::ptr(this), m_fbo_id);
+
+  return true;
+}
+
+void CRenderBufferPoolFBO::BindFramebuffer()
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fbo_id);
+}
+
+void CRenderBufferPoolFBO::UnbindFramebuffer()
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

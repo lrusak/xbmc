@@ -21,6 +21,7 @@
 #include "RenderBufferFBO.h"
 
 #include "ServiceBroker.h"
+#include "cores/RetroPlayer/buffers/RenderBufferPoolFBO.h"
 #include "cores/RetroPlayer/rendering/RenderContext.h"
 #include "cores/RetroPlayer/rendering/RenderVideoSettings.h"
 #include "utils/log.h"
@@ -49,33 +50,39 @@ bool CRenderBufferFBO::Allocate(AVPixelFormat format, unsigned int width, unsign
   if (!CreateTexture())
     return false;
 
-  if (!CreateFramebuffer())
-    return false;
+  // if (!CreateFramebuffer())
+  //   return false;
 
-  if (!CreateRenderbuffer())
-    return false;
+  // if (!CreateRenderbuffer())
+  //   return false;
 
-  CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: allocate FBO buffer: {} fbo_id: {}", fmt::ptr(this), m_texture.fbo_id);
+  // CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: allocate FBO buffer: {} fbo_id: {}", fmt::ptr(this), m_texture.fbo_id);
 
-  return CheckFrameBufferStatus();
+  // return CheckFrameBufferStatus();
+
+  CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: allocate FBO buffer: {} tex_id: {}", fmt::ptr(this),
+            m_texture.tex_id);
+
+
+  return true;
 }
 
-void CRenderBufferFBO::DeleteTexture()
+void CRenderBufferFBO::Update()
 {
-  glDeleteTextures(1, &m_texture.tex_id);
-  m_texture.tex_id = 0;
+  CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: update FBO buffer: {} tex_id: {}", fmt::ptr(this),
+            m_texture.tex_id);
 
-  glDeleteFramebuffers(1, &m_texture.fbo_id);
-  m_texture.fbo_id = 0;
+  auto pool = std::dynamic_pointer_cast<CRenderBufferPoolFBO>(m_pool);
+  if (!pool)
+    throw std::runtime_error("no pool!");
 
-  glDeleteRenderbuffers(1, &m_texture.rbo_id);
-  m_texture.rbo_id = 0;
-}
+  if (!pool->IsConfigured2())
+  {
+    if (!pool->Configure(m_width, m_height))
+      throw std::runtime_error("error configuring pool");
+  }
 
-bool CRenderBufferFBO::CreateFramebuffer()
-{
-  glGenFramebuffers(1, &m_texture.fbo_id);
-  glBindFramebuffer(GL_FRAMEBUFFER, m_texture.fbo_id);
+  pool->BindFramebuffer();
 
   // attach the texture to FBO color attachment point
   glFramebufferTexture2D(GL_FRAMEBUFFER, // 1. fbo target: GL_FRAMEBUFFER
@@ -84,37 +91,77 @@ bool CRenderBufferFBO::CreateFramebuffer()
                          m_texture.tex_id, // 4. tex ID
                          0); // 5. mipmap level: 0(base){
 
-  return true;
+  pool->UnbindFramebuffer();
 }
 
-bool CRenderBufferFBO::CreateRenderbuffer()
+uintptr_t CRenderBufferFBO::GetCurrentFramebuffer()
 {
-  glGenRenderbuffers(1, &m_texture.rbo_id);
-  glBindRenderbuffer(GL_RENDERBUFFER, m_texture.rbo_id);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_width, m_height);
-  glBindFramebuffer(GL_FRAMEBUFFER, m_texture.fbo_id);
+  auto pool = std::dynamic_pointer_cast<CRenderBufferPoolFBO>(m_pool);
+  if (!pool)
+    throw std::runtime_error("no pool!");
 
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_texture.rbo_id);
+  CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: GetCurrentFramebuffer: {} id: {}", fmt::ptr(this),
+            pool->GetCurrentFramebuffer());
 
-  return true;
+  return pool->GetCurrentFramebuffer();
 }
 
-bool CRenderBufferFBO::CheckFrameBufferStatus()
+
+void CRenderBufferFBO::DeleteTexture()
 {
-  GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  if(status != GL_FRAMEBUFFER_COMPLETE)
-  {
-    CLog::Log(LOGERROR, "RetroPlayer[RENDER]: Unable to create FBO - status: {}", status);
-    return false;
-  }
+  glDeleteTextures(1, &m_texture.tex_id);
+  m_texture.tex_id = 0;
 
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  // glDeleteFramebuffers(1, &m_texture.fbo_id);
+  // m_texture.fbo_id = 0;
 
-  CLog::Log(LOGDEBUG, "CheckFrameBufferStatus(): {} fbo_id: {}", fmt::ptr(this), m_texture.fbo_id);
-
-  return true;
+  // glDeleteRenderbuffers(1, &m_texture.rbo_id);
+  // m_texture.rbo_id = 0;
 }
+
+// bool CRenderBufferFBO::CreateFramebuffer()
+// {
+//   glGenFramebuffers(1, &m_texture.fbo_id);
+//   glBindFramebuffer(GL_FRAMEBUFFER, m_texture.fbo_id);
+
+//   // attach the texture to FBO color attachment point
+//   glFramebufferTexture2D(GL_FRAMEBUFFER, // 1. fbo target: GL_FRAMEBUFFER
+//                          GL_COLOR_ATTACHMENT0, // 2. attachment point
+//                          GL_TEXTURE_2D, // 3. tex target: GL_TEXTURE_2D
+//                          m_texture.tex_id, // 4. tex ID
+//                          0); // 5. mipmap level: 0(base){
+
+//   return true;
+// }
+
+// bool CRenderBufferFBO::CreateRenderbuffer()
+// {
+//   glGenRenderbuffers(1, &m_texture.rbo_id);
+//   glBindRenderbuffer(GL_RENDERBUFFER, m_texture.rbo_id);
+//   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_width, m_height);
+//   glBindFramebuffer(GL_FRAMEBUFFER, m_texture.fbo_id);
+
+//   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_texture.rbo_id);
+
+//   return true;
+// }
+
+// bool CRenderBufferFBO::CheckFrameBufferStatus()
+// {
+//   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+//   if(status != GL_FRAMEBUFFER_COMPLETE)
+//   {
+//     CLog::Log(LOGERROR, "RetroPlayer[RENDER]: Unable to create FBO - status: {}", status);
+//     return false;
+//   }
+
+//   glBindRenderbuffer(GL_RENDERBUFFER, 0);
+//   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+//   CLog::Log(LOGDEBUG, "CheckFrameBufferStatus(): {} fbo_id: {}", fmt::ptr(this), m_texture.fbo_id);
+
+//   return true;
+// }
 
 bool CRenderBufferFBO::CreateTexture()
 {

@@ -255,7 +255,7 @@ uintptr_t CRPRenderManager::GetCurrentFramebuffer()
     if (renderBuffer != nullptr)
     {
       CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: Libretro called GetCurrentFramebuffer");
-      renderBuffer->Release();
+      // renderBuffer->Release();
       return renderBuffer->GetCurrentFramebuffer();
     }
   }
@@ -629,8 +629,8 @@ IRenderBuffer* CRPRenderManager::GetRenderBuffer(IRenderBufferPool* bufferPool)
     renderBuffer->Acquire();
   }
 
-  if (m_renderBuffers.size() > 0)
-    return m_renderBuffers[0];
+  // if (m_renderBuffers.size() > 0)
+  //   return m_renderBuffers[0];
 
   return renderBuffer;
 }
