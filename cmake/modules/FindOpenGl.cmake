@@ -38,3 +38,5 @@ if(OPENGL_FOUND)
 endif()
 
 mark_as_advanced(OPENGL_INCLUDE_DIR OPENGL_gl_LIBRARY)
+
+include(${CMAKE_SOURCE_DIR}/cmake/scripts/common/GenerateOpenGLBindings.cmake)
