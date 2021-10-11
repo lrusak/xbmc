@@ -47,7 +47,7 @@ bool CWinSystemWaylandEGLContextGLES::InitWindowSystem()
   CDVDVideoCodecDRMPRIME::Register();
   CRendererDRMPRIMEGLES::Register();
 
-  RETRO::CRPProcessInfo::RegisterRendererFactory(new RETRO::CRendererFactoryDMA);
+  // RETRO::CRPProcessInfo::RegisterRendererFactory(new RETRO::CRendererFactoryDMA);
   RETRO::CRPProcessInfo::RegisterRendererFactory(new RETRO::CRendererFactoryOpenGLES);
 
   bool general, deepColor;
