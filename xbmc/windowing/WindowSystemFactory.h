@@ -20,18 +20,25 @@ namespace KODI
 namespace WINDOWING
 {
 
+using CreateFunction = std::function<std::unique_ptr<CWinSystemBase>()>;
+
 class CWindowSystemFactory
 {
 public:
   static std::unique_ptr<CWinSystemBase> CreateWindowSystem(const std::string& name);
   static std::list<std::string> GetWindowSystems();
-  static void RegisterWindowSystem(
-      const std::function<std::unique_ptr<CWinSystemBase>()>& createFunction,
-      const std::string& name = "default");
+  static void RegisterWindowSystem(const CreateFunction& createFunction,
+                                   const std::string& windowSystem = "default");
 
 private:
-  static std::list<std::pair<std::string, std::function<std::unique_ptr<CWinSystemBase>()>>>
-      m_windowSystems;
+
+  struct Registration
+  {
+    std::string windowSystem;
+    CreateFunction createFunction;
+  };
+
+  static std::list<Registration> m_registration;
 };
 
 } // namespace WINDOWING

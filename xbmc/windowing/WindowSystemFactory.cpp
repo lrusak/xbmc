@@ -12,31 +12,37 @@
 
 using namespace KODI::WINDOWING;
 
-std::list<std::pair<std::string, std::function<std::unique_ptr<CWinSystemBase>()>>>
-    CWindowSystemFactory::m_windowSystems;
+std::list<CWindowSystemFactory::Registration>
+    CWindowSystemFactory::m_registration;
 
 std::list<std::string> CWindowSystemFactory::GetWindowSystems()
 {
   std::list<std::string> available;
-  for (const auto& windowSystem : m_windowSystems)
-    available.emplace_back(windowSystem.first);
+  for (const auto& registration : m_registration)
+    available.emplace_back(registration.windowSystem);
 
   return available;
 }
 
-std::unique_ptr<CWinSystemBase> CWindowSystemFactory::CreateWindowSystem(const std::string& name)
+std::unique_ptr<CWinSystemBase> CWindowSystemFactory::CreateWindowSystem(
+    const std::string& windowSystem)
 {
-  auto windowSystem =
-      std::find_if(m_windowSystems.begin(), m_windowSystems.end(),
-                   [&name](auto& windowSystem) { return windowSystem.first == name; });
-  if (windowSystem != m_windowSystems.end())
-    return windowSystem->second();
+  auto registration = std::find_if(m_registration.cbegin(), m_registration.cend(),
+                                   [&windowSystem](auto& registration)
+                                   { return registration.windowSystem == windowSystem; });
+  if (registration != m_registration.end())
+    return registration->createFunction();
 
   return nullptr;
 }
 
 void CWindowSystemFactory::RegisterWindowSystem(
-    const std::function<std::unique_ptr<CWinSystemBase>()>& createFunction, const std::string& name)
+    const std::function<std::unique_ptr<CWinSystemBase>()>& createFunction,
+    const std::string& windowSystem)
 {
-  m_windowSystems.emplace_back(std::make_pair(name, createFunction));
+  Registration registration = {};
+  registration.createFunction = createFunction;
+  registration.windowSystem = windowSystem;
+
+  m_registration.emplace_back(registration);
 }
