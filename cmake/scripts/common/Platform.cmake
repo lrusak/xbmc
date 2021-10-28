@@ -16,6 +16,8 @@ endif()
 
 set(APP_BINARY_SUFFIX ".bin")
 
+string(REPLACE " " ";" APP_RENDER_SYSTEM "${APP_RENDER_SYSTEM}")
+
 #
 # Note: please do not use CORE_PLATFORM_NAME in any checks,
 # use the normalized to lower case CORE_PLATFORM_NAME_LC (see below) instead
