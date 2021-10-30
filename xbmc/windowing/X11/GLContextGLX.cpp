@@ -10,9 +10,7 @@
 
 #include "utils/log.h"
 
-#include <GL/glx.h>
-
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 using namespace KODI::WINDOWING::X11;
 
@@ -193,14 +191,14 @@ void CGLContextGLX::SwapBuffers()
 {
   if (m_vsyncMode == 3)
   {
-    glFinish();
+    gl::Finish();
     unsigned int before = 0, after = 0;
     if (m_glXGetVideoSyncSGI(&before) != 0)
       CLog::Log(LOGERROR, "{} - glXGetVideoSyncSGI - Failed to get current retrace count",
                 __FUNCTION__);
 
     glXSwapBuffers(m_dpy, m_glxWindow);
-    glFinish();
+    gl::Finish();
 
     if(m_glXGetVideoSyncSGI(&after) != 0)
       CLog::Log(LOGERROR, "{} - glXGetVideoSyncSGI - Failed to get current retrace count",
@@ -230,7 +228,7 @@ void CGLContextGLX::SwapBuffers()
   }
   else if (m_vsyncMode == 4)
   {
-    glFinish();
+    gl::Finish();
     unsigned int before = 0, swap = 0, after = 0;
     if (m_glXGetVideoSyncSGI(&before) != 0)
       CLog::Log(LOGERROR, "{} - glXGetVideoSyncSGI - Failed to get current retrace count",
@@ -240,7 +238,7 @@ void CGLContextGLX::SwapBuffers()
       CLog::Log(LOGERROR, "{} - glXWaitVideoSyncSGI - Returned error", __FUNCTION__);
 
     glXSwapBuffers(m_dpy, m_glxWindow);
-    glFinish();
+    gl::Finish();
 
     if (m_glXGetVideoSyncSGI(&after) != 0)
       CLog::Log(LOGERROR, "{} - glXGetVideoSyncSGI - Failed to get current retrace count",

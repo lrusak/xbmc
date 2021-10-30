@@ -10,7 +10,7 @@
 
 #include "cores/RetroPlayer/buffers/video/RenderBufferSysMem.h"
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 namespace KODI
 {

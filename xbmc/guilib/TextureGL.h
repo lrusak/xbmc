@@ -10,7 +10,7 @@
 
 #include "Texture.h"
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 /************************************************************************/
 /*    CGLTexture                                                       */

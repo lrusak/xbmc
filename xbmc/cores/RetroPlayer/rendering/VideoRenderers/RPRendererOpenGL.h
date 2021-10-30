@@ -11,7 +11,7 @@
 #include "RPBaseRenderer.h"
 #include "cores/RetroPlayer/process/RPProcessInfo.h"
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 namespace KODI
 {
@@ -71,7 +71,7 @@ protected:
   /*!
    * \brief Draw black bars around the video quad
    *
-   * This is more efficient than glClear() since it only sets pixels to
+   * This is more efficient than gl::Clear() since it only sets pixels to
    * black that aren't going to be overwritten by the game.
    */
   void DrawBlackBars();

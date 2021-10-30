@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 class CGUIFontTTFGL : public CGUIFontTTF
 {

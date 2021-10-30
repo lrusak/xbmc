@@ -14,7 +14,7 @@
 #include <array>
 #include <vector>
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 struct PackedVertex
 {

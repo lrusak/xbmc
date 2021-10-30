@@ -13,7 +13,7 @@
 
 #include <array>
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 class CRenderSystemGL;
 

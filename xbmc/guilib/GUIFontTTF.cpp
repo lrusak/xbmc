@@ -33,7 +33,7 @@
 #if defined(HAS_GL) || defined(HAS_GLES)
 #include "utils/GLUtils.h"
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 #endif
 
 #if defined(HAS_DX)

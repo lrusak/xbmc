@@ -14,7 +14,7 @@
 #include "windowing/GraphicContext.h"
 #include "windowing/WinSystem.h"
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 #if defined(HAS_GL)
 #include "rendering/gl/RenderSystemGL.h"

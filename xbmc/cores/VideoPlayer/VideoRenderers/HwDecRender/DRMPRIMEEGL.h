@@ -12,7 +12,7 @@
 #include "utils/EGLImage.h"
 #include "utils/Geometry.h"
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 class CDRMPRIMETexture
 {

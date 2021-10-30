@@ -12,7 +12,7 @@
 #endif
 
 #include <clocale>
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 #include "GLContextEGL.h"
 #include "utils/log.h"
 #include <EGL/eglext.h>
@@ -291,7 +291,7 @@ void CGLContextEGL::Destroy()
 {
   if (m_eglContext)
   {
-    glFinish();
+    gl::Finish();
     eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     eglDestroyContext(m_eglDisplay, m_eglContext);
     m_eglContext = EGL_NO_CONTEXT;
@@ -316,7 +316,7 @@ void CGLContextEGL::Detach()
 {
   if (m_eglContext)
   {
-    glFinish();
+    gl::Finish();
     eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
   }
   if (m_eglSurface)

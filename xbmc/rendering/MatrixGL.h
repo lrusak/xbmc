@@ -10,7 +10,7 @@
 
 #include <stack>
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 class TransformMatrix;
 

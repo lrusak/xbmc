@@ -12,7 +12,7 @@
 
 #include <memory>
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 class CEGLImage;
 class IBufferObject;

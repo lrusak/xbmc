@@ -17,7 +17,7 @@
 
 #include <vector>
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 void CScreenshotSurfaceGL::Register()
 {
@@ -42,11 +42,11 @@ bool CScreenshotSurfaceGL::Capture()
   CSingleLock lock(winsystem->GetGfxContext());
   gui->GetWindowManager().Render();
 
-  glReadBuffer(GL_BACK);
+  gl::ReadBuffer(GL_BACK);
 
   // get current viewport
   GLint viewport[4];
-  glGetIntegerv(GL_VIEWPORT, viewport);
+  gl::GetIntegerv(GL_VIEWPORT, viewport);
 
   m_width = viewport[2] - viewport[0];
   m_height = viewport[3] - viewport[1];
@@ -54,7 +54,8 @@ bool CScreenshotSurfaceGL::Capture()
   std::vector<uint8_t> surface(m_stride * m_height);
 
   // read pixels from the backbuffer
-  glReadPixels(viewport[0], viewport[1], viewport[2], viewport[3], GL_BGRA, GL_UNSIGNED_BYTE, static_cast<GLvoid*>(surface.data()));
+  gl::ReadPixels(viewport[0], viewport[1], viewport[2], viewport[3], GL_BGRA, GL_UNSIGNED_BYTE,
+                 static_cast<GLvoid*>(surface.data()));
 
   // make a new buffer and copy the read image to it with the Y axis inverted
   m_buffer = new unsigned char[m_stride * m_height];

@@ -8,16 +8,12 @@
 
 #pragma once
 
+#include "RenderingGLX.hpp"
 #include "guilib/DispResource.h"
 #include "threads/Event.h"
 #include "windowing/VideoSync.h"
 
-#include <GL/glx.h>
-#include <X11/X.h>
-#include <X11/Xlib.h>
-
-#include "system_gl.h"
-
+#include "RenderingGL.hpp"
 
 
 namespace KODI

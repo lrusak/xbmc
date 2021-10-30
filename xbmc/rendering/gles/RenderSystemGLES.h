@@ -14,7 +14,7 @@
 
 #include <map>
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 enum class ShaderMethodGLES
 {

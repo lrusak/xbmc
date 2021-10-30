@@ -12,7 +12,7 @@
 #include "cores/VideoSettings.h"
 #include "guilib/Shader.h"
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 namespace Shaders {
 

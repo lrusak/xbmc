@@ -15,7 +15,7 @@
 #include <map>
 #include <memory>
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 enum class ShaderMethodGL
 {

@@ -185,7 +185,7 @@ bool CWinSystemTVOS::CreateNewWindow(const std::string& name, bool fullScreen, R
 
   m_eglext = " ";
 
-  const char* tmpExtensions = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+  const char* tmpExtensions = reinterpret_cast<const char*>(gl::GetString(GL_EXTENSIONS));
   if (tmpExtensions != nullptr)
   {
     m_eglext += tmpExtensions;

@@ -10,7 +10,7 @@
 
 #include "RenderCapture.h"
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 class CRenderCaptureGLES : public CRenderCapture
 {

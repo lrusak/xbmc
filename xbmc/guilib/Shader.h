@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 namespace Shaders {
 

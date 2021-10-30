@@ -15,7 +15,7 @@
 #include <EGL/eglext.h>
 #include <drm_fourcc.h>
 
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 
 class CEGLImage
 {

@@ -35,7 +35,7 @@
 #endif
 
 #if defined(HAS_GL) || defined(HAS_GLES)
-#include "system_gl.h"
+#include "RenderingGL.hpp"
 #endif
 
 #include "FFmpegImage.h"
@@ -514,9 +514,9 @@ void CGUITextureManager::FreeUnusedTextures(unsigned int timeDelay)
     // sanity check before delete in that case.
 #if defined(TARGET_DARWIN_EMBEDDED)
     auto winSystem = dynamic_cast<WIN_SYSTEM_CLASS*>(CServiceBroker::GetWinSystem());
-    if (!winSystem->IsBackgrounded() || glIsTexture(m_unusedHwTextures[i]))
+    if (!winSystem->IsBackgrounded() || gl::IsTexture(m_unusedHwTextures[i]))
 #endif
-      glDeleteTextures(1, (GLuint*) &m_unusedHwTextures[i]);
+      gl::DeleteTextures(1, (GLuint*)&m_unusedHwTextures[i]);
   }
 #endif
   m_unusedHwTextures.clear();

@@ -10,6 +10,7 @@
 
 #include "BaseRenderer.h"
 #include "ColorManager.h"
+#include "RenderingGL.hpp"
 #include "FrameBufferObject.h"
 #include "RenderFlags.h"
 #include "RenderInfo.h"
@@ -22,8 +23,6 @@
 #include "windowing/GraphicContext.h"
 
 #include <vector>
-
-#include "system_gl.h"
 
 extern "C" {
 #include <libavutil/mastering_display_metadata.h>
