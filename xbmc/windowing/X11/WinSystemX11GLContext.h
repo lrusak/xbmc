@@ -45,6 +45,8 @@ public:
 
   bool IsExtSupported(const char* extension) const override;
 
+  void* GetProcAddress(const char* name) override;
+
   // videosync
   std::unique_ptr<CVideoSync> GetVideoSync(void *clock) override;
   float GetFrameLatencyAdjustment() override;

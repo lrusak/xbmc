@@ -29,6 +29,9 @@ public:
   void SetVSync(bool enable) override;
   void SwapBuffers() override;
   void QueryExtensions() override;
+
+  void* GetProcAddress(const char* name) override;
+
   GLXWindow m_glxWindow;
   GLXContext m_glxContext;
 protected:

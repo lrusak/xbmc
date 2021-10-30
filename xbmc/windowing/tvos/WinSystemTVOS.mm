@@ -45,6 +45,7 @@
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
 #import <QuartzCore/CADisplayLink.h>
+#import <dlfcn.h>
 
 using namespace std::chrono_literals;
 
@@ -148,6 +149,12 @@ CWinSystemTVOS::~CWinSystemTVOS()
 {
   m_pDisplayLink->callbackClass = nil;
   delete m_pDisplayLink;
+
+  if (m_glLibrary)
+  {
+    dlclose(m_glLibrary);
+    m_glLibrary = nullptr;
+  }
 }
 
 bool CWinSystemTVOS::InitWindowSystem()
@@ -449,4 +456,19 @@ std::vector<std::string> CWinSystemTVOS::GetConnectedOutputs()
 bool CWinSystemTVOS::MessagePump()
 {
   return m_winEvents->MessagePump();
+}
+
+void* CWinSystemTVOS::GetProcAddress(const char* name)
+{
+  if (!m_glLibrary)
+  {
+    const char* glLibPath = "/System/Library/Frameworks/OpenGLES.framework/OpenGLES";
+
+    m_glLibrary = dlopen(glLibPath, RTLD_LAZY);
+
+    if (!m_glLibrary)
+      throw std::runtime_error("failed to load OpenGLES library: " + dlerror());
+  }
+
+  return dlsym(m_glLibrary, funcName);
 }

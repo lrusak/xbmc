@@ -15,6 +15,11 @@ CWinSystemEGL::CWinSystemEGL(EGLenum platform, std::string const& platformExtens
 {
 }
 
+void* CWinSystemEGL::GetProcAddress(const char* name)
+{
+  return reinterpret_cast<void*>(eglGetProcAddress(name));
+}
+
 EGLDisplay CWinSystemEGL::GetEGLDisplay() const
 {
   return m_eglContext.GetEGLDisplay();

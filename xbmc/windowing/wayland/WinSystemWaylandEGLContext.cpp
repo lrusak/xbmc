@@ -103,6 +103,11 @@ bool CWinSystemWaylandEGLContext::DestroyWindowSystem()
   return CWinSystemWayland::DestroyWindowSystem();
 }
 
+void* CWinSystemWaylandEGLContext::GetProcAddress(const char* name)
+{
+  return CWinSystemEGL::GetProcAddress(name);
+}
+
 CSizeInt CWinSystemWaylandEGLContext::GetNativeWindowAttachedSize()
 {
   int width, height;

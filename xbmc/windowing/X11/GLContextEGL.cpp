@@ -538,3 +538,8 @@ void CGLContextEGL::QueryExtensions()
 
   CLog::Log(LOGDEBUG, "EGL_EXTENSIONS:{}", m_extensions);
 }
+
+void* CGLContextEGL::GetProcAddress(const char* name)
+{
+  return reinterpret_cast<void*>(eglGetProcAddress(name));
+}

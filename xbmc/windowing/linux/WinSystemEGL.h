@@ -23,6 +23,8 @@ public:
   CWinSystemEGL(EGLenum platform, std::string const& platformExtension);
   ~CWinSystemEGL() = default;
 
+  void* GetProcAddress(const char* name);
+
   EGLDisplay GetEGLDisplay() const;
   EGLSurface GetEGLSurface() const;
   EGLContext GetEGLContext() const;

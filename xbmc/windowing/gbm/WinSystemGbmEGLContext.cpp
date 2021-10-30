@@ -135,6 +135,11 @@ bool CWinSystemGbmEGLContext::DestroyWindowSystem()
   return CWinSystemGbm::DestroyWindowSystem();
 }
 
+void* CWinSystemGbmEGLContext::GetProcAddress(const char* name)
+{
+  return CWinSystemEGL::GetProcAddress(name);
+}
+
 void CWinSystemGbmEGLContext::delete_CVaapiProxy::operator()(CVaapiProxy *p) const
 {
   VaapiProxyDelete(p);

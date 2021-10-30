@@ -278,3 +278,11 @@ bool CWinSystemX11GLESContext::RefreshGLContext(bool force)
   }
   return success;
 }
+
+void* CWinSystemX11GLESContext::GetProcAddress(const char* name)
+{
+  if (!m_pGLContext)
+    return nullptr;
+
+  return m_pGLContext->GetProcAddress(name);
+}
