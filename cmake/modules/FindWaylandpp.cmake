@@ -22,6 +22,8 @@ pkg_check_modules(PC_WAYLANDPP_SCANNER wayland-scanner++ QUIET)
 
 if(PC_WAYLANDPP_SCANNER_FOUND)
   pkg_get_variable(PC_WAYLANDPP_SCANNER wayland-scanner++ wayland_scannerpp)
+elseif(WAYLANDPP_SCANNER)
+  message(STATUS "wayland-scanner++ already set to: ${WAYLANDPP_SCANNER}")
 else()
   message(SEND_ERROR "wayland-scanner++ not found via pkg-config")
 endif()
