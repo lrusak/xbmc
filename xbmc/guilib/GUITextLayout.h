@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "guilib/GUIFont.h"
 #include "utils/ColorUtils.h"
 
 #include <stdint.h>
@@ -21,7 +22,6 @@
 #define XBMC_FORCE_INLINE
 #endif
 
-class CGUIFont;
 class CScrollInfo;
 
 // Process will be:
@@ -94,7 +94,7 @@ public:
   float GetTextWidth() const { return m_textWidth; }
 
   float GetTextWidth(const std::wstring &text) const;
-  
+
   /*! \brief Returns the precalculated height of the text to be rendered (in constant time).
    \return height of text
   */
@@ -187,7 +187,7 @@ private:
   static void AppendToUTF32(const std::string &utf8, character_t colStyle, vecText &utf32);
   static void AppendToUTF32(const std::wstring &utf16, character_t colStyle, vecText &utf32);
   static void ParseText(const std::wstring& text,
-                        uint32_t defaultStyle,
+                        FontStyleFlags defaultStyle,
                         UTILS::COLOR::Color defaultColor,
                         std::vector<UTILS::COLOR::Color>& colors,
                         vecText& parsedText);

@@ -93,7 +93,7 @@ CGUIFont* GUIFontManager::LoadTTF(const std::string& strFontName,
                                   UTILS::COLOR::Color textColor,
                                   UTILS::COLOR::Color shadowColor,
                                   const int iSize,
-                                  const int iStyle,
+                                  const FontStyleFlags fontStyle,
                                   bool border,
                                   float lineSpacing,
                                   float aspect,
@@ -160,7 +160,8 @@ CGUIFont* GUIFontManager::LoadTTF(const std::string& strFontName,
       {
         CLog::Log(LOGERROR, "Couldn't load font name: {}({}), trying to substitute arial.ttf",
                   strFontName, strFilename);
-        return LoadTTF(strFontName, "arial.ttf", textColor, shadowColor, iSize, iStyle, border, lineSpacing, originalAspect);
+        return LoadTTF(strFontName, "arial.ttf", textColor, shadowColor, iSize, fontStyle, border,
+                       lineSpacing, originalAspect);
       }
       CLog::Log(LOGERROR, "Couldn't load font name:{} file:{}", strFontName, strPath);
 
@@ -171,7 +172,8 @@ CGUIFont* GUIFontManager::LoadTTF(const std::string& strFontName,
   }
 
   // font file is loaded, create our CGUIFont
-  CGUIFont *pNewFont = new CGUIFont(strFontName, iStyle, textColor, shadowColor, lineSpacing, (float)iSize, pFontFile);
+  CGUIFont* pNewFont = new CGUIFont(strFontName, fontStyle, textColor, shadowColor, lineSpacing,
+                                    (float)iSize, pFontFile);
   m_vecFonts.push_back(pNewFont);
 
   // Store the original TTF font info in case we need to reload it in a different resolution
@@ -425,7 +427,7 @@ void GUIFontManager::LoadFonts(const TiXmlNode* fontNode)
     float lineSpacing = 1.0f;
     UTILS::COLOR::Color shadowColor = 0;
     UTILS::COLOR::Color textColor = 0;
-    int iStyle = FONT_STYLE_NORMAL;
+    FontStyleFlags fontStyle = FontStyleFlagBits::Normal;
 
     XMLUtils::GetString(fontNode, "name", fontName);
     XMLUtils::GetInt(fontNode, "size", iSize);
@@ -434,42 +436,43 @@ void GUIFontManager::LoadFonts(const TiXmlNode* fontNode)
     CGUIControlFactory::GetColor(fontNode, "shadow", shadowColor);
     CGUIControlFactory::GetColor(fontNode, "color", textColor);
     XMLUtils::GetString(fontNode, "filename", fileName);
-    GetStyle(fontNode, iStyle);
+    GetStyle(fontNode, fontStyle);
 
     if (!fontName.empty() && URIUtils::HasExtension(fileName, ".ttf"))
     {
       //! @todo Why do we tolower() this shit?
       std::string strFontFileName = fileName;
       StringUtils::ToLower(strFontFileName);
-      LoadTTF(fontName, strFontFileName, textColor, shadowColor, iSize, iStyle, false, lineSpacing, aspect);
+      LoadTTF(fontName, strFontFileName, textColor, shadowColor, iSize, fontStyle, false,
+              lineSpacing, aspect);
     }
     fontNode = fontNode->NextSibling("font");
   }
 }
 
-void GUIFontManager::GetStyle(const TiXmlNode *fontNode, int &iStyle)
+void GUIFontManager::GetStyle(const TiXmlNode* fontNode, FontStyleFlags& fontStyle)
 {
   std::string style;
-  iStyle = FONT_STYLE_NORMAL;
+  fontStyle = FontStyleFlagBits::Normal;
   if (XMLUtils::GetString(fontNode, "style", style))
   {
     std::vector<std::string> styles = StringUtils::Tokenize(style, " ");
     for (const std::string& i : styles)
     {
       if (i == "bold")
-        iStyle |= FONT_STYLE_BOLD;
+        fontStyle |= FontStyleFlagBits::Bold;
       else if (i == "italics")
-        iStyle |= FONT_STYLE_ITALICS;
+        fontStyle |= FontStyleFlagBits::Italics;
       else if (i == "bolditalics") // backward compatibility
-        iStyle |= (FONT_STYLE_BOLD | FONT_STYLE_ITALICS);
+        fontStyle |= (FontStyleFlagBits::Bold | FontStyleFlagBits::Italics);
       else if (i == "uppercase")
-        iStyle |= FONT_STYLE_UPPERCASE;
+        fontStyle |= FontStyleFlagBits::UpperCase;
       else if (i == "lowercase")
-        iStyle |= FONT_STYLE_LOWERCASE;
+        fontStyle |= FontStyleFlagBits::LowerCase;
       else if (i == "capitalize")
-        iStyle |= FONT_STYLE_CAPITALIZE;
+        fontStyle |= FontStyleFlagBits::Capitalize;
       else if (i == "lighten")
-        iStyle |= FONT_STYLE_LIGHT;
+        fontStyle |= FontStyleFlagBits::Light;
     }
   }
 }

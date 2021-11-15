@@ -246,7 +246,8 @@ void CGUITextLayout::UpdateCommon(const std::wstring &text, float maxWidth, bool
   // parse the text for style information
   vecText parsedText;
   std::vector<UTILS::COLOR::Color> colors;
-  ParseText(text, m_font ? m_font->GetStyle() : 0, m_textColor, colors, parsedText);
+  ParseText(text, m_font ? m_font->GetStyle() : FontStyleFlagBits::Normal, m_textColor, colors,
+            parsedText);
 
   // and update
   UpdateStyled(parsedText, colors, maxWidth, forceLTRReadingOrder);
@@ -351,7 +352,7 @@ void CGUITextLayout::Filter(std::string &text)
   g_charsetConverter.utf8ToW(text, utf16, false);
   std::vector<UTILS::COLOR::Color> colors;
   vecText parsedText;
-  ParseText(utf16, 0, 0xffffffff, colors, parsedText);
+  ParseText(utf16, FontStyleFlagBits::Normal, 0xffffffff, colors, parsedText);
   utf16.clear();
   for (unsigned int i = 0; i < parsedText.size(); i++)
     utf16 += (wchar_t)(0xffff & parsedText[i]);
@@ -359,7 +360,7 @@ void CGUITextLayout::Filter(std::string &text)
 }
 
 void CGUITextLayout::ParseText(const std::wstring& text,
-                               uint32_t defaultStyle,
+                               FontStyleFlags defaultStyle,
                                UTILS::COLOR::Color defaultColor,
                                std::vector<UTILS::COLOR::Color>& colors,
                                vecText& parsedText)
@@ -371,7 +372,7 @@ void CGUITextLayout::ParseText(const std::wstring& text,
   // [CAPS <option>] or [/CAPS] -> toggle capatilization on and off
   // [TABS] tab amount [/TABS] -> add tabulator space in view
 
-  uint32_t currentStyle = defaultStyle; // start with the default font's style
+  FontStyleFlags currentStyle = defaultStyle; // start with the default font's style
   UTILS::COLOR::Color currentColor = 0;
 
   colors.push_back(defaultColor);
@@ -386,7 +387,7 @@ void CGUITextLayout::ParseText(const std::wstring& text,
   size_t pos = text.find(L'[');
   while (pos != std::string::npos && pos + 1 < text.size())
   {
-    uint32_t newStyle = 0;
+    FontStyleFlags newStyle = FontStyleFlagBits::Normal;
     UTILS::COLOR::Color newColor = currentColor;
     bool colorTagChange = false;
     bool newLine = false;
@@ -403,44 +404,47 @@ void CGUITextLayout::ParseText(const std::wstring& text,
     if (text.compare(pos, 2, L"B]") == 0)
     { // bold - finish the current text block and assign the bold state
       pos += 2;
-      if ((on && text.find(L"[/B]",pos) != std::string::npos) ||          // check for a matching end point
-         (!on && (currentStyle & FONT_STYLE_BOLD)))       // or matching start point
-        newStyle = FONT_STYLE_BOLD;
+      if ((on && text.find(L"[/B]", pos) != std::string::npos) || // check for a matching end point
+          (!on && (currentStyle & FontStyleFlagBits::Bold))) // or matching start point
+        newStyle = FontStyleFlagBits::Bold;
     }
     else if (text.compare(pos, 2, L"I]") == 0)
     { // italics
       pos += 2;
-      if ((on && text.find(L"[/I]", pos) != std::string::npos) ||          // check for a matching end point
-         (!on && (currentStyle & FONT_STYLE_ITALICS)))    // or matching start point
-        newStyle = FONT_STYLE_ITALICS;
+      if ((on && text.find(L"[/I]", pos) != std::string::npos) || // check for a matching end point
+          (!on && (currentStyle & FontStyleFlagBits::Italics))) // or matching start point
+        newStyle = FontStyleFlagBits::Italics;
     }
     else if (text.compare(pos, 10, L"UPPERCASE]") == 0)
     {
       pos += 10;
-      if ((on && text.find(L"[/UPPERCASE]", pos) != std::string::npos) ||  // check for a matching end point
-         (!on && (currentStyle & FONT_STYLE_UPPERCASE)))  // or matching start point
-        newStyle = FONT_STYLE_UPPERCASE;
+      if ((on && text.find(L"[/UPPERCASE]", pos) !=
+                     std::string::npos) || // check for a matching end point
+          (!on && (currentStyle & FontStyleFlagBits::UpperCase))) // or matching start point
+        newStyle = FontStyleFlagBits::UpperCase;
     }
     else if (text.compare(pos, 10, L"LOWERCASE]") == 0)
     {
       pos += 10;
-      if ((on && text.find(L"[/LOWERCASE]", pos) != std::string::npos) ||  // check for a matching end point
-         (!on && (currentStyle & FONT_STYLE_LOWERCASE)))  // or matching start point
-        newStyle = FONT_STYLE_LOWERCASE;
+      if ((on && text.find(L"[/LOWERCASE]", pos) !=
+                     std::string::npos) || // check for a matching end point
+          (!on && (currentStyle & FontStyleFlagBits::LowerCase))) // or matching start point
+        newStyle = FontStyleFlagBits::LowerCase;
     }
     else if (text.compare(pos, 11, L"CAPITALIZE]") == 0)
     {
       pos += 11;
-      if ((on && text.find(L"[/CAPITALIZE]", pos) != std::string::npos) ||  // check for a matching end point
-         (!on && (currentStyle & FONT_STYLE_CAPITALIZE)))  // or matching start point
-        newStyle = FONT_STYLE_CAPITALIZE;
+      if ((on && text.find(L"[/CAPITALIZE]", pos) !=
+                     std::string::npos) || // check for a matching end point
+          (!on && (currentStyle & FontStyleFlagBits::Capitalize))) // or matching start point
+        newStyle = FontStyleFlagBits::Capitalize;
     }
     else if (text.compare(pos, 6, L"LIGHT]") == 0)
     {
       pos += 6;
       if ((on && text.find(L"[/LIGHT]", pos) != std::string::npos) ||
-         (!on && (currentStyle & FONT_STYLE_LIGHT)))
-        newStyle = FONT_STYLE_LIGHT;
+          (!on && (currentStyle & FontStyleFlagBits::Light)))
+        newStyle = FontStyleFlagBits::Light;
     }
     else if (text.compare(pos, 5, L"TABS]") == 0 && on)
     {
@@ -497,13 +501,13 @@ void CGUITextLayout::ParseText(const std::wstring& text,
     if (newStyle || colorTagChange || newLine || tabs)
     { // we have a new style or a new color, so format up the previous segment
       std::wstring subText = text.substr(startPos, endPos - startPos);
-      if (currentStyle & FONT_STYLE_UPPERCASE)
+      if (currentStyle & FontStyleFlagBits::UpperCase)
         StringUtils::ToUpper(subText);
-      if (currentStyle & FONT_STYLE_LOWERCASE)
+      if (currentStyle & FontStyleFlagBits::LowerCase)
         StringUtils::ToLower(subText);
-      if (currentStyle & FONT_STYLE_CAPITALIZE)
+      if (currentStyle & FontStyleFlagBits::Capitalize)
         StringUtils::ToCapitalize(subText);
-      AppendToUTF32(subText, ((currentStyle & FONT_STYLE_MASK) << 24) | (currentColor << 16), parsedText);
+      AppendToUTF32(subText, (int(currentStyle) << 24) | (currentColor << 16), parsedText);
       if (newLine)
         parsedText.push_back(L'\n');
       for (int i = 0; i < tabs; ++i)
@@ -521,13 +525,13 @@ void CGUITextLayout::ParseText(const std::wstring& text,
   }
   // now grab the remainder of the string
   std::wstring subText = text.substr(startPos);
-  if (currentStyle & FONT_STYLE_UPPERCASE)
+  if (currentStyle & FontStyleFlagBits::UpperCase)
     StringUtils::ToUpper(subText);
-  if (currentStyle & FONT_STYLE_LOWERCASE)
+  if (currentStyle & FontStyleFlagBits::LowerCase)
     StringUtils::ToLower(subText);
-  if (currentStyle & FONT_STYLE_CAPITALIZE)
+  if (currentStyle & FontStyleFlagBits::Capitalize)
     StringUtils::ToCapitalize(subText);
-  AppendToUTF32(subText, ((currentStyle & FONT_STYLE_MASK) << 24) | (currentColor << 16), parsedText);
+  AppendToUTF32(subText, (int(currentStyle) << 24) | (currentColor << 16), parsedText);
 }
 
 void CGUITextLayout::SetMaxHeight(float fHeight)
@@ -680,7 +684,7 @@ float CGUITextLayout::GetTextWidth(const std::wstring &text) const
   // NOTE: Assumes a single line of text
   if (!m_font) return 0;
   vecText utf32;
-  AppendToUTF32(text, (m_font->GetStyle() & FONT_STYLE_MASK) << 24, utf32);
+  AppendToUTF32(text, (int(m_font->GetStyle()) << 24), utf32);
   return m_font->GetTextWidth(utf32);
 }
 

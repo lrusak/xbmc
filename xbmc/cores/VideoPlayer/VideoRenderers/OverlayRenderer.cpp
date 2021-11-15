@@ -287,12 +287,13 @@ void CRenderer::CreateSubtitlesStyle()
   m_overlayStyle->fontName = settings->GetString(CSettings::SETTING_SUBTITLES_FONT);
   m_overlayStyle->fontSize = (double)settings->GetInt(CSettings::SETTING_SUBTITLES_FONTSIZE);
 
-  uint32_t fontStyleMask = settings->GetInt(CSettings::SETTING_SUBTITLES_STYLE) & FONT_STYLE_MASK;
-  if ((fontStyleMask & FONT_STYLE_BOLD) && (fontStyleMask & FONT_STYLE_ITALICS))
+  FontStyleFlags fontStyleMask =
+      static_cast<FontStyleFlags>(settings->GetInt(CSettings::SETTING_SUBTITLES_STYLE));
+  if ((fontStyleMask & FontStyleFlagBits::Bold) && (fontStyleMask & FontStyleFlagBits::Italics))
     m_overlayStyle->fontStyle = KODI::SUBTITLES::FontStyle::BOLD_ITALIC;
-  else if (fontStyleMask & FONT_STYLE_BOLD)
+  else if (fontStyleMask & FontStyleFlagBits::Bold)
     m_overlayStyle->fontStyle = KODI::SUBTITLES::FontStyle::BOLD;
-  else if (fontStyleMask & FONT_STYLE_ITALICS)
+  else if (fontStyleMask & FontStyleFlagBits::Italics)
     m_overlayStyle->fontStyle = KODI::SUBTITLES::FontStyle::ITALIC;
 
   m_overlayStyle->fontColor =

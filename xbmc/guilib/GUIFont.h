@@ -14,6 +14,7 @@
 */
 
 #include "utils/ColorUtils.h"
+#include "utils/Flags.h"
 
 #include <assert.h>
 #include <math.h>
@@ -44,14 +45,50 @@ class CGUIFontTTF;
 
 // flags for font style. lower 16 bits are the unicode code
 // points, 16-24 are color bits and 24-32 are style bits
-#define FONT_STYLE_NORMAL       0
-#define FONT_STYLE_BOLD         1
-#define FONT_STYLE_ITALICS      2
-#define FONT_STYLE_LIGHT        4
-#define FONT_STYLE_UPPERCASE    8
-#define FONT_STYLE_LOWERCASE    16
-#define FONT_STYLE_CAPITALIZE   32
-#define FONT_STYLE_MASK         0xFF
+enum class FontStyleFlagBits : int
+{
+  Normal = 0x00,
+  Bold = 0x01,
+  Italics = 0x02,
+  Light = 0x04,
+  UpperCase = 0x08,
+  LowerCase = 0x10,
+  Capitalize = 0x20,
+};
+
+using FontStyleFlags = Flags<FontStyleFlagBits>;
+
+template<>
+struct FlagTraits<FontStyleFlagBits>
+{
+  enum : uint32_t
+  {
+    allFlags = uint32_t(FontStyleFlagBits::Normal) | uint32_t(FontStyleFlagBits::Bold) |
+               uint32_t(FontStyleFlagBits::Italics) | uint32_t(FontStyleFlagBits::Light) |
+               uint32_t(FontStyleFlagBits::UpperCase) | uint32_t(FontStyleFlagBits::LowerCase) |
+               uint32_t(FontStyleFlagBits::Capitalize)
+  };
+};
+
+inline constexpr FontStyleFlags operator|(FontStyleFlagBits bit0, FontStyleFlagBits bit1)
+{
+  return FontStyleFlags(bit0) | bit1;
+}
+
+inline constexpr FontStyleFlags operator&(FontStyleFlagBits bit0, FontStyleFlagBits bit1)
+{
+  return FontStyleFlags(bit0) & bit1;
+}
+
+inline constexpr FontStyleFlags operator^(FontStyleFlagBits bit0, FontStyleFlagBits bit1)
+{
+  return FontStyleFlags(bit0) ^ bit1;
+}
+
+inline constexpr FontStyleFlags operator~(FontStyleFlagBits bits)
+{
+  return ~(FontStyleFlags(bits));
+}
 
 class CScrollInfo
 {
@@ -105,7 +142,7 @@ class CGUIFont
 {
 public:
   CGUIFont(const std::string& strFontName,
-           uint32_t style,
+           FontStyleFlags style,
            UTILS::COLOR::Color textColor,
            UTILS::COLOR::Color shadowColor,
            float lineSpacing,
@@ -159,7 +196,7 @@ public:
   void Begin();
   void End();
 
-  uint32_t GetStyle() const { return m_style; }
+  FontStyleFlags GetStyle() const { return m_style; }
 
   static wchar_t RemapGlyph(wchar_t letter);
 
@@ -169,7 +206,7 @@ public:
 
 protected:
   std::string m_strFontName;
-  uint32_t m_style;
+  FontStyleFlags m_style;
   UTILS::COLOR::Color m_shadowColor;
   UTILS::COLOR::Color m_textColor;
   float m_lineSpacing;

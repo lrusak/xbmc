@@ -14,6 +14,7 @@
 */
 
 #include "IMsgTargetCallback.h"
+#include "guilib/GUIFont.h"
 #include "utils/ColorUtils.h"
 #include "utils/GlobalsHandling.h"
 #include "windowing/GraphicContext.h"
@@ -22,7 +23,6 @@
 #include <vector>
 
 // Forward
-class CGUIFont;
 class CGUIFontTTF;
 class CXBMCTinyXML;
 class TiXmlNode;
@@ -59,7 +59,7 @@ public:
                     UTILS::COLOR::Color textColor,
                     UTILS::COLOR::Color shadowColor,
                     const int iSize,
-                    const int iStyle,
+                    const FontStyleFlags fontStyle,
                     bool border = false,
                     float lineSpacing = 1.0f,
                     float aspect = 1.0f,
@@ -86,7 +86,7 @@ protected:
   static void RescaleFontSizeAndAspect(float *size, float *aspect, const RESOLUTION_INFO &sourceRes, bool preserveAspect);
   void LoadFonts(const TiXmlNode* fontNode);
   CGUIFontTTF* GetFontFile(const std::string& strFontFile);
-  static void GetStyle(const TiXmlNode *fontNode, int &iStyle);
+  static void GetStyle(const TiXmlNode* fontNode, FontStyleFlags& fontStyle);
 
   std::vector<CGUIFont*> m_vecFonts;
   std::vector<CGUIFontTTF*> m_vecFontFiles;

@@ -809,13 +809,13 @@ CGUIFontTTF::Character* CGUIFontTTF::GetCharacter(character_t chr, FT_UInt glyph
   unsigned int nestedBeginCount = m_nestedBeginCount;
   m_nestedBeginCount = 1;
   if (nestedBeginCount) End();
-  if (!CacheCharacter(letter, style, m_char + low, glyphIndex))
+  if (!CacheCharacter(letter, FontStyleFlags(style), m_char + low, glyphIndex))
   { // unable to cache character - try clearing them all out and starting over
     CLog::Log(LOGDEBUG, "{}: Unable to cache character.  Clearing character cache of {} characters",
               __FUNCTION__, m_numChars);
     ClearCharacterCache();
     low = 0;
-    if (!CacheCharacter(letter, style, m_char + low, glyphIndex))
+    if (!CacheCharacter(letter, FontStyleFlags(style), m_char + low, glyphIndex))
     {
       CLog::Log(LOGERROR, "{}: Unable to cache character (out of memory?)", __FUNCTION__);
       if (nestedBeginCount) Begin();
@@ -842,7 +842,10 @@ CGUIFontTTF::Character* CGUIFontTTF::GetCharacter(character_t chr, FT_UInt glyph
   return m_char + low;
 }
 
-bool CGUIFontTTF::CacheCharacter(wchar_t letter, uint32_t style, Character* ch, FT_UInt glyphIndex)
+bool CGUIFontTTF::CacheCharacter(wchar_t letter,
+                                 FontStyleFlags style,
+                                 Character* ch,
+                                 FT_UInt glyphIndex)
 {
   if (!glyphIndex)
     glyphIndex = FT_Get_Char_Index(m_face, letter);
@@ -855,13 +858,13 @@ bool CGUIFontTTF::CacheCharacter(wchar_t letter, uint32_t style, Character* ch, 
     return false;
   }
   // make bold if applicable
-  if (style & FONT_STYLE_BOLD)
+  if ((style & FontStyleFlagBits::Bold))
     SetGlyphStrength(m_face->glyph, GLYPH_STRENGTH_BOLD);
   // and italics if applicable
-  if (style & FONT_STYLE_ITALICS)
+  if ((style & FontStyleFlagBits::Italics))
     ObliqueGlyph(m_face->glyph);
   // and light if applicable
-  if (style & FONT_STYLE_LIGHT)
+  if ((style & FontStyleFlagBits::Light))
     SetGlyphStrength(m_face->glyph, GLYPH_STRENGTH_LIGHT);
   // grab the glyph
   if (FT_Get_Glyph(m_face->glyph, &glyph))
@@ -929,7 +932,7 @@ bool CGUIFontTTF::CacheCharacter(wchar_t letter, uint32_t style, Character* ch, 
     }
   }
   // set the character in our table
-  ch->glyphAndStyle = (style << 16) | glyphIndex;
+  ch->glyphAndStyle = (int(style) << 16) | glyphIndex;
   ch->glyphIndex = glyphIndex;
   ch->letter = letter;
   ch->offsetX = (short)bitGlyph->left;
@@ -1174,5 +1177,5 @@ void CGUIFontTTF::SetGlyphStrength(FT_GlyphSlot slot, int glyphStrength)
 float CGUIFontTTF::GetTabSpaceLength()
 {
   const Character* c = GetCharacter(static_cast<character_t>('X'), 0);
-  return c ? c->advance * TAB_SPACE_LENGTH : 28.0f * TAB_SPACE_LENGTH;
+  return c ? c->advance * TAB_SPACE_LENGTH : 2810.0f * TAB_SPACE_LENGTH;
 }

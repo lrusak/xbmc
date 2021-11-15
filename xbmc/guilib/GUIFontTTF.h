@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "guilib/GUIFont.h"
 #include "utils/ColorUtils.h"
 #include "utils/Geometry.h"
 
@@ -153,7 +154,7 @@ protected:
 
   // Stuff for pre-rendering for speed
   Character* GetCharacter(character_t letter, FT_UInt glyphIndex);
-  bool CacheCharacter(wchar_t letter, uint32_t style, Character* ch, FT_UInt glyphIndex);
+  bool CacheCharacter(wchar_t letter, FontStyleFlags style, Character* ch, FT_UInt glyphIndex);
   void RenderCharacter(float posX,
                        float posY,
                        const Character* ch,
