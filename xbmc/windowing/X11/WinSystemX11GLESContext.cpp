@@ -30,7 +30,7 @@ using namespace KODI::WINDOWING::X11;
 
 void CWinSystemX11GLESContext::Register()
 {
-  KODI::WINDOWING::CWindowSystemFactory::RegisterWindowSystem(CreateWinSystem, "x11");
+  KODI::WINDOWING::CWindowSystemFactory::RegisterWindowSystem(CreateWinSystem, "x11", "gles");
 }
 
 std::unique_ptr<CWinSystemBase> CWinSystemX11GLESContext::CreateWinSystem()

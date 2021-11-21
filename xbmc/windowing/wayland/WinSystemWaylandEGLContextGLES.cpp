@@ -27,7 +27,7 @@ using namespace KODI::WINDOWING::WAYLAND;
 
 void CWinSystemWaylandEGLContextGLES::Register()
 {
-  CWindowSystemFactory::RegisterWindowSystem(CreateWinSystem, "wayland");
+  CWindowSystemFactory::RegisterWindowSystem(CreateWinSystem, "wayland", "gles");
 }
 
 std::unique_ptr<CWinSystemBase> CWinSystemWaylandEGLContextGLES::CreateWinSystem()

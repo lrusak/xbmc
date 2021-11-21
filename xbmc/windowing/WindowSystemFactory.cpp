@@ -25,11 +25,15 @@ std::list<std::string> CWindowSystemFactory::GetWindowSystems()
 }
 
 std::unique_ptr<CWinSystemBase> CWindowSystemFactory::CreateWindowSystem(
-    const std::string& windowSystem)
+    const std::string& windowSystem, const std::string& renderSystem)
 {
   auto registration = std::find_if(m_registration.cbegin(), m_registration.cend(),
-                                   [&windowSystem](auto& registration)
-                                   { return registration.windowSystem == windowSystem; });
+                                   [&windowSystem, &renderSystem](auto& registration)
+                                   {
+                                     return registration.windowSystem == windowSystem &&
+                                            (registration.renderSystem == renderSystem ||
+                                             renderSystem == "default");
+                                   });
   if (registration != m_registration.end())
     return registration->createFunction();
 
@@ -38,11 +42,13 @@ std::unique_ptr<CWinSystemBase> CWindowSystemFactory::CreateWindowSystem(
 
 void CWindowSystemFactory::RegisterWindowSystem(
     const std::function<std::unique_ptr<CWinSystemBase>()>& createFunction,
-    const std::string& windowSystem)
+    const std::string& windowSystem,
+    const std::string& renderSystem)
 {
   Registration registration = {};
   registration.createFunction = createFunction;
   registration.windowSystem = windowSystem;
+  registration.renderSystem = renderSystem;
 
   m_registration.emplace_back(registration);
 }

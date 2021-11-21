@@ -464,11 +464,13 @@ bool CApplication::CreateGUI()
   if (!m_windowing.empty())
     windowSystems = {m_windowing};
 
+  std::string renderSystem = "default";
+
   for (auto& windowSystem : windowSystems)
   {
-    CLog::Log(LOGDEBUG, "CApplication::{} - trying to init {} windowing system", __FUNCTION__,
-              windowSystem);
-    m_pWinSystem = KODI::WINDOWING::CWindowSystemFactory::CreateWindowSystem(windowSystem);
+    CLog::Log(LOGDEBUG, "CApplication::{} - trying to init {} windowing system with {} render system", __FUNCTION__,
+              windowSystem, renderSystem);
+    m_pWinSystem = KODI::WINDOWING::CWindowSystemFactory::CreateWindowSystem(windowSystem, renderSystem);
 
     if (!m_pWinSystem)
       continue;

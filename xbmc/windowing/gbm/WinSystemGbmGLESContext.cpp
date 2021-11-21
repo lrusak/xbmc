@@ -39,7 +39,7 @@ CWinSystemGbmGLESContext::CWinSystemGbmGLESContext()
 
 void CWinSystemGbmGLESContext::Register()
 {
-  CWindowSystemFactory::RegisterWindowSystem(CreateWinSystem, "gbm");
+  CWindowSystemFactory::RegisterWindowSystem(CreateWinSystem, "gbm", "gles");
 }
 
 std::unique_ptr<CWinSystemBase> CWinSystemGbmGLESContext::CreateWinSystem()

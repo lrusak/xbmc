@@ -25,16 +25,19 @@ using CreateFunction = std::function<std::unique_ptr<CWinSystemBase>()>;
 class CWindowSystemFactory
 {
 public:
-  static std::unique_ptr<CWinSystemBase> CreateWindowSystem(const std::string& name);
+  static std::unique_ptr<CWinSystemBase> CreateWindowSystem(const std::string& name,
+                                                            const std::string& renderSystem);
   static std::list<std::string> GetWindowSystems();
   static void RegisterWindowSystem(const CreateFunction& createFunction,
-                                   const std::string& windowSystem = "default");
+                                   const std::string& windowSystem = "default",
+                                   const std::string& renderSystem = "default");
 
 private:
 
   struct Registration
   {
     std::string windowSystem;
+    std::string renderSystem;
     CreateFunction createFunction;
   };
 
