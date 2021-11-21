@@ -106,6 +106,11 @@ std::vector<std::string> CCompileInfo::GetAvailableWindowSystems()
   return StringUtils::Split("@CORE_PLATFORM_NAME_LC@", ' ');
 }
 
+std::vector<std::string> CCompileInfo::GetAvailableRenderSystems()
+{
+  return StringUtils::Split("@APP_RENDER_SYSTEM@", ' ');
+}
+
 // Return version of python built against as format MAJOR.MINOR
 std::string CCompileInfo::GetPythonVersion()
 {

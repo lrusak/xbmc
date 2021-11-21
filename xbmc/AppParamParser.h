@@ -39,6 +39,7 @@ public:
   bool IsTestMode() const { return m_testmode; }
   bool IsStandAlone() const { return m_standAlone; }
   const std::string& GetWindowing() const { return m_windowing; }
+  const std::string& GetRendering() const { return m_rendering; }
   const std::string& GetLogTarget() const { return m_logTarget; }
 
 protected:
@@ -46,6 +47,7 @@ protected:
   virtual void DisplayHelp();
 
   std::string m_windowing;
+  std::string m_rendering;
   std::string m_logTarget;
 
 private:

@@ -436,6 +436,7 @@ private:
   CEvent m_playerEvent;
   CApplicationStackHelper m_stackHelper;
   std::string m_windowing;
+  std::string m_rendering;
 };
 
 XBMC_GLOBAL_REF(CApplication,g_application);

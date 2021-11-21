@@ -228,7 +228,8 @@ find_addon_xml_in_files(${outputFilterRegex})
 # Compile Info
 add_custom_command(OUTPUT ${CORE_BUILD_DIR}/xbmc/CompileInfo.cpp
                           ${ADDON_XML_OUTPUTS}
-                   COMMAND ${CMAKE_COMMAND} -DCORE_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+                   COMMAND ${CMAKE_COMMAND} -DAPP_RENDER_SYSTEM="${APP_RENDER_SYSTEM}"
+                                            -DCORE_SOURCE_DIR=${CMAKE_SOURCE_DIR}
                                             -DCORE_SYSTEM_NAME=${CORE_SYSTEM_NAME}
                                             -DCORE_PLATFORM_NAME_LC="${CORE_PLATFORM_NAME_LC}"
                                             -DCORE_BUILD_DIR=${CORE_BUILD_DIR}

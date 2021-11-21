@@ -326,6 +326,7 @@ bool CApplication::Create(const CAppParamParser &params)
   m_bTestMode = params.IsTestMode();
   m_bStandalone = params.IsStandAlone();
   m_windowing = params.GetWindowing();
+  m_rendering = params.GetRendering();
   m_logTarget = params.GetLogTarget();
 
   CServiceBroker::CreateLogging();
@@ -465,6 +466,9 @@ bool CApplication::CreateGUI()
     windowSystems = {m_windowing};
 
   std::string renderSystem = "default";
+
+  if (!m_rendering.empty())
+    renderSystem = m_rendering;
 
   for (auto& windowSystem : windowSystems)
   {

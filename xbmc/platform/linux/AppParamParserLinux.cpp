@@ -19,12 +19,19 @@
 namespace
 {
 std::vector<std::string> availableWindowSystems = CCompileInfo::GetAvailableWindowSystems();
+std::vector<std::string> availableRenderSystems = CCompileInfo::GetAvailableRenderSystems();
 std::array<std::string, 1> availableLogTargets = {"console"};
 
 constexpr const char* windowingText =
     R"""(
 Selected window system not available: {}
     Available window systems: {}
+)""";
+
+constexpr const char* renderingText =
+    R"""(
+Selected render system not available: {}
+    Available render systems: {}
 )""";
 
 constexpr const char* loggingText =
@@ -38,6 +45,8 @@ constexpr const char* helpText =
 Linux Specific Arguments:
   --windowing=<system>  Select which windowing method to use.
                           Available window systems are: {}
+  --rendering=<system>  Select which rendering method to use.
+                          Available render systems are: {}
   --logging=<target>    Select which log target to use (log file will always be used in conjunction).
                           Available log targets are: {}
 )""";
@@ -67,6 +76,18 @@ void CAppParamParserLinux::ParseArg(const std::string& arg)
       exit(0);
     }
   }
+  else if (arg.substr(0, 12) == "--rendering=")
+  {
+    if (std::find(availableRenderSystems.begin(), availableRenderSystems.end(), arg.substr(12)) !=
+        availableRenderSystems.end())
+      m_rendering = arg.substr(12);
+    else
+    {
+      std::cout << StringUtils::Format(renderingText, arg.substr(12),
+                                       StringUtils::Join(availableRenderSystems, ", "));
+      exit(0);
+    }
+  }
   else if (arg.substr(0, 10) == "--logging=")
   {
     if (std::find(availableLogTargets.begin(), availableLogTargets.end(), arg.substr(10)) !=
@@ -88,5 +109,6 @@ void CAppParamParserLinux::DisplayHelp()
   CAppParamParser::DisplayHelp();
 
   std::cout << StringUtils::Format(helpText, StringUtils::Join(availableWindowSystems, ", "),
+                                   StringUtils::Join(availableRenderSystems, ", "),
                                    StringUtils::Join(availableLogTargets, ", "));
 }
