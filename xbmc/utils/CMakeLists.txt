@@ -99,6 +99,7 @@ set(HEADERS ActorProtocol.h
             Fanart.h
             FileOperationJob.h
             FileUtils.h
+            Flags.h
             Geometry.h
             GlobalsHandling.h
             GroupUtils.h
