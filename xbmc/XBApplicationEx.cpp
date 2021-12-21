@@ -16,6 +16,8 @@
 #include "utils/XTimeUtils.h"
 #include "utils/log.h"
 
+using namespace std::chrono_literals;
+
 CXBApplicationEx::CXBApplicationEx()
 {
   // Variables to perform app timing
@@ -42,7 +44,7 @@ int CXBApplicationEx::Run(const CAppParamParser &params)
 
   std::chrono::time_point<std::chrono::steady_clock> lastFrameTime;
   std::chrono::milliseconds frameTime;
-  const unsigned int noRenderFrameTime = 15;  // Simulates ~66fps
+  std::chrono::milliseconds noRenderFrameTime = 15ms; // Simulates ~66fps
 
   if (params.GetPlaylist().Size() > 0)
   {
@@ -74,8 +76,8 @@ int CXBApplicationEx::Run(const CAppParamParser &params)
     {
       auto now = std::chrono::steady_clock::now();
       frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastFrameTime);
-      if (frameTime.count() < noRenderFrameTime)
-        KODI::TIME::Sleep(std::chrono::milliseconds(noRenderFrameTime - frameTime.count()));
+      if (frameTime < noRenderFrameTime)
+        KODI::TIME::Sleep(noRenderFrameTime - frameTime);
     }
 
   }
