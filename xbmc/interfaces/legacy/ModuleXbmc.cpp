@@ -48,6 +48,8 @@
 using namespace KODI;
 using namespace KODI::MESSAGING;
 
+using namespace std::chrono_literals;
+
 namespace XBMCAddon
 {
 
@@ -143,10 +145,10 @@ namespace XBMCAddon
         {
           DelayedCallGuard dcguard;
           lh = dcguard.getLanguageHook(); // borrow this
-          long nextSleep = endTime.GetTimeLeft().count();
-          if (nextSleep > 100)
-            nextSleep = 100; // only sleep for 100 millis
-          KODI::TIME::Sleep(std::chrono::milliseconds(nextSleep));
+          auto nextSleep = endTime.GetTimeLeft();
+          if (nextSleep > 100ms)
+            nextSleep = 100ms; // only sleep for 100 millis
+          KODI::TIME::Sleep(nextSleep);
         }
         if (lh != NULL)
           lh->MakePendingCalls();
