@@ -42,24 +42,32 @@
 
 #include "WakeOnAccess.h"
 
-#define DEFAULT_NETWORK_INIT_SEC      (20)   // wait 20 sec for network after startup or resume
-#define DEFAULT_NETWORK_SETTLE_MS     (500)  // require 500ms of consistent network availability before trusting it
-
-#define DEFAULT_TIMEOUT_SEC (5*60)           // at least 5 minutes between each magic packets
-#define DEFAULT_WAIT_FOR_ONLINE_SEC_1 (40)   // wait at 40 seconds after sending magic packet
-#define DEFAULT_WAIT_FOR_ONLINE_SEC_2 (40)   // same for extended wait
-#define DEFAULT_WAIT_FOR_SERVICES_SEC (5)    // wait 5 seconds after host go online to launch file sharing daemons
-
 using namespace std::chrono_literals;
 
-static CDateTime upnpInitReady;
-
-static int GetTotalSeconds(const CDateTimeSpan& ts)
+namespace
 {
-  int hours = ts.GetHours() + ts.GetDays() * 24;
-  int minutes = ts.GetMinutes() + hours * 60;
-  return ts.GetSeconds() + minutes * 60;
-}
+
+// wait 20 sec for network after startup or resume
+constexpr auto DEFAULT_NETWORK_INIT_SEC = 20s;
+
+// require 500ms of consistent network availability before trusting it
+constexpr auto DEFAULT_NETWORK_SETTLE_MS = 500ms;
+
+// at least 5 minutes between each magic packets
+constexpr auto DEFAULT_TIMEOUT_SEC = 300s;
+
+// wait at 40 seconds after sending magic packet
+constexpr auto DEFAULT_WAIT_FOR_ONLINE_SEC_1 = 40s;
+
+// same for extended wait
+constexpr auto DEFAULT_WAIT_FOR_ONLINE_SEC_2 = 40s;
+
+// wait 5 seconds after host go online to launch file sharing daemon
+constexpr auto DEFAULT_WAIT_FOR_SERVICES_SEC = 5s;
+
+std::chrono::steady_clock::time_point upnpInitReady = std::chrono::steady_clock::now();
+
+} // namespace
 
 static unsigned long HostToIP(const std::string& host)
 {
@@ -89,10 +97,7 @@ static void ShowDiscoveryMessage(const char* function, const char* server_name, 
 
 struct UPnPServer
 {
-  UPnPServer()
-  {
-    m_nextWake = CDateTime::GetCurrentDateTime();
-  }
+  UPnPServer() { m_nextWake = std::chrono::steady_clock::now(); }
   bool operator == (const UPnPServer& server) const { return server.m_uuid == m_uuid; }
   bool operator != (const UPnPServer& server) const { return !(*this == server); }
   bool operator == (const std::string& server_uuid) const { return server_uuid == m_uuid; }
@@ -100,7 +105,7 @@ struct UPnPServer
   std::string m_name;
   std::string m_uuid;
   std::string m_mac;
-  CDateTime m_nextWake;
+  std::chrono::steady_clock::time_point m_nextWake;
 };
 
 static UPnPServer* LookupUPnPServer(std::vector<UPnPServer>& list, const std::string& uuid)
@@ -124,10 +129,13 @@ static void AddOrUpdateUPnPServer(std::vector<UPnPServer>& list, const UPnPServe
   ShowDiscoveryMessage(__FUNCTION__, server.m_name.c_str(), addNewEntry);
 }
 
-static void AddMatchingUPnPServers(std::vector<UPnPServer>& list, const std::string& host, const std::string& mac, const CDateTimeSpan& wakeupDelay)
+static void AddMatchingUPnPServers(std::vector<UPnPServer>& list,
+                                   const std::string& host,
+                                   const std::string& mac,
+                                   const std::chrono::milliseconds wakeupDelay)
 {
 #ifdef HAS_UPNP
-  while (CDateTime::GetCurrentDateTime() < upnpInitReady)
+  while (std::chrono::steady_clock::now() < upnpInitReady)
     KODI::TIME::Sleep(1s);
 
   PLT_SyncMediaBrowser* browser = UPNP::CUPnP::GetInstance()->m_MediaBrowser;
@@ -161,7 +169,7 @@ static std::string LookupUPnPHost(const std::string& uuid)
   {
     upnp->StartClient();
 
-    upnpInitReady = CDateTime::GetCurrentDateTime() + CDateTimeSpan(0, 0, 0, 10);
+    upnpInitReady = std::chrono::steady_clock::now() + 10s;
   }
 
   PLT_SyncMediaBrowser* browser = upnp->m_MediaBrowser;
@@ -175,13 +183,13 @@ static std::string LookupUPnPHost(const std::string& uuid)
   return "";
 }
 
-CWakeOnAccess::WakeUpEntry::WakeUpEntry (bool isAwake)
-  : timeout (0, 0, 0, DEFAULT_TIMEOUT_SEC)
-  , wait_online1_sec(DEFAULT_WAIT_FOR_ONLINE_SEC_1)
-  , wait_online2_sec(DEFAULT_WAIT_FOR_ONLINE_SEC_2)
-  , wait_services_sec(DEFAULT_WAIT_FOR_SERVICES_SEC)
+CWakeOnAccess::WakeUpEntry::WakeUpEntry(bool isAwake)
+  : timeout(DEFAULT_TIMEOUT_SEC),
+    wait_online1_sec(DEFAULT_WAIT_FOR_ONLINE_SEC_1),
+    wait_online2_sec(DEFAULT_WAIT_FOR_ONLINE_SEC_2),
+    wait_services_sec(DEFAULT_WAIT_FOR_SERVICES_SEC)
 {
-  nextWake = CDateTime::GetCurrentDateTime();
+  nextWake = std::chrono::steady_clock::now();
 
   if (isAwake)
     nextWake += timeout;
@@ -295,10 +303,10 @@ public:
 
   enum wait_result { TimedOut, Canceled, Success };
 
-  wait_result ShowAndWait (const WaitCondition& waitObj, unsigned timeOutSec, const std::string& line1)
+  wait_result ShowAndWait(const WaitCondition& waitObj,
+                          std::chrono::milliseconds timeout,
+                          const std::string& line1)
   {
-    auto timeOutMs = std::chrono::milliseconds(timeOutSec * 1000);
-
     if (m_dialog)
     {
       m_dialog->SetLine(0, CVariant{line1});
@@ -306,7 +314,7 @@ public:
       m_dialog->SetPercentage(1); // avoid flickering by starting at 1% ..
     }
 
-    XbmcThreads::EndTime<> end_time(timeOutMs);
+    XbmcThreads::EndTime<> end_time(timeout);
 
     while (!end_time.IsTimePast())
     {
@@ -323,9 +331,9 @@ public:
 
         m_dialog->Progress();
 
-        auto ms_passed = timeOutMs - end_time.GetTimeLeft();
+        auto ms_passed = timeout - end_time.GetTimeLeft();
 
-        int percentage = (ms_passed.count() * 100) / timeOutMs.count();
+        int percentage = (ms_passed.count() * 100) / timeout.count();
         m_dialog->SetPercentage(std::max(percentage, 1)); // avoid flickering , keep minimum 1%
       }
 
@@ -342,7 +350,8 @@ private:
 class NetworkStartWaiter : public WaitCondition
 {
 public:
-  NetworkStartWaiter (unsigned settle_time_ms, const std::string& host) : m_settle_time_ms (settle_time_ms), m_host(host)
+  NetworkStartWaiter(std::chrono::milliseconds settle_time_ms, const std::string& host)
+    : m_settle_time_ms(settle_time_ms), m_host(host)
   {
   }
   bool SuccessWaiting () const override
@@ -351,13 +360,13 @@ public:
     bool online = CServiceBroker::GetNetwork().HasInterfaceForIP(address);
 
     if (!online) // setup endtime so we dont return true until network is consistently connected
-      m_end.Set(std::chrono::milliseconds(m_settle_time_ms));
+      m_end.Set(m_settle_time_ms);
 
     return online && m_end.IsTimePast();
   }
 private:
   mutable XbmcThreads::EndTime<> m_end;
-  unsigned m_settle_time_ms;
+  std::chrono::milliseconds m_settle_time_ms;
   const std::string m_host;
 };
 
@@ -574,7 +583,7 @@ bool CWakeOnAccess::FindOrTouchHostEntry(const std::string& hostName, bool upnpM
   {
     if (upnp ? StringUtils::EqualsNoCase(upnp->m_mac, server.mac) : StringUtils::EqualsNoCase(hostName, server.host))
     {
-      CDateTime now = CDateTime::GetCurrentDateTime();
+      const auto now = std::chrono::steady_clock::now();
 
       if (now >= (upnp ? upnp->m_nextWake : server.nextWake))
       {
@@ -612,7 +621,7 @@ void CWakeOnAccess::TouchHostEntry(const std::string& hostName, bool upnpMode)
   {
     if (upnp ? StringUtils::EqualsNoCase(upnp->m_mac, server.mac) : StringUtils::EqualsNoCase(hostName, server.host))
     {
-      server.nextWake = CDateTime::GetCurrentDateTime() + server.timeout;
+      server.nextWake = std::chrono::steady_clock::now() + server.timeout;
 
       if (upnp)
         upnp->m_nextWake = server.nextWake;
@@ -826,12 +835,12 @@ void CWakeOnAccess::LoadFromXML()
 
   int tmp;
   if (XMLUtils::GetInt(pRootElement, "netinittimeout", tmp, 0, 5 * 60))
-    m_netinit_sec = tmp;
-  CLog::Log(LOGINFO, "  -Network init timeout : [{}] sec", m_netinit_sec);
+    m_netinit_sec = std::chrono::seconds(tmp);
+  CLog::Log(LOGINFO, "  -Network init timeout : [{}] sec", m_netinit_sec.count());
 
   if (XMLUtils::GetInt(pRootElement, "netsettletime", tmp, 0, 5 * 1000))
-    m_netsettle_ms = tmp;
-  CLog::Log(LOGINFO, "  -Network settle time  : [{}] ms", m_netsettle_ms);
+    m_netsettle_ms = std::chrono::milliseconds(tmp);
+  CLog::Log(LOGINFO, "  -Network settle time  : [{}] ms", m_netsettle_ms.count());
 
   const TiXmlNode* pWakeUp = pRootElement->FirstChildElement("wakeup");
   while (pWakeUp)
@@ -858,26 +867,26 @@ void CWakeOnAccess::LoadFromXML()
         entry.ping_mode = (unsigned short) tmp;
 
       if (XMLUtils::GetInt(pWakeUp, "timeout", tmp, 10, 12 * 60 * 60))
-        entry.timeout.SetDateTimeSpan (0, 0, 0, tmp);
+        entry.timeout = std::chrono::seconds(tmp);
 
       if (XMLUtils::GetInt(pWakeUp, "waitonline", tmp, 0, 10 * 60)) // max 10 minutes
-        entry.wait_online1_sec = tmp;
+        entry.wait_online1_sec = std::chrono::seconds(tmp);
 
       if (XMLUtils::GetInt(pWakeUp, "waitonline2", tmp, 0, 10 * 60)) // max 10 minutes
-        entry.wait_online2_sec = tmp;
+        entry.wait_online2_sec = std::chrono::seconds(tmp);
 
       if (XMLUtils::GetInt(pWakeUp, "waitservices", tmp, 0, 5 * 60)) // max 5 minutes
-        entry.wait_services_sec = tmp;
+        entry.wait_services_sec = std::chrono::seconds(tmp);
 
       CLog::Log(LOGINFO, "  Registering wakeup entry:");
       CLog::Log(LOGINFO, "    HostName        : {}", entry.host);
       CLog::Log(LOGINFO, "    MacAddress      : {}", entry.mac);
       CLog::Log(LOGINFO, "    PingPort        : {}", entry.ping_port);
       CLog::Log(LOGINFO, "    PingMode        : {}", entry.ping_mode);
-      CLog::Log(LOGINFO, "    Timeout         : {} (sec)", GetTotalSeconds(entry.timeout));
-      CLog::Log(LOGINFO, "    WaitForOnline   : {} (sec)", entry.wait_online1_sec);
-      CLog::Log(LOGINFO, "    WaitForOnlineEx : {} (sec)", entry.wait_online2_sec);
-      CLog::Log(LOGINFO, "    WaitForServices : {} (sec)", entry.wait_services_sec);
+      CLog::Log(LOGINFO, "    Timeout         : {} (sec)", entry.timeout.count());
+      CLog::Log(LOGINFO, "    WaitForOnline   : {} (sec)", entry.wait_online1_sec.count());
+      CLog::Log(LOGINFO, "    WaitForOnlineEx : {} (sec)", entry.wait_online2_sec.count());
+      CLog::Log(LOGINFO, "    WaitForServices : {} (sec)", entry.wait_services_sec.count());
 
       m_entries.push_back(entry);
     }
@@ -921,8 +930,8 @@ void CWakeOnAccess::SaveToXML()
   TiXmlNode *pRoot = xmlDoc.InsertEndChild(xmlRootElement);
   if (!pRoot) return;
 
-  XMLUtils::SetInt(pRoot, "netinittimeout", m_netinit_sec);
-  XMLUtils::SetInt(pRoot, "netsettletime", m_netsettle_ms);
+  XMLUtils::SetInt(pRoot, "netinittimeout", m_netinit_sec.count());
+  XMLUtils::SetInt(pRoot, "netsettletime", m_netsettle_ms.count());
 
   for (const auto& i : m_entries)
   {
@@ -934,10 +943,10 @@ void CWakeOnAccess::SaveToXML()
       XMLUtils::SetString(pWakeUpNode, "mac", i.mac);
       XMLUtils::SetInt(pWakeUpNode, "pingport", i.ping_port);
       XMLUtils::SetInt(pWakeUpNode, "pingmode", i.ping_mode);
-      XMLUtils::SetInt(pWakeUpNode, "timeout", GetTotalSeconds(i.timeout));
-      XMLUtils::SetInt(pWakeUpNode, "waitonline", i.wait_online1_sec);
-      XMLUtils::SetInt(pWakeUpNode, "waitonline2", i.wait_online2_sec);
-      XMLUtils::SetInt(pWakeUpNode, "waitservices", i.wait_services_sec);
+      XMLUtils::SetInt(pWakeUpNode, "timeout", i.timeout.count());
+      XMLUtils::SetInt(pWakeUpNode, "waitonline", i.wait_online1_sec.count());
+      XMLUtils::SetInt(pWakeUpNode, "waitonline2", i.wait_online2_sec.count());
+      XMLUtils::SetInt(pWakeUpNode, "waitservices", i.wait_services_sec.count());
     }
   }
 

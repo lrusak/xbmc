@@ -39,15 +39,15 @@ public:
 
     std::string host;
     std::string mac;
-    CDateTimeSpan timeout;
-    unsigned int wait_online1_sec; // initial wait
-    unsigned int wait_online2_sec; // extended wait
-    unsigned int wait_services_sec;
+    std::chrono::milliseconds timeout;
+    std::chrono::seconds wait_online1_sec; // initial wait
+    std::chrono::seconds wait_online2_sec; // extended wait
+    std::chrono::seconds wait_services_sec;
 
     unsigned short ping_port = 0; // where to ping
     unsigned short ping_mode = 0; // how to ping
 
-    CDateTime nextWake;
+    std::chrono::steady_clock::time_point nextWake;
     std::string upnpUuid; // empty unless upnpmode
     std::string friendlyName;
   };
@@ -70,7 +70,8 @@ private:
   bool FindOrTouchHostEntry(const std::string& hostName, bool upnpMode, WakeUpEntry& server);
   void TouchHostEntry(const std::string& hostName, bool upnpMode);
 
-  unsigned int m_netinit_sec, m_netsettle_ms; //time to wait for network connection
+  std::chrono::seconds m_netinit_sec;
+  std::chrono::milliseconds m_netsettle_ms; //time to wait for network connection
 
   bool m_enabled = false;
 
