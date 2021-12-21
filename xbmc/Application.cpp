@@ -2326,11 +2326,18 @@ void CApplication::FrameMove(bool processEvents, bool processGUI)
 
       // Calculate a window size between 2 and 10ms, 4 continuous requests let the window grow by 1ms
       // When not playing video we allow it to increase to 80ms
-      unsigned int max_sleep = 10;
+      auto maxSleep = 10ms;
+
       if (!m_appPlayer.IsPlayingVideo() || m_appPlayer.IsPausedPlayback())
-        max_sleep = 80;
-      unsigned int sleepTime = std::max(static_cast<unsigned int>(2), std::min(m_ProcessedExternalCalls >> 2, max_sleep));
-      KODI::TIME::Sleep(std::chrono::milliseconds(sleepTime));
+        maxSleep = 80ms;
+
+      // this value seems arbitrary. 1/4 of the external calls is the delay in milliseconds?
+      const auto processedCallsDelay = std::chrono::milliseconds(m_ProcessedExternalCalls >> 2);
+      const std::chrono::milliseconds minSleep = std::min(processedCallsDelay, maxSleep);
+      const std::chrono::milliseconds sleepTime = std::max(2ms, minSleep);
+
+      KODI::TIME::Sleep(sleepTime);
+
       m_frameMoveGuard.lock();
       m_ProcessedExternalDecay = 5;
     }
