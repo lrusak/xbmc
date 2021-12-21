@@ -12,6 +12,7 @@
 #include "Interface/StreamInfo.h"
 #include "VideoSettings.h"
 
+#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
@@ -233,7 +234,7 @@ public:
   {
   }
   virtual bool RenderCaptureGetPixels(unsigned int captureId,
-                                      unsigned int millis,
+                                      std::chrono::milliseconds timeout,
                                       uint8_t* buffer,
                                       unsigned int size)
   {

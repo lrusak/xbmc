@@ -4956,9 +4956,12 @@ void CVideoPlayer::RenderCaptureRelease(unsigned int captureId)
   m_renderManager.ReleaseRenderCapture(captureId);
 }
 
-bool CVideoPlayer::RenderCaptureGetPixels(unsigned int captureId, unsigned int millis, uint8_t *buffer, unsigned int size)
+bool CVideoPlayer::RenderCaptureGetPixels(unsigned int captureId,
+                                          std::chrono::milliseconds timeout,
+                                          uint8_t* buffer,
+                                          unsigned int size)
 {
-  return m_renderManager.RenderCaptureGetPixels(captureId, millis, buffer, size);
+  return m_renderManager.RenderCaptureGetPixels(captureId, timeout, buffer, size);
 }
 
 void CVideoPlayer::VideoParamsChange()

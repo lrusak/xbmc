@@ -78,7 +78,10 @@ public:
   unsigned int AllocRenderCapture();
   void ReleaseRenderCapture(unsigned int captureId);
   void StartRenderCapture(unsigned int captureId, unsigned int width, unsigned int height, int flags);
-  bool RenderCaptureGetPixels(unsigned int captureId, unsigned int millis, uint8_t *buffer, unsigned int size);
+  bool RenderCaptureGetPixels(unsigned int captureId,
+                              std::chrono::milliseconds timeout,
+                              uint8_t* buffer,
+                              unsigned int size);
 
   // Functions called from GUI
   bool Supports(ERENDERFEATURE feature);

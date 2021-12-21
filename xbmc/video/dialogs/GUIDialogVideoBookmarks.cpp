@@ -41,6 +41,8 @@
 
 using namespace KODI::MESSAGING;
 
+using namespace std::chrono_literals;
+
 #define BOOKMARK_THUMB_WIDTH CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_imageRes
 
 #define CONTROL_ADD_BOOKMARK           2
@@ -419,7 +421,8 @@ bool CGUIDialogVideoBookmarks::AddBookmark(CVideoInfoTag* tag)
   unsigned int captureId = g_application.GetAppPlayer().RenderCaptureAlloc();
 
   g_application.GetAppPlayer().RenderCapture(captureId, width, height, CAPTUREFLAG_IMMEDIATELY);
-  bool hasImage = g_application.GetAppPlayer().RenderCaptureGetPixels(captureId, 1000, pixels, height * width * 4);
+  bool hasImage = g_application.GetAppPlayer().RenderCaptureGetPixels(captureId, 1000ms, pixels,
+                                                                      height * width * 4);
 
   if (hasImage)
   {

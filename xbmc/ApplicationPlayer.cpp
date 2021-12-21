@@ -946,11 +946,14 @@ void CApplicationPlayer::RenderCaptureRelease(unsigned int captureId)
     player->RenderCaptureRelease(captureId);
 }
 
-bool CApplicationPlayer::RenderCaptureGetPixels(unsigned int captureId, unsigned int millis, uint8_t *buffer, unsigned int size)
+bool CApplicationPlayer::RenderCaptureGetPixels(unsigned int captureId,
+                                                std::chrono::milliseconds timeout,
+                                                uint8_t* buffer,
+                                                unsigned int size)
 {
   std::shared_ptr<IPlayer> player = GetInternal();
   if (player)
-    return player->RenderCaptureGetPixels(captureId, millis, buffer, size);
+    return player->RenderCaptureGetPixels(captureId, timeout, buffer, size);
   else
     return false;
 }

@@ -563,7 +563,10 @@ void CRenderManager::StartRenderCapture(unsigned int captureId, unsigned int wid
     m_hasCaptures = true;
 }
 
-bool CRenderManager::RenderCaptureGetPixels(unsigned int captureId, unsigned int millis, uint8_t *buffer, unsigned int size)
+bool CRenderManager::RenderCaptureGetPixels(unsigned int captureId,
+                                            std::chrono::milliseconds timeout,
+                                            uint8_t* buffer,
+                                            unsigned int size)
 {
   CSingleLock lock(m_captCritSect);
 
@@ -575,11 +578,11 @@ bool CRenderManager::RenderCaptureGetPixels(unsigned int captureId, unsigned int
   m_captureWaitCounter++;
 
   {
-    if (!millis)
-      millis = 1000;
+    if (timeout == 0ms)
+      timeout = 1000ms;
 
     CSingleExit exitlock(m_captCritSect);
-    if (!it->second->GetEvent().Wait(std::chrono::milliseconds(millis)))
+    if (!it->second->GetEvent().Wait(timeout))
     {
       m_captureWaitCounter--;
       return false;

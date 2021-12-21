@@ -179,7 +179,8 @@ namespace XBMCAddon
 #ifndef SWIG
       inline bool GetPixels(unsigned int msec)
       {
-        return g_application.GetAppPlayer().RenderCaptureGetPixels(m_captureId, msec, m_buffer, m_width*m_height*4);
+        return g_application.GetAppPlayer().RenderCaptureGetPixels(
+            m_captureId, std::chrono::milliseconds(msec), m_buffer, m_width * m_height * 4);
       }
 #endif
 
