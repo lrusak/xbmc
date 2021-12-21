@@ -22,10 +22,13 @@
 #include "platform/win32/WIN32Util.h"
 #include "utils/CharsetConverter.h"
 #endif
+#include "threads/SystemClock.h"
 #include "utils/StringUtils.h"
 #include "utils/XTimeUtils.h"
 
 using namespace KODI::MESSAGING;
+
+using namespace std::chrono_literals;
 
 /* slightly modified in_ether taken from the etherboot project (http://sourceforge.net/projects/etherboot) */
 bool in_ether (const char *bufp, unsigned char *addr)
@@ -461,8 +464,10 @@ std::vector<SOCKET> CreateTCPServerSocket(const int port, const bool bindLocal, 
 
 void CNetworkBase::WaitForNet()
 {
-  const int timeout = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_POWERMANAGEMENT_WAITFORNETWORK);
-  if (timeout <= 0)
+  const auto timeout =
+      std::chrono::seconds(CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(
+          CSettings::SETTING_POWERMANAGEMENT_WAITFORNETWORK));
+  if (timeout <= 0s)
     return; // wait for network is disabled
 
   // check if we have at least one network interface to wait for
@@ -470,26 +475,23 @@ void CNetworkBase::WaitForNet()
     return;
 
   CLog::Log(LOGINFO, "{}: Waiting for a network interface to come up (Timeout: {} s)", __FUNCTION__,
-            timeout);
+            timeout.count());
 
-  const static int intervalMs = 200;
-  const int numMaxTries = (timeout * 1000) / intervalMs;
-
-  for(int i=0; i < numMaxTries; ++i)
+  XbmcThreads::EndTime<> timer(timeout);
+  while (!timer.IsTimePast())
   {
-    if (i > 0)
-      KODI::TIME::Sleep(std::chrono::milliseconds(intervalMs));
-
     if (IsConnected())
     {
       CLog::Log(LOGINFO, "{}: A network interface is up after waiting {} ms", __FUNCTION__,
-                i * intervalMs);
+                (timer.GetInitialTimeoutValue() - timer.GetTimeLeft()).count());
       return;
     }
+
+    KODI::TIME::Sleep(200ms);
   }
 
   CLog::Log(LOGINFO, "{}: No network interface did come up within {} s... Giving up...",
-            __FUNCTION__, timeout);
+            __FUNCTION__, timeout.count());
 }
 
 std::string CNetworkBase::GetIpStr(const struct sockaddr* sa)
