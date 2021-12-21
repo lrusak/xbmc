@@ -13,6 +13,7 @@
 #include "interfaces/generic/ILanguageInvoker.h"
 #include "interfaces/generic/LanguageInvokerThread.h"
 #include "threads/SingleLock.h"
+#include "threads/SystemClock.h"
 #include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 #include "utils/XTimeUtils.h"
@@ -23,6 +24,8 @@
 #include <vector>
 
 using namespace XFILE;
+
+using namespace std::chrono_literals;
 
 CScriptInvocationManager::~CScriptInvocationManager()
 {
@@ -296,7 +299,7 @@ int CScriptInvocationManager::ExecuteSync(
     const std::string& script,
     const ADDON::AddonPtr& addon /* = ADDON::AddonPtr() */,
     const std::vector<std::string>& arguments /* = std::vector<std::string>() */,
-    uint32_t timeoutMs /* = 0 */,
+    const std::chrono::milliseconds timeoutMs /* = 0ms */,
     bool waitShutdown /* = false */)
 {
   if (script.empty())
@@ -317,25 +320,21 @@ int CScriptInvocationManager::ExecuteSync(
     const LanguageInvokerPtr& languageInvoker,
     const ADDON::AddonPtr& addon /* = ADDON::AddonPtr() */,
     const std::vector<std::string>& arguments /* = std::vector<std::string>() */,
-    uint32_t timeoutMs /* = 0 */,
+    const std::chrono::milliseconds timeoutMs /* = 0ms */,
     bool waitShutdown /* = false */)
 {
   int scriptId = ExecuteAsync(script, languageInvoker, addon, arguments);
   if (scriptId < 0)
     return -1;
 
-  bool timeout = timeoutMs > 0;
-  while ((!timeout || timeoutMs > 0) && IsRunning(scriptId))
-  {
-    unsigned int sleepMs = 100U;
-    if (timeout && timeoutMs < sleepMs)
-      sleepMs = timeoutMs;
+  auto sleepMs = 100ms;
+  if (timeoutMs < sleepMs)
+    sleepMs = timeoutMs;
 
-    KODI::TIME::Sleep(std::chrono::milliseconds(sleepMs));
+  XbmcThreads::EndTime<> timer(timeoutMs);
 
-    if (timeout)
-      timeoutMs -= sleepMs;
-  }
+  while (!timer.IsTimePast() && IsRunning(scriptId))
+    KODI::TIME::Sleep(sleepMs);
 
   if (IsRunning(scriptId))
   {

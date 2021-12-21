@@ -23,6 +23,8 @@
 #include "utils/URIUtils.h"
 #include "utils/log.h"
 
+using namespace std::chrono_literals;
+
 #define MAX_STRING_POST_SIZE 20000
 
 CHTTPPythonHandler::CHTTPPythonHandler()
@@ -152,7 +154,8 @@ MHD_RESULT CHTTPPythonHandler::HandleRequest()
     CHTTPPythonInvoker* pythonInvoker =
         new CHTTPPythonWsgiInvoker(&CServiceBroker::GetXBPython(), pythonRequest);
     LanguageInvokerPtr languageInvokerPtr(pythonInvoker);
-    int result = CScriptInvocationManager::GetInstance().ExecuteSync(m_scriptPath, languageInvokerPtr, m_addon, args, 30000, false);
+    int result = CScriptInvocationManager::GetInstance().ExecuteSync(
+        m_scriptPath, languageInvokerPtr, m_addon, args, 30s, false);
 
     // check if the script couldn't be started
     if (result < 0)

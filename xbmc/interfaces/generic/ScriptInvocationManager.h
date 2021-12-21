@@ -87,7 +87,7 @@ public:
   int ExecuteSync(const std::string& script,
                   const ADDON::AddonPtr& addon = ADDON::AddonPtr(),
                   const std::vector<std::string>& arguments = std::vector<std::string>(),
-                  uint32_t timeoutMs = 0,
+                  const std::chrono::milliseconds timeoutMs = std::chrono::milliseconds::zero(),
                   bool waitShutdown = false);
   /*!
   * \brief Executes the given script synchronously.
@@ -110,7 +110,7 @@ public:
                   const LanguageInvokerPtr& languageInvoker,
                   const ADDON::AddonPtr& addon = ADDON::AddonPtr(),
                   const std::vector<std::string>& arguments = std::vector<std::string>(),
-                  uint32_t timeoutMs = 0,
+                  const std::chrono::milliseconds timeoutMs = std::chrono::milliseconds::zero(),
                   bool waitShutdown = false);
   bool Stop(int scriptId, bool wait = false);
   bool Stop(const std::string &scriptPath, bool wait = false);
