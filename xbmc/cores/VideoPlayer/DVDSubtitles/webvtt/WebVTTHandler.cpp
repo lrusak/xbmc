@@ -177,10 +177,10 @@ void TranslateEscapeChars(std::string& text)
 {
   if (text.find('&') != std::string::npos)
   {
-    StringUtils::Replace(text, "&lrm;", u8"\u200e");
-    StringUtils::Replace(text, "&rlm;", u8"\u200f");
-    StringUtils::Replace(text, "&#x2068;", u8"\u2068");
-    StringUtils::Replace(text, "&#x2069;", u8"\u2069");
+    StringUtils::Replace(text, "&lrm;", "\u200e");
+    StringUtils::Replace(text, "&rlm;", "\u200f");
+    StringUtils::Replace(text, "&#x2068;", "\u2068");
+    StringUtils::Replace(text, "&#x2069;", "\u2069");
     StringUtils::Replace(text, "&amp;", "&");
     StringUtils::Replace(text, "&lt;", "<");
     StringUtils::Replace(text, "&gt;", ">");
