@@ -76,16 +76,16 @@ public:
   \return Formatted string
   */
   template<typename... Args>
-  static std::string Format(const std::string& fmt, Args&&... args)
+  static constexpr std::string Format(const std::string& format, Args&&... args)
   {
     // coverity[fun_call_w_exception : FALSE]
-    return ::fmt::format(fmt, EnumToInt(std::forward<Args>(args))...);
+    return fmt::vformat(format, fmt::make_format_args(EnumToInt(std::forward<Args>(args))...));
   }
   template<typename... Args>
-  static std::wstring Format(const std::wstring& fmt, Args&&... args)
+  static constexpr std::wstring Format(const std::wstring& format, Args&&... args)
   {
     // coverity[fun_call_w_exception : FALSE]
-    return ::fmt::format(fmt, EnumToInt(std::forward<Args>(args))...);
+    return fmt::format(format, EnumToInt(std::forward<Args>(args))...);
   }
 
   static std::string FormatV(PRINTF_FORMAT_STRING const char *fmt, va_list args);
