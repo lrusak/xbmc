@@ -31,7 +31,8 @@ public:
   bool OnMessage(CGUIMessage& message) override;
   bool OnAction(const CAction &action) override;
 
-  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
+  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
+
 private:
   int m_updateRA; // flag for which recently added items needs to be queried
   void AddRecentlyAddedJobs(int flag);

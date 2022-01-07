@@ -23,9 +23,7 @@
 
 #include <utility>
 
-CVideoLibraryQueue::CVideoLibraryQueue()
-  : CJobQueue(false, 1, CJob::PRIORITY_LOW),
-    m_jobs()
+CVideoLibraryQueue::CVideoLibraryQueue() : CJobQueue(false, 1, JobPriority::LOW), m_jobs()
 { }
 
 CVideoLibraryQueue::~CVideoLibraryQueue()
@@ -219,7 +217,7 @@ void CVideoLibraryQueue::Refresh()
   CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg);
 }
 
-void CVideoLibraryQueue::OnJobComplete(unsigned int jobID, bool success, CJob *job)
+void CVideoLibraryQueue::OnJobComplete(unsigned int jobID, bool success, IJob* job)
 {
   if (success)
   {

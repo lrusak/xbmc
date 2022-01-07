@@ -55,7 +55,7 @@ protected:
   void CancelLoading();
 
   enum DIRECTORY_STATUS { UNLOADED = 0, LOADING, LOADED, READY };
-  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
+  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
 
   class CMultiImageJob : public CJob
   {

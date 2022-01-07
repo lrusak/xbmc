@@ -17,7 +17,7 @@ class CFileItemList;
 
 class CGUIDialogVideoBookmarks : public CGUIDialog, public CJobQueue
 {
-  typedef std::map<CJob*, unsigned int> MAPJOBSCHAPS;
+  typedef std::map<IJob*, unsigned int> MAPJOBSCHAPS;
 
 public:
   CGUIDialogVideoBookmarks(void);
@@ -60,7 +60,7 @@ protected:
   void OnPopupMenu(int item);
   CGUIControl *GetFirstFocusableControl(int id) override;
 
-  void OnJobComplete(unsigned int jobID, bool success, CJob* job) override;
+  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
 
   CFileItemList* m_vecItems;
   CGUIViewControl m_viewControl;

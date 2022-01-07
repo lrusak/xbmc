@@ -698,7 +698,7 @@ void CMediaManager::OnStorageAdded(const MEDIA_DETECT::STORAGE::StorageDevice& d
     if (settings->GetInt(CSettings::SETTING_AUDIOCDS_AUTOACTION) == AUTOCD_RIP)
     {
       CJobManager::GetInstance().AddJob(new CAutorunMediaJob(device.label, device.path), this,
-                                        CJob::PRIORITY_LOW);
+                                        JobPriority::LOW);
     }
     else
     {
@@ -712,7 +712,7 @@ void CMediaManager::OnStorageAdded(const MEDIA_DETECT::STORAGE::StorageDevice& d
                   __FUNCTION__, device.path);
       }
       CJobManager::GetInstance().AddJob(new CAutorunMediaJob(device.label, device.path), this,
-                                        CJob::PRIORITY_HIGH);
+                                        JobPriority::HIGH);
     }
   }
   else

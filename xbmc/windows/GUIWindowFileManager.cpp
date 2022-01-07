@@ -1197,7 +1197,7 @@ int64_t CGUIWindowFileManager::CalculateFolderSize(const std::string &strDirecto
   return totalSize;
 }
 
-void CGUIWindowFileManager::OnJobComplete(unsigned int jobID, bool success, CJob *job)
+void CGUIWindowFileManager::OnJobComplete(unsigned int jobID, bool success, IJob* job)
 {
   if(!success)
   {

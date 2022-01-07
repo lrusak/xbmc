@@ -28,7 +28,7 @@ public:
 
   void QueueMACDiscoveryForAllRemotes();
 
-  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
+  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
   void OnSettingChanged(const std::shared_ptr<const CSetting>& setting) override;
   void OnSettingsLoaded() override;
 

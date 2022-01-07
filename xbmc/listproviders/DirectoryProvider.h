@@ -70,7 +70,8 @@ public:
   void FreeResources(bool immediately) override;
 
   // callback from directory job
-  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
+  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
+
 private:
   UpdateState      m_updateState;
   bool             m_isAnnounced;

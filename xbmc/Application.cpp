@@ -662,14 +662,15 @@ bool CApplication::Initialize()
       if (CAddonSystemSettings::GetInstance().GetAddonAutoUpdateMode() == AUTO_UPDATES_ON)
       {
         CJobManager::GetInstance().Submit(
-            [&event, &incompatibleAddons]() {
+            [&event, &incompatibleAddons]()
+            {
               if (CServiceBroker::GetRepositoryUpdater().CheckForUpdates())
                 CServiceBroker::GetRepositoryUpdater().Await();
 
               incompatibleAddons = CServiceBroker::GetAddonMgr().MigrateAddons();
               event.Set();
             },
-            CJob::PRIORITY_DEDICATED);
+            JobPriority::DEDICATED);
         localizedStr = g_localizeStrings.Get(24151);
         iDots = 1;
         while (!event.Wait(1000ms))

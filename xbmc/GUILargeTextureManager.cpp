@@ -223,11 +223,12 @@ void CGUILargeTextureManager::QueueImage(const std::string &path, bool useCache)
 
   // queue the item
   CLargeTexture *image = new CLargeTexture(path);
-  unsigned int jobID = CJobManager::GetInstance().AddJob(new CImageLoader(path, useCache), this, CJob::PRIORITY_NORMAL);
+  unsigned int jobID = CJobManager::GetInstance().AddJob(new CImageLoader(path, useCache), this,
+                                                         JobPriority::NORMAL);
   m_queued.emplace_back(jobID, image);
 }
 
-void CGUILargeTextureManager::OnJobComplete(unsigned int jobID, bool success, CJob *job)
+void CGUILargeTextureManager::OnJobComplete(unsigned int jobID, bool success, IJob* job)
 {
   // see if we still have this job id
   CSingleLock lock(m_listSection);

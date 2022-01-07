@@ -37,7 +37,7 @@ CTextureCache &CTextureCache::GetInstance()
   return s_cache;
 }
 
-CTextureCache::CTextureCache() : CJobQueue(false, 1, CJob::PRIORITY_LOW_PAUSABLE)
+CTextureCache::CTextureCache() : CJobQueue(false, 1, JobPriority::LOW_PAUSABLE)
 {
 }
 
@@ -304,14 +304,17 @@ void CTextureCache::OnCachingComplete(bool success, CTextureCacheJob *job)
   m_completeEvent.Set();
 }
 
-void CTextureCache::OnJobComplete(unsigned int jobID, bool success, CJob *job)
+void CTextureCache::OnJobComplete(unsigned int jobID, bool success, IJob* job)
 {
   if (strcmp(job->GetType(), kJobTypeCacheImage) == 0)
     OnCachingComplete(success, static_cast<CTextureCacheJob*>(job));
   return CJobQueue::OnJobComplete(jobID, success, job);
 }
 
-void CTextureCache::OnJobProgress(unsigned int jobID, unsigned int progress, unsigned int total, const CJob *job)
+void CTextureCache::OnJobProgress(unsigned int jobID,
+                                  unsigned int progress,
+                                  unsigned int total,
+                                  const IJob* job)
 {
   if (strcmp(job->GetType(), kJobTypeCacheImage) == 0 && !progress)
   { // check our processing list

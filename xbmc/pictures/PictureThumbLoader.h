@@ -30,7 +30,7 @@ public:
 
    \sa CImageLoader, IJobCallback
    */
-  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
+  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
 
 protected:
   void OnLoaderFinish() override;

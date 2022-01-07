@@ -21,7 +21,7 @@ CInfoLoader::CInfoLoader(unsigned int timeToRefresh)
 
 CInfoLoader::~CInfoLoader() = default;
 
-void CInfoLoader::OnJobComplete(unsigned int jobID, bool success, CJob *job)
+void CInfoLoader::OnJobComplete(unsigned int jobID, bool success, IJob* job)
 {
   m_refreshTime = CTimeUtils::GetFrameTime() + m_timeToRefresh;
   m_busy = false;

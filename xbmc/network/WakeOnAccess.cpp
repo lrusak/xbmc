@@ -382,7 +382,7 @@ public:
     return m_jobId ? m_hostOnline : Ping(m_server);
   }
 
-  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override
+  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override
   {
     m_hostOnline = success;
   }
@@ -736,7 +736,7 @@ void CWakeOnAccess::SaveMACDiscoveryResult(const std::string& host, const std::s
   SaveToXML();
 }
 
-void CWakeOnAccess::OnJobComplete(unsigned int jobID, bool success, CJob *job)
+void CWakeOnAccess::OnJobComplete(unsigned int jobID, bool success, IJob* job)
 {
   CMACDiscoveryJob* discoverJob = static_cast<CMACDiscoveryJob*>(job);
 
