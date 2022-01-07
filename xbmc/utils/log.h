@@ -127,7 +127,7 @@ private:
                                    const std::string_view& format,
                                    Args&&... args)
   {
-    auto message = fmt::format(format, std::forward<Args>(args)...);
+    auto message = fmt::format(format, EnumToInt(std::forward<Args>(args))...);
 
     // fixup newline alignment, number of spaces should equal prefix length
     StringUtils::Replace(message, "\n", "\n                                                   ");
