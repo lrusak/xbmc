@@ -35,19 +35,19 @@ void BitstreamStats::CalculateBitrate()
   auto elapsed = now - m_start;
 
   // only update after 2 seconds has past
-  if (elapsed >= 2s)
-  {
-    m_bitrate = static_cast<double>(m_bitCount) /
-                std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
+  if (elapsed < 2s)
+    return;
 
-    if (m_bitrate > m_maxBitrate)
-      m_maxBitrate = m_bitrate;
+  m_bitrate = static_cast<double>(m_bitCount) /
+              std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
 
-    if (m_bitrate < m_minBitrate || m_minBitrate == -1)
-      m_minBitrate = m_bitrate;
+  if (m_bitrate > m_maxBitrate)
+    m_maxBitrate = m_bitrate;
 
-    Start();
-  }
+  if (m_bitrate < m_minBitrate || m_minBitrate == -1)
+    m_minBitrate = m_bitrate;
+
+  Start();
 }
 
 
