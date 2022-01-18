@@ -10,10 +10,6 @@
 
 using namespace std::chrono_literals;
 
-BitstreamStats::BitstreamStats(unsigned int estimatedBitrate) : m_estimatedBitrate(estimatedBitrate)
-{
-}
-
 void BitstreamStats::AddSampleBytes(unsigned int bytes)
 {
   AddSampleBits(bytes * 8);

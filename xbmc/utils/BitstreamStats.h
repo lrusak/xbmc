@@ -13,10 +13,8 @@
 class BitstreamStats final
 {
 public:
-  // in order not to cause a performance hit, we should only check the clock when
-  // we reach m_estimatedBitrate bits.
-  // if this value is 1, we will calculate bitrate on every sample.
-  explicit BitstreamStats(unsigned int estimatedBitrate = (10240 * 8) /*10Kbit*/);
+  BitstreamStats() = default;
+  ~BitstreamStats() = default;
 
   void AddSampleBytes(unsigned int bytes);
   void AddSampleBits(unsigned int bits);
@@ -26,6 +24,12 @@ public:
   inline double GetMinBitrate() const { return m_minBitrate; }
 
   void Start();
+
+  /**
+   * @brief Calculates the bitrate if 2 seconds
+   *        has passed since the last call.
+   *
+   */
   void CalculateBitrate();
 
 private:
@@ -33,7 +37,7 @@ private:
   double m_maxBitrate{0.0};
   double m_minBitrate{-1.0};
   unsigned int m_bitCount{0};
-  unsigned int m_estimatedBitrate{0}; // when we reach this amount of bits we check current bitrate.
+  unsigned int m_estimatedBitrate{1024 * 10 * 8}; // 1KB * 10 * 8bit/byte = 10Kbit
   std::chrono::steady_clock::time_point m_start;
 };
 
