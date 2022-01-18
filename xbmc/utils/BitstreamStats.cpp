@@ -10,18 +10,10 @@
 
 #include "utils/TimeUtils.h"
 
-int64_t BitstreamStats::m_tmFreq;
+int64_t BitstreamStats::m_tmFreq{0};
 
-BitstreamStats::BitstreamStats(unsigned int estimatedBitrate)
+BitstreamStats::BitstreamStats(unsigned int estimatedBitrate) : m_estimatedBitrate(estimatedBitrate)
 {
-  m_bitrate = 0.0;
-  m_maxBitrate = 0.0;
-  m_minBitrate = -1.0;
-
-  m_bitCount = 0;
-  m_estimatedBitrate = estimatedBitrate;
-  m_tmStart = 0LL;
-
   if (m_tmFreq == 0LL)
     m_tmFreq = CurrentHostFrequency();
 }

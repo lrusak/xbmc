@@ -29,12 +29,12 @@ public:
   void CalculateBitrate();
 
 private:
-  double m_bitrate;
-  double m_maxBitrate;
-  double m_minBitrate;
-  unsigned int m_bitCount;
-  unsigned int m_estimatedBitrate; // when we reach this amount of bits we check current bitrate.
-  int64_t m_tmStart;
+  double m_bitrate{0.0};
+  double m_maxBitrate{0.0};
+  double m_minBitrate{-1.0};
+  unsigned int m_bitCount{0};
+  unsigned int m_estimatedBitrate{0}; // when we reach this amount of bits we check current bitrate.
+  int64_t m_tmStart{0};
   static int64_t m_tmFreq;
 };
 
