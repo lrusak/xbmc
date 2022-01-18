@@ -12,35 +12,35 @@
 
 int64_t BitstreamStats::m_tmFreq;
 
-BitstreamStats::BitstreamStats(unsigned int nEstimatedBitrate)
+BitstreamStats::BitstreamStats(unsigned int estimatedBitrate)
 {
-  m_dBitrate = 0.0;
-  m_dMaxBitrate = 0.0;
-  m_dMinBitrate = -1.0;
+  m_bitrate = 0.0;
+  m_maxBitrate = 0.0;
+  m_minBitrate = -1.0;
 
-  m_nBitCount = 0;
-  m_nEstimatedBitrate = nEstimatedBitrate;
+  m_bitCount = 0;
+  m_estimatedBitrate = estimatedBitrate;
   m_tmStart = 0LL;
 
   if (m_tmFreq == 0LL)
     m_tmFreq = CurrentHostFrequency();
 }
 
-void BitstreamStats::AddSampleBytes(unsigned int nBytes)
+void BitstreamStats::AddSampleBytes(unsigned int bytes)
 {
-  AddSampleBits(nBytes*8);
+  AddSampleBits(bytes * 8);
 }
 
-void BitstreamStats::AddSampleBits(unsigned int nBits)
+void BitstreamStats::AddSampleBits(unsigned int bits)
 {
-  m_nBitCount += nBits;
-  if (m_nBitCount >= m_nEstimatedBitrate)
+  m_bitCount += bits;
+  if (m_bitCount >= m_estimatedBitrate)
     CalculateBitrate();
 }
 
 void BitstreamStats::Start()
 {
-  m_nBitCount = 0;
+  m_bitCount = 0;
   m_tmStart = CurrentHostCounter();
 }
 
@@ -53,13 +53,13 @@ void BitstreamStats::CalculateBitrate()
   // only update once every 2 seconds
   if (elapsed >= 2)
   {
-    m_dBitrate = (double)m_nBitCount / elapsed;
+    m_bitrate = (double)m_bitCount / elapsed;
 
-    if (m_dBitrate > m_dMaxBitrate)
-      m_dMaxBitrate = m_dBitrate;
+    if (m_bitrate > m_maxBitrate)
+      m_maxBitrate = m_bitrate;
 
-    if (m_dBitrate < m_dMinBitrate || m_dMinBitrate == -1)
-      m_dMinBitrate = m_dBitrate;
+    if (m_bitrate < m_minBitrate || m_minBitrate == -1)
+      m_minBitrate = m_bitrate;
 
     Start();
   }
