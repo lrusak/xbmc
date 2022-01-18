@@ -8,14 +8,10 @@
 
 #include "BitstreamStats.h"
 
-#include "utils/TimeUtils.h"
-
-int64_t BitstreamStats::m_tmFreq{0};
+using namespace std::chrono_literals;
 
 BitstreamStats::BitstreamStats(unsigned int estimatedBitrate) : m_estimatedBitrate(estimatedBitrate)
 {
-  if (m_tmFreq == 0LL)
-    m_tmFreq = CurrentHostFrequency();
 }
 
 void BitstreamStats::AddSampleBytes(unsigned int bytes)
@@ -33,19 +29,20 @@ void BitstreamStats::AddSampleBits(unsigned int bits)
 void BitstreamStats::Start()
 {
   m_bitCount = 0;
-  m_tmStart = CurrentHostCounter();
+  m_start = std::chrono::steady_clock::now();
 }
 
 void BitstreamStats::CalculateBitrate()
 {
-  int64_t tmNow;
-  tmNow = CurrentHostCounter();
+  auto now = std::chrono::steady_clock::now();
 
-  double elapsed = (double)(tmNow - m_tmStart) / (double)m_tmFreq;
-  // only update once every 2 seconds
-  if (elapsed >= 2)
+  auto elapsed = now - m_start;
+
+  // only update after 2 seconds has past
+  if (elapsed >= 2s)
   {
-    m_bitrate = (double)m_bitCount / elapsed;
+    m_bitrate = static_cast<double>(m_bitCount) /
+                std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
 
     if (m_bitrate > m_maxBitrate)
       m_maxBitrate = m_bitrate;

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <chrono>
 
 class BitstreamStats final
 {
@@ -34,7 +34,6 @@ private:
   double m_minBitrate{-1.0};
   unsigned int m_bitCount{0};
   unsigned int m_estimatedBitrate{0}; // when we reach this amount of bits we check current bitrate.
-  int64_t m_tmStart{0};
-  static int64_t m_tmFreq;
+  std::chrono::steady_clock::time_point m_start;
 };
 
