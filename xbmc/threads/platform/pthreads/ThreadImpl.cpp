@@ -19,8 +19,35 @@
 #include <pthread_np.h>
 #endif
 
-#include <signal.h>
 #include "utils/log.h"
+
+#include <array>
+#include <signal.h>
+namespace
+{
+
+constexpr std::array<ThreadPriorityStruct, 5> nativeThreadPriorityMap = {{
+    {ThreadPriority::LOWEST, -1},
+    {ThreadPriority::BELOW_NORMAL, -1},
+    {ThreadPriority::NORMAL, 0},
+    {ThreadPriority::ABOVE_NORMAL, 1},
+    {ThreadPriority::HIGHEST, 1},
+}};
+
+int GetNativeThreadPriority(const ThreadPriority priority)
+{
+  auto it = std::find_if(nativeThreadPriorityMap.cbegin(), nativeThreadPriorityMap.cend(),
+                         [&priority](const auto& map) { return map.priority == priority; });
+
+  if (it != nativeThreadPriorityMap.cend())
+  {
+    return it->nativePriority;
+  }
+
+  throw std::runtime_error("priority not implemented");
+}
+
+} // namespace
 
 namespace XbmcThreads
 {
@@ -105,7 +132,7 @@ void CThread::SetThreadInfo()
 
 #ifdef RLIMIT_NICE
   // get user max prio
-  int userMaxPrio = GetUserMaxPriority(GetMaxPriority());
+  int userMaxPrio = GetUserMaxPriority(GetNativeThreadPriority(ThreadPriority::HIGHEST));
 
   // if the user does not have an entry in limits.conf the following
   // call will fail
@@ -119,25 +146,7 @@ void CThread::SetThreadInfo()
 #endif
 }
 
-int CThread::GetMinPriority(void)
-{
-  // one level lower than application
-  return -1;
-}
-
-int CThread::GetMaxPriority(void)
-{
-  // one level higher than application
-  return 1;
-}
-
-int CThread::GetNormalPriority(void)
-{
-  // same level as application
-  return 0;
-}
-
-bool CThread::SetPriority(const int iPriority)
+bool CThread::SetPriority(const ThreadPriority& priority)
 {
   bool bReturn = false;
 
@@ -151,14 +160,14 @@ bool CThread::SetPriority(const int iPriority)
   else
   {
     // get user max prio given max prio (will take the min)
-    int userMaxPrio = GetUserMaxPriority(GetMaxPriority());
+    int userMaxPrio = GetUserMaxPriority(GetNativeThreadPriority(ThreadPriority::HIGHEST));
 
     // keep priority in bounds
-    int prio = iPriority;
-    if (prio >= GetMaxPriority())
+    int prio = GetNativeThreadPriority(priority);
+    if (prio >= GetNativeThreadPriority(ThreadPriority::HIGHEST))
       prio = userMaxPrio; // this is already the min of GetMaxPriority and what the user can set.
-    if (prio < GetMinPriority())
-      prio = GetMinPriority();
+    if (prio < GetNativeThreadPriority(ThreadPriority::LOWEST))
+      prio = GetNativeThreadPriority(ThreadPriority::LOWEST);
 
     // nice level of application
     const int appNice = getpriority(PRIO_PROCESS, getpid());
