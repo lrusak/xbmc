@@ -16,8 +16,8 @@ public:
   BitstreamStats() = default;
   ~BitstreamStats() = default;
 
-  void AddSampleBytes(unsigned int bytes);
-  void AddSampleBits(unsigned int bits);
+  void AddSampleBytes(uint32_t bytes);
+  void AddSampleBits(uint32_t bits);
 
   inline double GetBitrate() const { return m_bitrate; }
   inline double GetMaxBitrate() const { return m_maxBitrate; }
@@ -36,8 +36,8 @@ private:
   double m_bitrate{0.0};
   double m_maxBitrate{0.0};
   double m_minBitrate{-1.0};
-  unsigned int m_bitCount{0};
-  unsigned int m_estimatedBitrate{1024 * 10 * 8}; // 1KB * 10 * 8bit/byte = 10Kbit
+  uint32_t m_bitCount{0};
+  uint32_t m_estimatedBitrate{1024 * 10 * 8}; // 1KB * 10 * 8bit/byte = 10Kbit
   std::chrono::steady_clock::time_point m_start;
 };
 

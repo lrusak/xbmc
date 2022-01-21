@@ -10,12 +10,12 @@
 
 using namespace std::chrono_literals;
 
-void BitstreamStats::AddSampleBytes(unsigned int bytes)
+void BitstreamStats::AddSampleBytes(uint32_t bytes)
 {
   AddSampleBits(bytes * 8);
 }
 
-void BitstreamStats::AddSampleBits(unsigned int bits)
+void BitstreamStats::AddSampleBits(uint32_t bits)
 {
   m_bitCount += bits;
   if (m_bitCount >= m_estimatedBitrate)
