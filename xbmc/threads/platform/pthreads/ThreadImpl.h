@@ -8,8 +8,18 @@
 
 #pragma once
 
-#include <sys/types.h>
-#include <unistd.h>
+#include "threads/IThreadImpl.h"
+#include "threads/SingleLock.h"
 
-typedef pid_t ThreadLwpId;
+class CThreadImplPosix : public IThreadImpl
+{
+public:
+  CThreadImplPosix(std::thread::native_handle_type handle, const std::string& name);
 
+  ~CThreadImplPosix() override = default;
+
+  bool SetPriority(const ThreadPriority priority) override;
+
+private:
+  CCriticalSection m_criticalSection;
+};
