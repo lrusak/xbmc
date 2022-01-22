@@ -1,0 +1,27 @@
+/*
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
+ *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
+ */
+
+#pragma once
+
+#include "threads/IThreadImpl.h"
+#include "threads/SingleLock.h"
+
+class CThreadImplLinux : public IThreadImpl
+{
+public:
+  CThreadImplLinux(std::thread::native_handle_type handle, const std::string& name);
+
+  ~CThreadImplLinux() override = default;
+
+  bool SetPriority(const ThreadPriority priority) override;
+
+private:
+  CThreadImplLinux() = delete;
+
+  CCriticalSection m_criticalSection;
+};
