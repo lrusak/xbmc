@@ -49,37 +49,6 @@ int GetNativeThreadPriority(const ThreadPriority priority)
 
 } // namespace
 
-namespace XbmcThreads
-{
-// ==========================================================
-static pthread_mutexattr_t recursiveAttr;
-
-static bool SetRecursiveAttr()
-{
-  static bool alreadyCalled = false; // initialized to 0 in the data segment prior to startup init code running
-  if (!alreadyCalled)
-  {
-    pthread_mutexattr_init(&recursiveAttr);
-    pthread_mutexattr_settype(&recursiveAttr, PTHREAD_MUTEX_RECURSIVE);
-#if !defined(TARGET_ANDROID)
-    pthread_mutexattr_setprotocol(&recursiveAttr, PTHREAD_PRIO_INHERIT);
-#endif
-    alreadyCalled = true;
-  }
-  return true; // note, we never call destroy.
-}
-
-static bool recursiveAttrSet = SetRecursiveAttr();
-
-pthread_mutexattr_t* CRecursiveMutex::getRecursiveAttr()
-{
-  if (!recursiveAttrSet) // this is only possible in the single threaded startup code
-    recursiveAttrSet = SetRecursiveAttr();
-  return &recursiveAttr;
-}
-// ==========================================================
-}
-
 #ifdef RLIMIT_NICE
 // We need to return what the best number than can be passed
 // to SetPriority is. It will basically be relative to the
