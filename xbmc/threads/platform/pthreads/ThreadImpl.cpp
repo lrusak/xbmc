@@ -53,19 +53,6 @@ pthread_mutexattr_t* CRecursiveMutex::getRecursiveAttr()
 // ==========================================================
 }
 
-static pid_t GetCurrentThreadPid_()
-{
-#ifdef TARGET_FREEBSD
-  return pthread_getthreadid_np();
-#elif defined(TARGET_ANDROID)
-  return gettid();
-#elif TARGET_DARWIN
-  return pthread_mach_thread_np(pthread_self());
-#else
-  return syscall(SYS_gettid);
-#endif
-}
-
 #ifdef RLIMIT_NICE
 // We need to return what the best number than can be passed
 // to SetPriority is. It will basically be relative to the
@@ -107,7 +94,7 @@ static int GetUserMaxPriority(int maxPriority)
 
 void CThread::SetThreadInfo()
 {
-  m_lwpId = GetCurrentThreadPid_();
+  m_lwpId = m_thread->native_handle();
 
 #if defined(TARGET_DARWIN)
   pthread_setname_np(m_ThreadName.c_str());
