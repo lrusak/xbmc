@@ -18,7 +18,7 @@ set(HEADERS Atomics.h
             platform/RecursiveMutex.h
             IThreadImpl.h)
 
-if(NOT CORE_SYSTEM_NAME STREQUAL windows AND NOT CORE_SYSTEM_NAME STREQUAL windowsstore)
+if(NOT CORE_SYSTEM_NAME STREQUAL windows AND NOT CORE_SYSTEM_NAME STREQUAL windowsstore AND NOT CORE_SYSTEM_NAME STREQUAL android)
     list(APPEND SOURCES platform/RecursiveMutex.cpp)
 endif()
 

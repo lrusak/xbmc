@@ -10,7 +10,7 @@
 
 #include <mutex>
 
-#if (defined TARGET_POSIX)
+#if defined(TARGET_POSIX) && !defined(TARGET_ANDROID)
 #include <pthread.h>
 namespace XbmcThreads
 {
@@ -43,7 +43,7 @@ public:
   std::recursive_mutex::native_handle_type native_handle() { return &m_mutex; }
 };
 }
-#elif (defined TARGET_WINDOWS)
+#elif defined(TARGET_WINDOWS) || defined(TARGET_ANDROID)
 namespace XbmcThreads
 {
   typedef std::recursive_mutex CRecursiveMutex;
