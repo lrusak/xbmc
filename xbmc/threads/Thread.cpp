@@ -25,6 +25,38 @@
 
 static thread_local CThread* currentThread;
 
+namespace
+{
+
+struct ThreadPriorityStringStruct
+{
+  ThreadPriority priority;
+  std::string_view priorityLabel;
+};
+
+constexpr std::array<ThreadPriorityStringStruct, 4> nativeThreadPriorityMap = {{
+    {ThreadPriority::LOWEST, "lowest"},
+    {ThreadPriority::BELOW_NORMAL, "below normal"},
+    {ThreadPriority::NORMAL, "normal"},
+    {ThreadPriority::ABOVE_NORMAL, "above normal"},
+    {ThreadPriority::HIGHEST, "highest"},
+}};
+
+std::string_view GetThreadPriorityString(const ThreadPriority priority)
+{
+  auto native = std::find_if(nativeThreadPriorityMap.cbegin(), nativeThreadPriorityMap.cend(),
+                             [&priority](const auto& map) { return map.priority == priority; });
+
+  if (native != nativeThreadPriorityMap.cend())
+  {
+    return native->priorityLabel;
+  }
+
+  throw std::runtime_error("priority not implemented");
+}
+
+} // namespace
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -178,6 +210,9 @@ bool CThread::IsRunning() const
 
 bool CThread::SetPriority(const ThreadPriority priority)
 {
+  CLog::Log(LOGDEBUG, "[THREAD] trying to set priority \"{}\" for thread \"{}\"",
+            GetThreadPriorityString(priority), m_ThreadName);
+
   return m_impl->SetPriority(priority);
 }
 
