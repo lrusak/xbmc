@@ -95,7 +95,7 @@ void CJobQueue::CancelJob(const CJob* job)
 {
   std::unique_lock<CCriticalSection> lock(m_section);
 
-  Processing::iterator i = find(m_processing.begin(), m_processing.end(), job);
+  Processing::iterator i = std::find(m_processing.begin(), m_processing.end(), job);
   if (i != m_processing.end())
   {
     i->CancelJob();
@@ -103,7 +103,7 @@ void CJobQueue::CancelJob(const CJob* job)
     return;
   }
 
-  Queue::iterator j = find(m_jobQueue.begin(), m_jobQueue.end(), job);
+  Queue::iterator j = std::find(m_jobQueue.begin(), m_jobQueue.end(), job);
   if (j != m_jobQueue.end())
   {
     j->FreeJob();
@@ -116,8 +116,8 @@ bool CJobQueue::AddJob(CJob* job)
   std::unique_lock<CCriticalSection> lock(m_section);
 
   // check if we have this job already.  If so, we're done.
-  if (find(m_jobQueue.begin(), m_jobQueue.end(), job) != m_jobQueue.end() ||
-      find(m_processing.begin(), m_processing.end(), job) != m_processing.end())
+  if (std::find(m_jobQueue.begin(), m_jobQueue.end(), job) != m_jobQueue.end() ||
+      std::find(m_processing.begin(), m_processing.end(), job) != m_processing.end())
   {
     delete job;
     return false;
@@ -169,8 +169,8 @@ void CJobQueue::CancelJobs()
 {
   std::unique_lock<CCriticalSection> lock(m_section);
 
-  for_each(m_processing.begin(), m_processing.end(), [](CJobPointer& jp) { jp.CancelJob(); });
-  for_each(m_jobQueue.begin(), m_jobQueue.end(), [](CJobPointer& jp) { jp.FreeJob(); });
+  std::for_each(m_processing.begin(), m_processing.end(), [](CJobPointer& jp) { jp.CancelJob(); });
+  std::for_each(m_jobQueue.begin(), m_jobQueue.end(), [](CJobPointer& jp) { jp.FreeJob(); });
   m_jobQueue.clear();
   m_processing.clear();
 }
@@ -278,7 +278,8 @@ void CJobManager::CancelJob(unsigned int jobID)
   for (unsigned int priority = CJob::PRIORITY_LOW_PAUSABLE; priority <= CJob::PRIORITY_DEDICATED;
        ++priority)
   {
-    JobQueue::iterator i = find(m_jobQueue[priority].begin(), m_jobQueue[priority].end(), jobID);
+    JobQueue::iterator i =
+        std::find(m_jobQueue[priority].begin(), m_jobQueue[priority].end(), jobID);
     if (i != m_jobQueue[priority].end())
     {
       delete i->m_job;
@@ -288,7 +289,7 @@ void CJobManager::CancelJob(unsigned int jobID)
   }
 
   // or if we're processing it
-  Processing::iterator it = find(m_processing.begin(), m_processing.end(), jobID);
+  Processing::iterator it = std::find(m_processing.begin(), m_processing.end(), jobID);
   if (it != m_processing.end())
     it->m_callback = NULL; // job is in progress, so only thing to do is to remove callback
 }
@@ -413,7 +414,7 @@ bool CJobManager::OnJobProgress(unsigned int progress, unsigned int total, const
   std::unique_lock<CCriticalSection> lock(m_section);
 
   // find the job in the processing queue, and check whether it's cancelled (no callback)
-  Processing::const_iterator i = find(m_processing.begin(), m_processing.end(), job);
+  Processing::const_iterator i = std::find(m_processing.begin(), m_processing.end(), job);
   if (i != m_processing.end())
   {
     CWorkItem item(*i);
@@ -433,7 +434,7 @@ void CJobManager::OnJobComplete(bool success, CJob* job)
   std::unique_lock<CCriticalSection> lock(m_section);
 
   // remove the job from the processing queue
-  Processing::iterator i = find(m_processing.begin(), m_processing.end(), job);
+  Processing::iterator i = std::find(m_processing.begin(), m_processing.end(), job);
   if (i != m_processing.end())
   {
     // tell any listeners we're done with the job, then delete it
@@ -451,7 +452,7 @@ void CJobManager::OnJobComplete(bool success, CJob* job)
     }
 
     lock.lock();
-    Processing::iterator j = find(m_processing.begin(), m_processing.end(), job);
+    Processing::iterator j = std::find(m_processing.begin(), m_processing.end(), job);
     if (j != m_processing.end())
       m_processing.erase(j);
 
@@ -465,7 +466,7 @@ void CJobManager::RemoveWorker(const CJobWorker* worker)
   std::unique_lock<CCriticalSection> lock(m_section);
 
   // remove our worker
-  Workers::iterator i = find(m_workers.begin(), m_workers.end(), worker);
+  Workers::iterator i = std::find(m_workers.begin(), m_workers.end(), worker);
   if (i != m_workers.end())
     m_workers.erase(i); // workers auto-delete
 }
