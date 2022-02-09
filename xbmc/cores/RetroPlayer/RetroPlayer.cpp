@@ -497,14 +497,14 @@ void CRetroPlayer::SetPlaybackSpeed(double speed)
       if (speed == 1.0)
       {
         IPlayerCallback* callback = &m_callback;
-        CJobManager::GetInstance().Submit([callback]() { callback->OnPlayBackResumed(); },
-                                          JobPriority::NORMAL);
+        CServiceBroker::GetJobManager().Submit([callback]() { callback->OnPlayBackResumed(); },
+                                               JobPriority::NORMAL);
       }
       else if (speed == 0.0)
       {
         IPlayerCallback* callback = &m_callback;
-        CJobManager::GetInstance().Submit([callback]() { callback->OnPlayBackPaused(); },
-                                          JobPriority::NORMAL);
+        CServiceBroker::GetJobManager().Submit([callback]() { callback->OnPlayBackPaused(); },
+                                               JobPriority::NORMAL);
       }
     }
   }

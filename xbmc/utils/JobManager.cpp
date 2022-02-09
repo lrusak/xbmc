@@ -8,6 +8,7 @@
 
 #include "JobManager.h"
 
+#include "ServiceBroker.h"
 #include "threads/SingleLock.h"
 #include "utils/XTimeUtils.h"
 #include "utils/log.h"
@@ -99,7 +100,7 @@ void CJobWorker::Process()
 
 void CJobQueue::CJobPointer::CancelJob()
 {
-  CJobManager::GetInstance().CancelJob(m_id);
+  CServiceBroker::GetJobManager().CancelJob(m_id);
   m_id = 0;
 }
 
@@ -185,7 +186,7 @@ void CJobQueue::QueueNextJob()
   while (m_jobQueue.size() && m_processing.size() < m_jobsAtOnce)
   {
     CJobPointer& job = m_jobQueue.back();
-    job.m_id = CJobManager::GetInstance().AddJob(job.m_job, this, m_priority);
+    job.m_id = CServiceBroker::GetJobManager().AddJob(job.m_job, this, m_priority);
     if (job.m_id > 0)
     {
       m_processing.emplace_back(job);
@@ -210,7 +211,8 @@ void CJobQueue::CancelJobs()
 
 bool CJobQueue::IsProcessing() const
 {
-  return CJobManager::GetInstance().m_running && (!m_processing.empty() || !m_jobQueue.empty());
+  return CServiceBroker::GetJobManager().m_running &&
+         (!m_processing.empty() || !m_jobQueue.empty());
 }
 
 bool CJobQueue::QueueEmpty() const
@@ -220,10 +222,9 @@ bool CJobQueue::QueueEmpty() const
   return m_jobQueue.empty();
 }
 
-CJobManager& CJobManager::GetInstance()
+std::unique_ptr<CJobManager> CJobManager::Create()
 {
-  static CJobManager sJobManager;
-  return sJobManager;
+  return std::make_unique<CJobManager>();
 }
 
 CJobManager::CJobManager()

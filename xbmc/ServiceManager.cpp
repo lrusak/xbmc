@@ -44,6 +44,7 @@
 #endif
 #include "storage/MediaManager.h"
 #include "utils/FileExtensionProvider.h"
+#include "utils/JobManager.h"
 #include "utils/log.h"
 #include "weather/WeatherManager.h"
 
@@ -63,6 +64,8 @@ CServiceManager::~CServiceManager()
 
 bool CServiceManager::InitForTesting()
 {
+  m_jobManager = CJobManager::Create();
+
   m_network = CNetworkBase::GetNetwork();
 
   m_databaseManager.reset(new CDatabaseManager);
@@ -91,6 +94,7 @@ void CServiceManager::DeinitTesting()
   m_addonMgr.reset();
   m_databaseManager.reset();
   m_network.reset();
+  m_jobManager.reset();
 }
 
 bool CServiceManager::InitStageOne()
@@ -98,6 +102,8 @@ bool CServiceManager::InitStageOne()
   m_Platform.reset(CPlatform::CreateInstance());
   if (!m_Platform->InitStageOne())
     return false;
+
+  m_jobManager = CJobManager::Create();
 
 #ifdef HAS_PYTHON
   m_XBPython.reset(new XBPython());
@@ -266,6 +272,7 @@ void CServiceManager::DeinitStageOne()
   CScriptInvocationManager::GetInstance().UnregisterLanguageInvocationHandler(m_XBPython.get());
   m_XBPython.reset();
 #endif
+  m_jobManager.reset();
 }
 
 #if defined(HAS_FILESYSTEM_SMB)
@@ -428,4 +435,9 @@ CDatabaseManager &CServiceManager::GetDatabaseManager()
 CMediaManager& CServiceManager::GetMediaManager()
 {
   return *m_mediaManager;
+}
+
+CJobManager& CServiceManager::GetJobManager()
+{
+  return *m_jobManager;
 }

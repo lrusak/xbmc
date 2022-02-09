@@ -788,16 +788,18 @@ void CAddonMgr::OnPostUnInstall(const std::string& id)
 void CAddonMgr::UpdateLastUsed(const std::string& id)
 {
   auto time = CDateTime::GetCurrentDateTime();
-  CJobManager::GetInstance().Submit([this, id, time](){
-    {
-      CSingleLock lock(m_critSection);
-      m_database.SetLastUsed(id, time);
-      auto addonInfo = GetAddonInfo(id);
-      if (addonInfo)
-        addonInfo->SetLastUsed(time);
-    }
-    m_events.Publish(AddonEvents::MetadataChanged(id));
-  });
+  CServiceBroker::GetJobManager().Submit(
+      [this, id, time]()
+      {
+        {
+          CSingleLock lock(m_critSection);
+          m_database.SetLastUsed(id, time);
+          auto addonInfo = GetAddonInfo(id);
+          if (addonInfo)
+            addonInfo->SetLastUsed(time);
+        }
+        m_events.Publish(AddonEvents::MetadataChanged(id));
+      });
 }
 
 static void ResolveDependencies(const std::string& addonId, std::vector<std::string>& needed, std::vector<std::string>& missing)

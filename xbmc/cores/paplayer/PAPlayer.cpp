@@ -222,8 +222,8 @@ bool PAPlayer::OpenFile(const CFileItem& file, const CPlayerOptions &options)
     CSingleLock lock(m_streamsLock);
     m_jobCounter++;
   }
-  CJobManager::GetInstance().Submit([=]() { QueueNextFileEx(file, false); }, this,
-                                    JobPriority::NORMAL);
+  CServiceBroker::GetJobManager().Submit([=]() { QueueNextFileEx(file, false); }, this,
+                                         JobPriority::NORMAL);
 
   CSingleLock lock(m_streamsLock);
   if (m_streams.size() == 2)
@@ -283,8 +283,8 @@ bool PAPlayer::QueueNextFile(const CFileItem &file)
     CSingleLock lock(m_streamsLock);
     m_jobCounter++;
   }
-  CJobManager::GetInstance().Submit([this, file]() { QueueNextFileEx(file, true); }, this,
-                                    JobPriority::NORMAL);
+  CServiceBroker::GetJobManager().Submit([this, file]() { QueueNextFileEx(file, true); }, this,
+                                         JobPriority::NORMAL);
 
   return true;
 }
@@ -1135,8 +1135,8 @@ void PAPlayer::CloseFileCB(StreamInfo &si)
   bookmark.timeInSeconds -= si.m_stream->GetDelay();
   bookmark.player = m_name;
   bookmark.playerState = GetPlayerState();
-  CJobManager::GetInstance().Submit([=]() { cb->OnPlayerCloseFile(fileItem, bookmark); },
-                                    JobPriority::NORMAL);
+  CServiceBroker::GetJobManager().Submit([=]() { cb->OnPlayerCloseFile(fileItem, bookmark); },
+                                         JobPriority::NORMAL);
 }
 
 void PAPlayer::AdvancePlaylistOnError(CFileItem &fileItem)

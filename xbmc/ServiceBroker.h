@@ -64,6 +64,7 @@ class CMediaManager;
 class CCPUInfo;
 class CLog;
 class CPlatform;
+class CJobManager;
 
 namespace WSDiscovery
 {
@@ -138,6 +139,7 @@ public:
   static CDatabaseManager &GetDatabaseManager();
   static CEventLog* GetEventLog();
   static CMediaManager& GetMediaManager();
+  static CJobManager& GetJobManager();
 
   static CGUIComponent* GetGUI();
   static void RegisterGUI(CGUIComponent *gui);

@@ -697,8 +697,8 @@ void CMediaManager::OnStorageAdded(const MEDIA_DETECT::STORAGE::StorageDevice& d
   {
     if (settings->GetInt(CSettings::SETTING_AUDIOCDS_AUTOACTION) == AUTOCD_RIP)
     {
-      CJobManager::GetInstance().AddJob(new CAutorunMediaJob(device.label, device.path), this,
-                                        JobPriority::LOW);
+      CServiceBroker::GetJobManager().AddJob(new CAutorunMediaJob(device.label, device.path), this,
+                                             JobPriority::LOW);
     }
     else
     {
@@ -711,8 +711,8 @@ void CMediaManager::OnStorageAdded(const MEDIA_DETECT::STORAGE::StorageDevice& d
         CLog::Log(LOGDEBUG, "{}: Could not execute autorun for optical disc with path {}",
                   __FUNCTION__, device.path);
       }
-      CJobManager::GetInstance().AddJob(new CAutorunMediaJob(device.label, device.path), this,
-                                        JobPriority::HIGH);
+      CServiceBroker::GetJobManager().AddJob(new CAutorunMediaJob(device.label, device.path), this,
+                                             JobPriority::HIGH);
     }
   }
   else
