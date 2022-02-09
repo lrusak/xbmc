@@ -236,7 +236,8 @@ void CGUIMultiImage::LoadDirectory()
   // slow(er) checks necessary - do them in the background
   CSingleLock lock(m_section);
   m_directoryStatus = LOADING;
-  m_jobID = CJobManager::GetInstance().AddJob(new CMultiImageJob(m_currentPath), this, CJob::PRIORITY_NORMAL);
+  m_jobID = CJobManager::GetInstance().AddJob(new CMultiImageJob(m_currentPath), this,
+                                              JobPriority::NORMAL);
 }
 
 void CGUIMultiImage::OnDirectoryLoaded()

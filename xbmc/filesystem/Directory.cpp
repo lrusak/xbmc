@@ -71,9 +71,7 @@ public:
   CGetDirectory(std::shared_ptr<IDirectory>& imp, const CURL& dir, const CURL& listDir)
     : m_result(new CResult(dir, listDir))
   {
-    m_id = CJobManager::GetInstance().AddJob(new CGetJob(imp, m_result)
-                                           , NULL
-                                           , CJob::PRIORITY_HIGH);
+    m_id = CJobManager::GetInstance().AddJob(new CGetJob(imp, m_result), NULL, JobPriority::HIGH);
     if (m_id == 0)
     {
       CGetJob job(imp, m_result);

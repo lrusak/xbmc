@@ -12,6 +12,7 @@
 #include "threads/CriticalSection.h"
 #include "threads/Thread.h"
 
+#include <map>
 #include <queue>
 #include <string>
 #include <vector>
@@ -93,7 +94,9 @@ public:
    \param priority priority of this queue.
    \sa CJob
    */
-  CJobQueue(bool lifo = false, unsigned int jobsAtOnce = 1, CJob::PRIORITY priority = CJob::PRIORITY_LOW);
+  CJobQueue(bool lifo = false,
+            unsigned int jobsAtOnce = 1,
+            JobPriority priority = JobPriority::LOW);
 
   /*!
    \brief CJobQueue destructor
@@ -186,7 +189,7 @@ private:
   Processing m_processing;
 
   unsigned int m_jobsAtOnce;
-  CJob::PRIORITY m_priority;
+  JobPriority m_priority;
   mutable CCriticalSection m_section;
   bool m_lifo;
 };
@@ -207,7 +210,7 @@ class CJobManager final
   class CWorkItem
   {
   public:
-    CWorkItem(CJob *job, unsigned int id, CJob::PRIORITY priority, IJobCallback *callback)
+    CWorkItem(CJob* job, unsigned int id, JobPriority priority, IJobCallback* callback)
     {
       m_job = job;
       m_id = id;
@@ -234,7 +237,7 @@ class CJobManager final
     CJob         *m_job;
     unsigned int  m_id;
     IJobCallback *m_callback;
-    CJob::PRIORITY m_priority;
+    JobPriority m_priority;
   };
 
 public:
@@ -254,13 +257,13 @@ public:
    In case of failure, the passed CJob object will be deleted before returning from this method.
    \sa CJob, IJobCallback, CancelJob()
    */
-  unsigned int AddJob(CJob *job, IJobCallback *callback, CJob::PRIORITY priority = CJob::PRIORITY_LOW);
+  unsigned int AddJob(CJob* job, IJobCallback* callback, JobPriority priority = JobPriority::LOW);
 
   /*!
    \brief Add a function f to this job manager for asynchronously execution.
    */
   template<typename F>
-  void Submit(F&& f, CJob::PRIORITY priority = CJob::PRIORITY_LOW)
+  void Submit(F&& f, JobPriority priority = JobPriority::LOW)
   {
     AddJob(new CLambdaJob<F>(std::forward<F>(f)), nullptr, priority);
   }
@@ -269,7 +272,7 @@ public:
    \brief Add a function f to this job manager for asynchronously execution.
    */
   template<typename F>
-  void Submit(F&& f, IJobCallback *callback, CJob::PRIORITY priority = CJob::PRIORITY_LOW)
+  void Submit(F&& f, IJobCallback* callback, JobPriority priority = JobPriority::LOW)
   {
     AddJob(new CLambdaJob<F>(std::forward<F>(f)), callback, priority);
   }
@@ -322,7 +325,7 @@ public:
    \param priority to search for
    \return true if processing jobs, else returns false
    */
-  bool IsProcessing(const CJob::PRIORITY &priority) const;
+  bool IsProcessing(const JobPriority& priority) const;
 
 protected:
   friend class CJobWorker;
@@ -367,9 +370,9 @@ private:
    */
   CJob *PopJob();
 
-  void StartWorkers(CJob::PRIORITY priority);
+  void StartWorkers(JobPriority priority);
   void RemoveWorker(const CJobWorker *worker);
-  static unsigned int GetMaxWorkers(CJob::PRIORITY priority);
+  static unsigned int GetMaxWorkers(JobPriority priority);
 
   unsigned int m_jobCounter;
 
@@ -377,7 +380,7 @@ private:
   typedef std::vector<CWorkItem>   Processing;
   typedef std::vector<CJobWorker*> Workers;
 
-  JobQueue   m_jobQueue[CJob::PRIORITY_DEDICATED + 1];
+  std::map<JobPriority, JobQueue> m_jobQueue;
   bool       m_pauseJobs;
   Processing m_processing;
   Workers    m_workers;

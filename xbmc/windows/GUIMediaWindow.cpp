@@ -2264,10 +2264,13 @@ bool CGUIMediaWindow::WaitGetDirectoryItems(CGetDirectoryItems &items)
   {
     m_updateJobActive = true;
     m_updateEvent.Reset();
-    CJobManager::GetInstance().Submit([&]() {
-      items.Run();
-      m_updateEvent.Set();
-    }, nullptr, CJob::PRIORITY_NORMAL);
+    CJobManager::GetInstance().Submit(
+        [&]()
+        {
+          items.Run();
+          m_updateEvent.Set();
+        },
+        nullptr, JobPriority::NORMAL);
 
     while (!m_updateEvent.Wait(1ms))
     {

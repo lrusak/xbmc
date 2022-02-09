@@ -87,6 +87,16 @@ public:
 
 class CJobManager;
 
+//! @todo: add doxygen
+enum class JobPriority
+{
+  LOW_PAUSABLE,
+  LOW,
+  NORMAL,
+  HIGH,
+  DEDICATED,
+};
+
 /*!
  \ingroup jobs
  \brief Base class for jobs that are executed asynchronously.
@@ -109,17 +119,6 @@ class CJobManager;
 class CJob
 {
 public:
-  /*!
-   \brief Priority levels for jobs, specified by clients when adding jobs to the CJobManager.
-   \sa CJobManager
-   */
-  enum PRIORITY {
-    PRIORITY_LOW_PAUSABLE = 0,
-    PRIORITY_LOW,
-    PRIORITY_NORMAL,
-    PRIORITY_HIGH,
-    PRIORITY_DEDICATED, // will create a new worker if no worker is available at queue time
-  };
   CJob() { m_callback = NULL; }
 
   /*!
