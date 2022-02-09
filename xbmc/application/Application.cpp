@@ -691,7 +691,7 @@ bool CApplication::Initialize()
               incompatibleAddons = CServiceBroker::GetAddonMgr().MigrateAddons();
               event.Set();
             },
-            CJob::PRIORITY_DEDICATED);
+            JobPriority::DEDICATED);
         localizedStr = g_localizeStrings.Get(24151);
         iDots = 1;
         while (!event.Wait(1000ms))

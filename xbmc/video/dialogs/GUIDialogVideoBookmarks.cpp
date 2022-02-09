@@ -51,8 +51,8 @@
 #define CONTROL_THUMBS                11
 
 CGUIDialogVideoBookmarks::CGUIDialogVideoBookmarks()
-    : CGUIDialog(WINDOW_DIALOG_VIDEO_BOOKMARKS, "VideoOSDBookmarks.xml"),
-    CJobQueue(false, 1, CJob::PRIORITY_NORMAL)
+  : CGUIDialog(WINDOW_DIALOG_VIDEO_BOOKMARKS, "VideoOSDBookmarks.xml"),
+    CJobQueue(false, 1, JobPriority::NORMAL)
 {
   m_vecItems = new CFileItemList;
   m_loadType = LOAD_EVERY_TIME;

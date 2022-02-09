@@ -224,7 +224,7 @@ bool PAPlayer::OpenFile(const CFileItem& file, const CPlayerOptions &options)
     m_jobCounter++;
   }
   CServiceBroker::GetJobManager()->Submit([=]() { QueueNextFileEx(file, false); }, this,
-                                          CJob::PRIORITY_NORMAL);
+                                    JobPriority::NORMAL);
 
   std::unique_lock<CCriticalSection> lock(m_streamsLock);
   if (m_streams.size() == 2)
@@ -289,7 +289,7 @@ bool PAPlayer::QueueNextFile(const CFileItem &file)
     m_jobCounter++;
   }
   CServiceBroker::GetJobManager()->Submit([this, file]() { QueueNextFileEx(file, true); }, this,
-                                          CJob::PRIORITY_NORMAL);
+                                    JobPriority::NORMAL);
 
   return true;
 }
@@ -1173,7 +1173,7 @@ void PAPlayer::CloseFileCB(StreamInfo &si)
   bookmark.player = m_name;
   bookmark.playerState = GetPlayerState();
   CServiceBroker::GetJobManager()->Submit([=]() { cb->OnPlayerCloseFile(fileItem, bookmark); },
-                                          CJob::PRIORITY_NORMAL);
+                                    JobPriority::NORMAL);
 }
 
 void PAPlayer::AdvancePlaylistOnError(CFileItem &fileItem)

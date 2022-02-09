@@ -239,7 +239,7 @@ void CGUIMultiImage::LoadDirectory()
   std::unique_lock<CCriticalSection> lock(m_section);
   m_directoryStatus = LOADING;
   m_jobID = CServiceBroker::GetJobManager()->AddJob(new CMultiImageJob(m_currentPath), this,
-                                                    CJob::PRIORITY_NORMAL);
+                                              JobPriority::NORMAL);
 }
 
 void CGUIMultiImage::OnDirectoryLoaded()

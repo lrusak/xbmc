@@ -281,8 +281,7 @@ bool CGUIDialogSongInfo::SetSong(CFileItem* item)
   m_event.Reset();
   m_cancelled = false;  // SetSong happens before win_init
   // In a separate job fetch song info and fill list of art types.
-  int jobid =
-      CServiceBroker::GetJobManager()->AddJob(new CGetSongInfoJob(), nullptr, CJob::PRIORITY_LOW);
+  int jobid = CServiceBroker::GetJobManager()->AddJob(new CGetSongInfoJob(), nullptr, JobPriority::LOW);
 
   // Wait to get all data before show, allowing user to cancel if fetch is slow
   if (!CGUIDialogBusy::WaitOnEvent(m_event, TIME_TO_BUSY_DIALOG))

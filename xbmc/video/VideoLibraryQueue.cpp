@@ -23,9 +23,7 @@
 #include <mutex>
 #include <utility>
 
-CVideoLibraryQueue::CVideoLibraryQueue()
-  : CJobQueue(false, 1, CJob::PRIORITY_LOW),
-    m_jobs()
+CVideoLibraryQueue::CVideoLibraryQueue() : CJobQueue(false, 1, JobPriority::LOW), m_jobs()
 { }
 
 CVideoLibraryQueue::~CVideoLibraryQueue()

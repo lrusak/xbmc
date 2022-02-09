@@ -31,7 +31,7 @@
 using namespace XFILE;
 using namespace std::chrono_literals;
 
-CTextureCache::CTextureCache() : CJobQueue(false, 1, CJob::PRIORITY_LOW_PAUSABLE)
+CTextureCache::CTextureCache() : CJobQueue(false, 1, JobPriority::LOW_PAUSABLE)
 {
 }
 

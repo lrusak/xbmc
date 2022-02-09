@@ -286,7 +286,7 @@ bool CAddonInstaller::DoInstall(const AddonPtr& addon,
     // Workaround: because CAddonInstallJob is blocking waiting for other jobs, it needs to be run
     // with priority dedicated.
     unsigned int jobID =
-        CServiceBroker::GetJobManager()->AddJob(installJob, this, CJob::PRIORITY_DEDICATED);
+        CServiceBroker::GetJobManager()->AddJob(installJob, this, JobPriority::DEDICATED);
     m_downloadJobs.insert(make_pair(addon->ID(), CDownloadJob(jobID)));
     m_idle.Reset();
 

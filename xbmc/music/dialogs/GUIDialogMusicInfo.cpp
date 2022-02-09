@@ -442,8 +442,7 @@ bool CGUIDialogMusicInfo::SetItem(CFileItem* item)
   m_cancelled = false;  // Happens before win_init
 
   // In a separate job fetch info and fill list of art types.
-  int jobid =
-      CServiceBroker::GetJobManager()->AddJob(new CGetInfoJob(), nullptr, CJob::PRIORITY_LOW);
+  int jobid = CServiceBroker::GetJobManager()->AddJob(new CGetInfoJob(), nullptr, JobPriority::LOW);
 
   // Wait to get all data before show, allowing user to cancel if fetch is slow
   if (!CGUIDialogBusy::WaitOnEvent(m_event, TIME_TO_BUSY_DIALOG))
@@ -605,8 +604,7 @@ void CGUIDialogMusicInfo::RefreshInfo()
 
   SetScrapedInfo(false);
   // Start separate job to scrape info and fill list of art types.
-  CServiceBroker::GetJobManager()->AddJob(new CRefreshInfoJob(dlgProgress), nullptr,
-                                          CJob::PRIORITY_HIGH);
+  CServiceBroker::GetJobManager()->AddJob(new CRefreshInfoJob(dlgProgress), nullptr, JobPriority::HIGH);
 
   // Wait for refresh to complete or be canceled, but render every 10ms so that the
   // pointer movements works on dialog even when job is reporting progress infrequently

@@ -222,8 +222,8 @@ void CGUILargeTextureManager::QueueImage(const std::string &path, bool useCache)
 
   // queue the item
   CLargeTexture *image = new CLargeTexture(path);
-  unsigned int jobID = CServiceBroker::GetJobManager()->AddJob(new CImageLoader(path, useCache),
-                                                               this, CJob::PRIORITY_NORMAL);
+  unsigned int jobID = CServiceBroker::GetJobManager()->AddJob(new CImageLoader(path, useCache), this,
+                                                         JobPriority::NORMAL);
   m_queued.emplace_back(jobID, image);
 }
 

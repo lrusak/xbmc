@@ -2276,7 +2276,7 @@ bool CGUIMediaWindow::WaitGetDirectoryItems(CGetDirectoryItems &items)
           items.Run();
           m_updateEvent.Set();
         },
-        nullptr, CJob::PRIORITY_NORMAL);
+        nullptr, JobPriority::NORMAL);
 
     while (!m_updateEvent.Wait(1ms))
     {

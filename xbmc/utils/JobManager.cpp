@@ -9,6 +9,7 @@
 #include "JobManager.h"
 
 #include "ServiceBroker.h"
+#include "utils/Map.h"
 #include "utils/XTimeUtils.h"
 #include "utils/log.h"
 
@@ -18,6 +19,40 @@
 #include <stdexcept>
 
 using namespace std::chrono_literals;
+
+namespace
+{
+
+/*!
+ * \brief This mapping places the highest priority first. This is intended
+ *        so that when processing jobs we process them in priority order.
+ *        See CJobManager::PopJob() for the job processing logic.
+ *
+ *        This logic is slightly confusing because the maxWorkerCount is
+ *        for the entire m_processing vector not the specific priority.
+ *        For example, if there are 3 jobs processing when adding a LOW
+ *        priority job the job won't be added to the m_processing queue
+ *        until a job finishes and no higher priority jobs are waiting.
+ *
+ */
+constexpr auto jobPriorityMap = make_map<JobPriority, size_t>({
+    {JobPriority::DEDICATED, 10000},
+    {JobPriority::HIGH, 5},
+    {JobPriority::NORMAL, 4},
+    {JobPriority::LOW, 3},
+    {JobPriority::LOW_PAUSABLE, 2},
+});
+
+constexpr size_t JobPriorityToMaxWorkerCount(const JobPriority& priority)
+{
+  const auto it = jobPriorityMap.find(priority);
+  if (it != jobPriorityMap.cend())
+    return it->second;
+
+  throw std::range_error("job priority not found");
+}
+
+} // namespace
 
 bool CJob::ShouldCancel(unsigned int progress, unsigned int total) const
 {
@@ -71,7 +106,7 @@ void CJobQueue::CJobPointer::CancelJob()
   m_id = 0;
 }
 
-CJobQueue::CJobQueue(bool lifo, unsigned int jobsAtOnce, CJob::PRIORITY priority)
+CJobQueue::CJobQueue(bool lifo, unsigned int jobsAtOnce, JobPriority priority)
   : m_jobsAtOnce(jobsAtOnce), m_priority(priority), m_lifo(lifo)
 {
 }
@@ -212,9 +247,10 @@ void CJobManager::CancelJobs()
   m_running = false;
 
   // clear any pending jobs
-  for (unsigned int priority = CJob::PRIORITY_LOW_PAUSABLE; priority <= CJob::PRIORITY_DEDICATED;
-       ++priority)
+  for (auto it = jobPriorityMap.crbegin(); it != jobPriorityMap.crend(); it++)
   {
+    const JobPriority& priority = it->first;
+
     std::for_each(m_jobQueue[priority].begin(), m_jobQueue[priority].end(),
                   [](CWorkItem& wi)
                   {
@@ -246,7 +282,7 @@ void CJobManager::CancelJobs()
   }
 }
 
-unsigned int CJobManager::AddJob(CJob* job, IJobCallback* callback, CJob::PRIORITY priority)
+unsigned int CJobManager::AddJob(CJob* job, IJobCallback* callback, JobPriority priority)
 {
   std::unique_lock<CCriticalSection> lock(m_section);
 
@@ -275,9 +311,10 @@ void CJobManager::CancelJob(unsigned int jobID)
   std::unique_lock<CCriticalSection> lock(m_section);
 
   // check whether we have this job in the queue
-  for (unsigned int priority = CJob::PRIORITY_LOW_PAUSABLE; priority <= CJob::PRIORITY_DEDICATED;
-       ++priority)
+  for (auto it = jobPriorityMap.crbegin(); it != jobPriorityMap.crend(); it++)
   {
+    const JobPriority& priority = it->first;
+
     JobQueue::iterator i =
         std::find(m_jobQueue[priority].begin(), m_jobQueue[priority].end(), jobID);
     if (i != m_jobQueue[priority].end())
@@ -294,12 +331,12 @@ void CJobManager::CancelJob(unsigned int jobID)
     it->m_callback = NULL; // job is in progress, so only thing to do is to remove callback
 }
 
-void CJobManager::StartWorkers(CJob::PRIORITY priority)
+void CJobManager::StartWorkers(JobPriority priority)
 {
   std::unique_lock<CCriticalSection> lock(m_section);
 
   // check how many free threads we have
-  if (m_processing.size() >= GetMaxWorkers(priority))
+  if (m_processing.size() >= JobPriorityToMaxWorkerCount(priority))
     return;
 
   // do we have any sleeping threads?
@@ -316,14 +353,16 @@ void CJobManager::StartWorkers(CJob::PRIORITY priority)
 CJob* CJobManager::PopJob()
 {
   std::unique_lock<CCriticalSection> lock(m_section);
-  for (int priority = CJob::PRIORITY_DEDICATED; priority >= CJob::PRIORITY_LOW_PAUSABLE; --priority)
+
+  for (auto it = jobPriorityMap.cbegin(); it != jobPriorityMap.cend(); it++)
   {
+    const JobPriority& priority = it->first;
+
     // Check whether we're pausing pausable jobs
-    if (priority == CJob::PRIORITY_LOW_PAUSABLE && m_pauseJobs)
+    if (priority == JobPriority::LOW_PAUSABLE && m_pauseJobs)
       continue;
 
-    if (m_jobQueue[priority].size() &&
-        m_processing.size() < GetMaxWorkers(CJob::PRIORITY(priority)))
+    if (m_jobQueue[priority].size() && m_processing.size() < JobPriorityToMaxWorkerCount(priority))
     {
       // pop the job off the queue
       CWorkItem job = m_jobQueue[priority].front();
@@ -351,7 +390,7 @@ void CJobManager::UnPauseJobs()
   m_pauseJobs = false;
 }
 
-bool CJobManager::IsProcessing(const CJob::PRIORITY& priority) const
+bool CJobManager::IsProcessing(const JobPriority& priority) const
 {
   std::unique_lock<CCriticalSection> lock(m_section);
 
@@ -471,10 +510,3 @@ void CJobManager::RemoveWorker(const CJobWorker* worker)
     m_workers.erase(i); // workers auto-delete
 }
 
-unsigned int CJobManager::GetMaxWorkers(CJob::PRIORITY priority)
-{
-  static const unsigned int max_workers = 5;
-  if (priority == CJob::PRIORITY_DEDICATED)
-    return 10000; // A large number..
-  return max_workers - (CJob::PRIORITY_HIGH - priority);
-}

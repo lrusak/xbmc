@@ -179,8 +179,7 @@ private:
   bool m_finish;
 };
 
-BroadcastingJob *
-WaitForJobToStartProcessing(CJob::PRIORITY priority, JobControlPackage &package)
+BroadcastingJob* WaitForJobToStartProcessing(JobPriority priority, JobControlPackage& package)
 {
   BroadcastingJob* job = new BroadcastingJob(package);
   CServiceBroker::GetJobManager()->AddJob(job, nullptr, priority);
@@ -196,13 +195,13 @@ WaitForJobToStartProcessing(CJob::PRIORITY priority, JobControlPackage &package)
 TEST_F(TestJobManager, PauseLowPriorityJob)
 {
   JobControlPackage package;
-  BroadcastingJob *job (WaitForJobToStartProcessing(CJob::PRIORITY_LOW_PAUSABLE, package));
+  BroadcastingJob* job(WaitForJobToStartProcessing(JobPriority::LOW_PAUSABLE, package));
 
-  EXPECT_TRUE(CServiceBroker::GetJobManager()->IsProcessing(CJob::PRIORITY_LOW_PAUSABLE));
+  EXPECT_TRUE(CServiceBroker::GetJobManager()->IsProcessing(JobPriority::LOW_PAUSABLE));
   CServiceBroker::GetJobManager()->PauseJobs();
-  EXPECT_FALSE(CServiceBroker::GetJobManager()->IsProcessing(CJob::PRIORITY_LOW_PAUSABLE));
+  EXPECT_FALSE(CServiceBroker::GetJobManager()->IsProcessing(JobPriority::LOW_PAUSABLE));
   CServiceBroker::GetJobManager()->UnPauseJobs();
-  EXPECT_TRUE(CServiceBroker::GetJobManager()->IsProcessing(CJob::PRIORITY_LOW_PAUSABLE));
+  EXPECT_TRUE(CServiceBroker::GetJobManager()->IsProcessing(JobPriority::LOW_PAUSABLE));
 
   job->FinishAndStopBlocking();
 }
@@ -210,7 +209,7 @@ TEST_F(TestJobManager, PauseLowPriorityJob)
 TEST_F(TestJobManager, IsProcessing)
 {
   JobControlPackage package;
-  BroadcastingJob *job (WaitForJobToStartProcessing(CJob::PRIORITY_LOW_PAUSABLE, package));
+  BroadcastingJob* job(WaitForJobToStartProcessing(JobPriority::LOW_PAUSABLE, package));
 
   EXPECT_EQ(0, CServiceBroker::GetJobManager()->IsProcessing(""));
 
