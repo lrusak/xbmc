@@ -144,7 +144,7 @@ bool CAddonInstaller::Cancel(const std::string &addonID)
   JobMap::iterator i = m_downloadJobs.find(addonID);
   if (i != m_downloadJobs.end())
   {
-    CServiceBroker::GetJobManager().CancelJob(i->second.jobID);
+    CJobManager::GetInstance().CancelJob(i->second.jobID);
     m_downloadJobs.erase(i);
     if (m_downloadJobs.empty())
       m_idle.Set();
@@ -288,7 +288,7 @@ bool CAddonInstaller::DoInstall(const AddonPtr& addon,
     // Workaround: because CAddonInstallJob is blocking waiting for other jobs, it needs to be run
     // with priority dedicated.
     unsigned int jobID =
-        CServiceBroker::GetJobManager().AddJob(installJob, this, JobPriority::DEDICATED);
+        CJobManager::GetInstance().AddJob(installJob, this, JobPriority::DEDICATED);
     m_downloadJobs.insert(make_pair(addon->ID(), CDownloadJob(jobID)));
     m_idle.Reset();
 

@@ -199,7 +199,7 @@ private:
  \brief Job Manager class for scheduling asynchronous jobs.
 
  Controls asynchronous job execution, by allowing clients to add and cancel jobs.
- Should be accessed via CServiceBroker::GetJobManager().  Jobs are allocated based on
+ Should be accessed via CJobManager::GetInstance().  Jobs are allocated based on
  priority levels.  Lower priority jobs are executed only if there are sufficient
  spare worker threads free to allow for higher priority jobs that may arise.
 
@@ -236,7 +236,7 @@ public:
    \brief The only way through which the global instance of the CJobManager should be accessed.
    \return the global instance.
    */
-  static std::unique_ptr<CJobManager> Create();
+  static CJobManager& GetInstance();
 
   /*!
    \brief Add a job to the threaded job manager.

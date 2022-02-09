@@ -366,12 +366,10 @@ void CPVRManager::Init()
 {
   // initial check for enabled addons
   // if at least one pvr addon is enabled, PVRManager start up
-  CServiceBroker::GetJobManager().Submit(
-      [this]
-      {
-        Clients()->Start();
-        return true;
-      });
+  CJobManager::GetInstance().Submit([this] {
+    Clients()->Start();
+    return true;
+  });
 }
 
 void CPVRManager::Start()
@@ -802,7 +800,9 @@ void CPVRManager::TriggerPlayChannelOnStartup()
 {
   if (IsStarted())
   {
-    CServiceBroker::GetJobManager().Submit([this] { return GUIActions()->PlayChannelOnStartup(); });
+    CJobManager::GetInstance().Submit([this] {
+      return GUIActions()->PlayChannelOnStartup();
+    });
   }
 }
 
@@ -1017,12 +1017,10 @@ void CPVRManager::ConnectionStateChange(CPVRClient* client,
                                         PVR_CONNECTION_STATE state,
                                         const std::string& message)
 {
-  CServiceBroker::GetJobManager().Submit(
-      [this, client, connectString, state, message]
-      {
-        Clients()->ConnectionStateChange(client, connectString, state, message);
-        return true;
-      });
+  CJobManager::GetInstance().Submit([this, client, connectString, state, message] {
+    Clients()->ConnectionStateChange(client, connectString, state, message);
+    return true;
+  });
 }
 
 bool CPVRManager::CreateChannelEpgs()

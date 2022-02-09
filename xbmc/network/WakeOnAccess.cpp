@@ -370,10 +370,13 @@ public:
     if (async)
     {
       CJob* job = new CHostProberJob(server);
-      m_jobId = CServiceBroker::GetJobManager().AddJob(job, this);
+      m_jobId = CJobManager::GetInstance().AddJob(job, this);
     }
   }
-  ~PingResponseWaiter() override { CServiceBroker::GetJobManager().CancelJob(m_jobId); }
+  ~PingResponseWaiter() override
+  {
+    CJobManager::GetInstance().CancelJob(m_jobId);
+  }
   bool SuccessWaiting () const override
   {
     return m_jobId ? m_hostOnline : Ping(m_server);
@@ -640,7 +643,7 @@ void CWakeOnAccess::QueueMACDiscoveryForHost(const std::string& host)
   if (IsEnabled())
   {
     if (URIUtils::IsHostOnLAN(host, true))
-      CServiceBroker::GetJobManager().AddJob(new CMACDiscoveryJob(host), this);
+      CJobManager::GetInstance().AddJob(new CMACDiscoveryJob(host), this);
     else
       CLog::Log(LOGINFO, "{} - skip Mac discovery for non-local host '{}'", __FUNCTION__, host);
   }

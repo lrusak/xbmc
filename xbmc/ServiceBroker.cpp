@@ -265,11 +265,6 @@ CMediaManager& CServiceBroker::GetMediaManager()
   return g_application.m_ServiceManager->GetMediaManager();
 }
 
-CJobManager& CServiceBroker::GetJobManager()
-{
-  return g_application.m_ServiceManager->GetJobManager();
-}
-
 CGUIComponent* CServiceBroker::GetGUI()
 {
   return g_serviceBroker.m_pGUI;

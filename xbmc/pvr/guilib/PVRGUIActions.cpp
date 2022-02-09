@@ -2276,7 +2276,7 @@ namespace PVR
                     name,
                     GetAnnouncerText(timer, idEpg, idNoEpg),
                     icon);
-      CServiceBroker::GetJobManager().AddJob(job, nullptr);
+      CJobManager::GetInstance().AddJob(job, nullptr);
     }
   } // unnamed namespace
 

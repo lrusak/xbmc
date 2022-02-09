@@ -149,7 +149,7 @@ void CRepositoryUpdater::CheckForUpdates(const ADDON::RepositoryPtr& repo, bool 
     m_doneEvent.Reset();
     if (showProgress)
       SetProgressIndicator(job);
-    CServiceBroker::GetJobManager().AddJob(job, this, JobPriority::LOW);
+    CJobManager::GetInstance().AddJob(job, this, JobPriority::LOW);
   }
   else
   {

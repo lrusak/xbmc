@@ -2264,7 +2264,7 @@ bool CGUIMediaWindow::WaitGetDirectoryItems(CGetDirectoryItems &items)
   {
     m_updateJobActive = true;
     m_updateEvent.Reset();
-    CServiceBroker::GetJobManager().Submit(
+    CJobManager::GetInstance().Submit(
         [&]()
         {
           items.Run();

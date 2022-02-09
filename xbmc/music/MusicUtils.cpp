@@ -183,7 +183,7 @@ namespace MUSIC_UTILS
   {
     // Asynchronously update that type of art in the database
     CSetArtJob *job = new CSetArtJob(pItem, strType, strArt);
-    CServiceBroker::GetJobManager().AddJob(job, NULL);
+    CJobManager::GetInstance().AddJob(job, NULL);
   }
 
   // Add art types required in Kodi and configured by the user
@@ -343,7 +343,7 @@ namespace MUSIC_UTILS
       job = new CSetSongRatingJob(tag->GetDatabaseId(), userrating);
     else
       job = new CSetSongRatingJob(pItem->GetPath(), userrating);
-    CServiceBroker::GetJobManager().AddJob(job, NULL);
+    CJobManager::GetInstance().AddJob(job, NULL);
   }
 
   std::vector<std::string> GetArtTypesToScan(const MediaType& mediaType)

@@ -87,7 +87,6 @@ class CDatabaseManager;
 class CProfileManager;
 class CEventLog;
 class CMediaManager;
-class CJobManager;
 
 class CServiceManager
 {
@@ -150,8 +149,6 @@ public:
   MEDIA_DETECT::CDetectDVDMedia& GetDetectDVDMedia();
 #endif
 
-  CJobManager& GetJobManager();
-
 protected:
   struct delete_dataCacheCore
   {
@@ -202,5 +199,4 @@ protected:
 #if !defined(TARGET_WINDOWS) && defined(HAS_DVD_DRIVE)
   std::unique_ptr<MEDIA_DETECT::CDetectDVDMedia> m_DetectDVDType;
 #endif
-  std::unique_ptr<CJobManager> m_jobManager;
 };

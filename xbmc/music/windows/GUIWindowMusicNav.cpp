@@ -562,7 +562,7 @@ void CGUIWindowMusicNav::GetContextButtons(int itemNumber, CContextButtons &butt
         MEDIA_DETECT::CCdInfo* pCdInfo = CServiceBroker::GetMediaManager().GetCdInfo();
         if (pCdInfo->IsAudio(1) || pCdInfo->IsCDExtra(1) || pCdInfo->IsMixedMode(1))
         {
-          if (CServiceBroker::GetJobManager().IsProcessing("cdrip"))
+          if (CJobManager::GetInstance().IsProcessing("cdrip"))
             buttons.Add(CONTEXT_BUTTON_CANCEL_RIP_CD, 14100);
           else
             buttons.Add(CONTEXT_BUTTON_RIP_CD, 600);
