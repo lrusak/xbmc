@@ -57,7 +57,7 @@ public:
   int GetAudioStream() override { return 0; }
 
   // implementation of IJobCallback
-  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
+  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
 
   struct
   {

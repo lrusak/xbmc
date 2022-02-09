@@ -55,7 +55,7 @@ CDetectDVDMedia::~CDetectDVDMedia() = default;
 
 void CDetectDVDMedia::OnStartup()
 {
-  // SetPriority( THREAD_LOWEST );
+  // SetPriority( THREAD_PRIORITY_LOWEST );
   CLog::Log(LOGDEBUG, "Compiled with libcdio Version 0.{}", LIBCDIO_VERSION_NUM);
 }
 

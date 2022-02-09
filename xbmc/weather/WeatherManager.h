@@ -97,7 +97,7 @@ protected:
   CJob *GetJob() const override;
   std::string TranslateInfo(int info) const override;
   std::string BusyInfo(int info) const override;
-  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
+  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
 
   void OnSettingChanged(const std::shared_ptr<const CSetting>& setting) override;
   void OnSettingAction(const std::shared_ptr<const CSetting>& setting) override;

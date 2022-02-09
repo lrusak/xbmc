@@ -63,7 +63,7 @@ CAddonInstaller &CAddonInstaller::GetInstance()
   return addonInstaller;
 }
 
-void CAddonInstaller::OnJobComplete(unsigned int jobID, bool success, IJob* job)
+void CAddonInstaller::OnJobComplete(unsigned int jobID, bool success, CJob* job)
 {
   CSingleLock lock(m_critSection);
   JobMap::iterator i = find_if(m_downloadJobs.begin(), m_downloadJobs.end(), [jobID](const std::pair<std::string, CDownloadJob>& p) {
@@ -80,10 +80,7 @@ void CAddonInstaller::OnJobComplete(unsigned int jobID, bool success, IJob* job)
   CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg);
 }
 
-void CAddonInstaller::OnJobProgress(unsigned int jobID,
-                                    unsigned int progress,
-                                    unsigned int total,
-                                    const IJob* job)
+void CAddonInstaller::OnJobProgress(unsigned int jobID, unsigned int progress, unsigned int total, const CJob *job)
 {
   CSingleLock lock(m_critSection);
   JobMap::iterator i = find_if(m_downloadJobs.begin(), m_downloadJobs.end(), [jobID](const std::pair<std::string, CDownloadJob>& p) {
@@ -290,8 +287,7 @@ bool CAddonInstaller::DoInstall(const AddonPtr& addon,
   {
     // Workaround: because CAddonInstallJob is blocking waiting for other jobs, it needs to be run
     // with priority dedicated.
-    unsigned int jobID =
-        CJobManager::GetInstance().AddJob(installJob, this, JobPriority::DEDICATED);
+    unsigned int jobID = CJobManager::GetInstance().AddJob(installJob, this, CJob::PRIORITY_DEDICATED);
     m_downloadJobs.insert(make_pair(addon->ID(), CDownloadJob(jobID)));
     m_idle.Reset();
 

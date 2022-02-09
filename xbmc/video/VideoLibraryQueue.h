@@ -133,7 +133,7 @@ public:
 
 protected:
   // implementation of IJobCallback
-  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
+  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
 
   /*!
    \brief Notifies all to refresh the current listings.

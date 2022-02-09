@@ -36,8 +36,7 @@ public:
 
   static int64_t CalculateFolderSize(const std::string &strDirectory, CGUIDialogProgress *pProgress = NULL);
 
-  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
-
+  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
 protected:
   void OnInitWindow() override;
   void SetInitialPath(const std::string &path);

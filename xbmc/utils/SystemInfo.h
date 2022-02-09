@@ -151,7 +151,7 @@ public:
 protected:
   CJob *GetJob() const override;
   std::string TranslateInfo(int info) const override;
-  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
+  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
 
 private:
   CSysData m_info;

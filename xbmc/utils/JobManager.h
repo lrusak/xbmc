@@ -12,7 +12,6 @@
 #include "threads/CriticalSection.h"
 #include "threads/Thread.h"
 
-#include <map>
 #include <queue>
 #include <string>
 #include <vector>
@@ -63,6 +62,29 @@ private:
  */
 class CJobQueue: public IJobCallback
 {
+  class CJobPointer
+  {
+  public:
+    explicit CJobPointer(CJob *job)
+    {
+      m_job = job;
+      m_id = 0;
+    };
+    void CancelJob();
+    void FreeJob()
+    {
+      delete m_job;
+      m_job = NULL;
+    };
+    bool operator==(const CJob *job) const
+    {
+      if (m_job)
+        return *m_job == job;
+      return false;
+    };
+    CJob *m_job;
+    unsigned int m_id;
+  };
 public:
   /*!
    \brief CJobQueue constructor
@@ -71,9 +93,7 @@ public:
    \param priority priority of this queue.
    \sa CJob
    */
-  CJobQueue(bool lifo = false,
-            unsigned int jobsAtOnce = 1,
-            JobPriority priority = JobPriority::LOW);
+  CJobQueue(bool lifo = false, unsigned int jobsAtOnce = 1, CJob::PRIORITY priority = CJob::PRIORITY_LOW);
 
   /*!
    \brief CJobQueue destructor
@@ -90,7 +110,7 @@ public:
    In case of failure, the passed CJob object will be deleted before returning from this method.
    \sa CJob
    */
-  bool AddJob(IJob* job);
+  bool AddJob(CJob *job);
 
   /*!
    \brief Add a function f to this job queue
@@ -109,7 +129,7 @@ public:
    \param job a pointer to the job to cancel. The job should be subclassed from CJob.
    \sa CJob
    */
-  void CancelJob(const IJob* job);
+  void CancelJob(const CJob *job);
 
   /*!
    \brief Cancel all jobs in the queue
@@ -135,7 +155,7 @@ public:
    \param job the job that has been processed.
    \sa CJobManager, IJobCallback and CJob
    */
-  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
+  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
 
   /*!
    \brief The callback used when a job will be aborted.
@@ -147,7 +167,7 @@ public:
    \param job the job that has been aborted.
    \sa CJobManager, IJobCallback and CJob
    */
-  void OnJobAbort(unsigned int jobID, IJob* job) override;
+  void OnJobAbort(unsigned int jobID, CJob* job) override;
 
 protected:
   /*!
@@ -157,16 +177,16 @@ protected:
   bool QueueEmpty() const;
 
 private:
-  void OnJobNotify(IJob* job);
+  void OnJobNotify(CJob* job);
   void QueueNextJob();
 
-  typedef std::deque<IJob*> Queue;
-  typedef std::vector<IJob*> Processing;
+  typedef std::deque<CJobPointer> Queue;
+  typedef std::vector<CJobPointer> Processing;
   Queue m_jobQueue;
   Processing m_processing;
 
   unsigned int m_jobsAtOnce;
-  JobPriority m_priority;
+  CJob::PRIORITY m_priority;
   mutable CCriticalSection m_section;
   bool m_lifo;
 };
@@ -184,6 +204,39 @@ private:
  */
 class CJobManager final
 {
+  class CWorkItem
+  {
+  public:
+    CWorkItem(CJob *job, unsigned int id, CJob::PRIORITY priority, IJobCallback *callback)
+    {
+      m_job = job;
+      m_id = id;
+      m_callback = callback;
+      m_priority = priority;
+    }
+    bool operator==(unsigned int jobID) const
+    {
+      return m_id == jobID;
+    };
+    bool operator==(const CJob *job) const
+    {
+      return m_job == job;
+    };
+    void FreeJob()
+    {
+      delete m_job;
+      m_job = NULL;
+    };
+    void Cancel()
+    {
+      m_callback = NULL;
+    };
+    CJob         *m_job;
+    unsigned int  m_id;
+    IJobCallback *m_callback;
+    CJob::PRIORITY m_priority;
+  };
+
 public:
   /*!
    \brief The only way through which the global instance of the CJobManager should be accessed.
@@ -201,13 +254,13 @@ public:
    In case of failure, the passed CJob object will be deleted before returning from this method.
    \sa CJob, IJobCallback, CancelJob()
    */
-  unsigned int AddJob(IJob* job, IJobCallback* callback, JobPriority priority = JobPriority::LOW);
+  unsigned int AddJob(CJob *job, IJobCallback *callback, CJob::PRIORITY priority = CJob::PRIORITY_LOW);
 
   /*!
    \brief Add a function f to this job manager for asynchronously execution.
    */
   template<typename F>
-  void Submit(F&& f, JobPriority priority = JobPriority::LOW)
+  void Submit(F&& f, CJob::PRIORITY priority = CJob::PRIORITY_LOW)
   {
     AddJob(new CLambdaJob<F>(std::forward<F>(f)), nullptr, priority);
   }
@@ -216,7 +269,7 @@ public:
    \brief Add a function f to this job manager for asynchronously execution.
    */
   template<typename F>
-  void Submit(F&& f, IJobCallback* callback, JobPriority priority = JobPriority::LOW)
+  void Submit(F&& f, IJobCallback *callback, CJob::PRIORITY priority = CJob::PRIORITY_LOW)
   {
     AddJob(new CLambdaJob<F>(std::forward<F>(f)), callback, priority);
   }
@@ -251,7 +304,7 @@ public:
   int IsProcessing(const std::string &type) const;
 
   /*!
-   \brief Suspends queueing of jobs with priority LOW_PAUSABLE until unpaused
+   \brief Suspends queueing of jobs with priority PRIORITY_LOW_PAUSABLE until unpaused
    Useful to (for ex) stop queuing thumb jobs during video start/playback.
    Does not affect currently processing jobs, use IsProcessing to see if any need to be waited on
    \sa UnPauseJobs()
@@ -259,7 +312,7 @@ public:
   void PauseJobs();
 
   /*!
-   \brief Resumes queueing of (previously paused) jobs with priority LOW_PAUSABLE
+   \brief Resumes queueing of (previously paused) jobs with priority PRIORITY_LOW_PAUSABLE
    \sa PauseJobs()
    */
   void UnPauseJobs();
@@ -269,7 +322,7 @@ public:
    \param priority to search for
    \return true if processing jobs, else returns false
    */
-  bool IsProcessing(const JobPriority& priority) const;
+  bool IsProcessing(const CJob::PRIORITY &priority) const;
 
 protected:
   friend class CJobWorker;
@@ -281,7 +334,7 @@ protected:
    \param worker a pointer to the current CJobWorker instance requesting a job.
    \sa CJob
    */
-  IJob* GetNextJob(const CJobWorker* worker);
+  CJob *GetNextJob(const CJobWorker *worker);
 
   /*!
    \brief Callback from CJobWorker after a job has completed.
@@ -290,7 +343,7 @@ protected:
    \param success the result from the DoWork call
    \sa IJobCallback, CJob
    */
-  void OnJobComplete(bool success, IJob* job);
+  void  OnJobComplete(bool success, CJob *job);
 
   /*!
    \brief Callback from CJob to report progress and check for cancellation.
@@ -301,7 +354,7 @@ protected:
    \return true if the job has been cancelled, else returns false.
    \sa IJobCallback, CJob
    */
-  bool OnJobProgress(unsigned int progress, unsigned int total, const IJob* job) const;
+  bool  OnJobProgress(unsigned int progress, unsigned int total, const CJob *job) const;
 
 private:
   // private construction, and no assignments; use the provided singleton methods
@@ -312,19 +365,19 @@ private:
   /*! \brief Pop a job off the job queue and add to the processing queue ready to process
    \return the job to process, NULL if no jobs are available
    */
-  IJob* PopJob();
+  CJob *PopJob();
 
-  void StartWorkers(JobPriority priority);
+  void StartWorkers(CJob::PRIORITY priority);
   void RemoveWorker(const CJobWorker *worker);
-  static unsigned int GetMaxWorkers(JobPriority priority);
+  static unsigned int GetMaxWorkers(CJob::PRIORITY priority);
 
   unsigned int m_jobCounter;
 
-  typedef std::deque<IJob*> JobQueue;
-  typedef std::vector<IJob*> Processing;
+  typedef std::deque<CWorkItem>    JobQueue;
+  typedef std::vector<CWorkItem>   Processing;
   typedef std::vector<CJobWorker*> Workers;
 
-  std::map<JobPriority, JobQueue> m_jobQueue;
+  JobQueue   m_jobQueue[CJob::PRIORITY_DEDICATED + 1];
   bool       m_pauseJobs;
   Processing m_processing;
   Workers    m_workers;

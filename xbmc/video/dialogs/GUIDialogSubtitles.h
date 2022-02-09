@@ -33,7 +33,7 @@ public:
 
 protected:
   void Process(unsigned int currentTime, CDirtyRegionList &dirtyregions) override;
-  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
+  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
 
   bool SetService(const std::string &service);
   const CFileItemPtr GetService() const;

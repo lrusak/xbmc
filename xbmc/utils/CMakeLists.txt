@@ -31,7 +31,6 @@ set(SOURCES ActorProtocol.cpp
             HttpRangeUtils.cpp
             HttpResponse.cpp
             InfoLoader.cpp
-            Job.cpp
             JobManager.cpp
             JSONVariantParser.cpp
             JSONVariantWriter.cpp
@@ -111,7 +110,6 @@ set(HEADERS ActorProtocol.h
             HttpResponse.h
             IArchivable.h
             IBufferObject.h
-            IJob.h
             ILocalizer.h
             InfoLoader.h
             IPlatformLog.h

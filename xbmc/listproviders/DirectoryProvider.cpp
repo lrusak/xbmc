@@ -378,7 +378,7 @@ void CDirectoryProvider::FreeResources(bool immediately)
     item->FreeMemory(immediately);
 }
 
-void CDirectoryProvider::OnJobComplete(unsigned int jobID, bool success, IJob* job)
+void CDirectoryProvider::OnJobComplete(unsigned int jobID, bool success, CJob *job)
 {
   CSingleLock lock(m_section);
   if (success)

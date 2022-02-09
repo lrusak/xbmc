@@ -297,7 +297,7 @@ std::string CCDDARipper::GetTrackName(CFileItem* item)
   return track;
 }
 
-void CCDDARipper::OnJobComplete(unsigned int jobID, bool success, IJob* job)
+void CCDDARipper::OnJobComplete(unsigned int jobID, bool success, CJob* job)
 {
   if (success)
   {

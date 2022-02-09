@@ -21,8 +21,7 @@ public:
   std::string GetInfo(int info);
   void Refresh();
 
-  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
-
+  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
 protected:
   virtual CJob *GetJob() const=0;
   virtual std::string TranslateInfo(int info) const;

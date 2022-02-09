@@ -373,7 +373,7 @@ void CGUIDialogSubtitles::Search(const std::string &search/*=""*/)
   AddJob(new CSubtitlesJob(url, ""));
 }
 
-void CGUIDialogSubtitles::OnJobComplete(unsigned int jobID, bool success, IJob* job)
+void CGUIDialogSubtitles::OnJobComplete(unsigned int jobID, bool success, CJob *job)
 {
   const CURL &url             = static_cast<CSubtitlesJob*>(job)->GetURL();
   const CFileItemList *items  = static_cast<CSubtitlesJob*>(job)->GetItems();

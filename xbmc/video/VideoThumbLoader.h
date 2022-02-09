@@ -115,19 +115,21 @@ public:
 
    \sa CImageLoader, IJobCallback
    */
- void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
+  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
 
- static bool GetEmbeddedThumb(const std::string& path, const std::string& type, EmbeddedArt& art);
+  static bool GetEmbeddedThumb(const std::string& path,
+                               const std::string& type,
+                               EmbeddedArt& art);
 
- protected:
- CVideoDatabase* m_videoDatabase;
- ArtCache m_artCache;
+protected:
+  CVideoDatabase *m_videoDatabase;
+  ArtCache m_artCache;
 
- /*! \brief Tries to detect missing data/info from a file and adds those
+  /*! \brief Tries to detect missing data/info from a file and adds those
    \param item The CFileItem to process
    \return void
    */
- void DetectAndAddMissingItemData(CFileItem& item);
+  void DetectAndAddMissingItemData(CFileItem &item);
 
- const ArtMap& GetArtFromCache(const std::string& mediaType, const int id);
+  const ArtMap& GetArtFromCache(const std::string &mediaType, const int id);
 };

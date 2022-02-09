@@ -60,7 +60,7 @@ public:
    */
   bool RipCD();
 
-  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
+  void OnJobComplete(unsigned int jobID, bool success, CJob* job) override;
 
 private:
   // private construction and no assignments

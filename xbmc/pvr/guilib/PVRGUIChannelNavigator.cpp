@@ -43,7 +43,7 @@ public:
 
   virtual void OnTimeout() = 0;
 
-  void OnJobComplete(unsigned int iJobID, bool bSuccess, IJob* job) override {}
+  void OnJobComplete(unsigned int iJobID, bool bSuccess, CJob* job) override {}
 
   bool DoWork() override
   {

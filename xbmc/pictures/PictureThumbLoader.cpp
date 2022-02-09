@@ -28,8 +28,7 @@
 
 using namespace XFILE;
 
-CPictureThumbLoader::CPictureThumbLoader()
-  : CThumbLoader(), CJobQueue(true, 1, JobPriority::LOW_PAUSABLE)
+CPictureThumbLoader::CPictureThumbLoader() : CThumbLoader(), CJobQueue(true, 1, CJob::PRIORITY_LOW_PAUSABLE)
 {
   m_regenerateThumbs = false;
 }
@@ -112,7 +111,7 @@ bool CPictureThumbLoader::LoadItemLookup(CFileItem* pItem)
   return false;
 }
 
-void CPictureThumbLoader::OnJobComplete(unsigned int jobID, bool success, IJob* job)
+void CPictureThumbLoader::OnJobComplete(unsigned int jobID, bool success, CJob* job)
 {
   if (success)
   {

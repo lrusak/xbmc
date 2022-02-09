@@ -143,7 +143,7 @@ CJob *CWeatherManager::GetJob() const
   return new CWeatherJob(GetArea());
 }
 
-void CWeatherManager::OnJobComplete(unsigned int jobID, bool success, IJob* job)
+void CWeatherManager::OnJobComplete(unsigned int jobID, bool success, CJob *job)
 {
   m_info = static_cast<CWeatherJob*>(job)->GetInfo();
   CInfoLoader::OnJobComplete(jobID, success, job);

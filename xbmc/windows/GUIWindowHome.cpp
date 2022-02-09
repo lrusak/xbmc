@@ -133,7 +133,7 @@ void CGUIWindowHome::AddRecentlyAddedJobs(int flag)
   m_updateRA = 0;
 }
 
-void CGUIWindowHome::OnJobComplete(unsigned int jobID, bool success, IJob* job)
+void CGUIWindowHome::OnJobComplete(unsigned int jobID, bool success, CJob *job)
 {
   int flag = 0;
 

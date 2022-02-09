@@ -65,7 +65,7 @@ public:
 
    \sa CImageLoader, IJobCallback
    */
-  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
+  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
 
   /*!
    \brief Request a texture to be loaded in the background.

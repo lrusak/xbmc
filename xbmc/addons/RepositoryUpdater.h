@@ -69,7 +69,7 @@ private:
   CRepositoryUpdater& operator=(const CRepositoryUpdater&) = delete;
   CRepositoryUpdater& operator=(CRepositoryUpdater&&) = delete;
 
-  void OnJobComplete(unsigned int jobID, bool success, IJob* job) override;
+  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
 
   void OnTimeout() override;
 

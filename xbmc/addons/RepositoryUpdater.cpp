@@ -70,7 +70,7 @@ void CRepositoryUpdater::OnEvent(const ADDON::AddonEvent& event)
   }
 }
 
-void CRepositoryUpdater::OnJobComplete(unsigned int jobID, bool success, IJob* job)
+void CRepositoryUpdater::OnJobComplete(unsigned int jobID, bool success, CJob* job)
 {
   CSingleLock lock(m_criticalSection);
   m_jobs.erase(std::find(m_jobs.begin(), m_jobs.end(), job));
@@ -149,7 +149,7 @@ void CRepositoryUpdater::CheckForUpdates(const ADDON::RepositoryPtr& repo, bool 
     m_doneEvent.Reset();
     if (showProgress)
       SetProgressIndicator(job);
-    CJobManager::GetInstance().AddJob(job, this, JobPriority::LOW);
+    CJobManager::GetInstance().AddJob(job, this, CJob::PRIORITY_LOW);
   }
   else
   {

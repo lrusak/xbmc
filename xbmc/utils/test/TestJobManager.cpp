@@ -176,7 +176,8 @@ private:
   bool m_finish;
 };
 
-BroadcastingJob* WaitForJobToStartProcessing(JobPriority priority, JobControlPackage& package)
+BroadcastingJob *
+WaitForJobToStartProcessing(CJob::PRIORITY priority, JobControlPackage &package)
 {
   BroadcastingJob* job = new BroadcastingJob(package);
   CJobManager::GetInstance().AddJob(job, NULL, priority);
@@ -192,13 +193,13 @@ BroadcastingJob* WaitForJobToStartProcessing(JobPriority priority, JobControlPac
 TEST_F(TestJobManager, PauseLowPriorityJob)
 {
   JobControlPackage package;
-  BroadcastingJob* job(WaitForJobToStartProcessing(JobPriority::LOW_PAUSABLE, package));
+  BroadcastingJob *job (WaitForJobToStartProcessing(CJob::PRIORITY_LOW_PAUSABLE, package));
 
-  EXPECT_TRUE(CJobManager::GetInstance().IsProcessing(JobPriority::LOW_PAUSABLE));
+  EXPECT_TRUE(CJobManager::GetInstance().IsProcessing(CJob::PRIORITY_LOW_PAUSABLE));
   CJobManager::GetInstance().PauseJobs();
-  EXPECT_FALSE(CJobManager::GetInstance().IsProcessing(JobPriority::LOW_PAUSABLE));
+  EXPECT_FALSE(CJobManager::GetInstance().IsProcessing(CJob::PRIORITY_LOW_PAUSABLE));
   CJobManager::GetInstance().UnPauseJobs();
-  EXPECT_TRUE(CJobManager::GetInstance().IsProcessing(JobPriority::LOW_PAUSABLE));
+  EXPECT_TRUE(CJobManager::GetInstance().IsProcessing(CJob::PRIORITY_LOW_PAUSABLE));
 
   job->FinishAndStopBlocking();
 }
@@ -206,7 +207,7 @@ TEST_F(TestJobManager, PauseLowPriorityJob)
 TEST_F(TestJobManager, IsProcessing)
 {
   JobControlPackage package;
-  BroadcastingJob* job(WaitForJobToStartProcessing(JobPriority::LOW_PAUSABLE, package));
+  BroadcastingJob *job (WaitForJobToStartProcessing(CJob::PRIORITY_LOW_PAUSABLE, package));
 
   EXPECT_EQ(0, CJobManager::GetInstance().IsProcessing(""));
 

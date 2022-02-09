@@ -27,7 +27,9 @@
 
 #include <utility>
 
-CMusicLibraryQueue::CMusicLibraryQueue() : CJobQueue(false, 1, JobPriority::LOW), m_jobs()
+CMusicLibraryQueue::CMusicLibraryQueue()
+  : CJobQueue(false, 1, CJob::PRIORITY_LOW),
+    m_jobs()
 { }
 
 CMusicLibraryQueue::~CMusicLibraryQueue()
@@ -304,7 +306,7 @@ void CMusicLibraryQueue::Refresh()
   CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg);
 }
 
-void CMusicLibraryQueue::OnJobComplete(unsigned int jobID, bool success, IJob* job)
+void CMusicLibraryQueue::OnJobComplete(unsigned int jobID, bool success, CJob *job)
 {
   if (success)
   {

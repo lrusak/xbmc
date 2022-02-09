@@ -181,8 +181,8 @@ bool CThumbExtractor::DoWork()
   return false;
 }
 
-CVideoThumbLoader::CVideoThumbLoader()
-  : CThumbLoader(), CJobQueue(true, 1, JobPriority::LOW_PAUSABLE)
+CVideoThumbLoader::CVideoThumbLoader() :
+  CThumbLoader(), CJobQueue(true, 1, CJob::PRIORITY_LOW_PAUSABLE)
 {
   m_videoDatabase = new CVideoDatabase();
 }
@@ -507,8 +507,8 @@ bool CVideoThumbLoader::FillLibraryArt(CFileItem &item)
 {
   CVideoInfoTag &tag = *item.GetVideoInfoTag();
   std::map<std::string, std::string> artwork;
-  // Video item can be an album - either a
-  // a) search result with full details including music library album id, or
+  // Video item can be an album - either a 
+  // a) search result with full details including music library album id, or 
   // b) musicvideo album that needs matching to a music album, storing id as well as fetch art.
   if (tag.m_type == MediaTypeAlbum)
   {
@@ -716,7 +716,7 @@ bool CVideoThumbLoader::GetEmbeddedThumb(const std::string& path,
   return !art.Empty();
 }
 
-void CVideoThumbLoader::OnJobComplete(unsigned int jobID, bool success, IJob* job)
+void CVideoThumbLoader::OnJobComplete(unsigned int jobID, bool success, CJob* job)
 {
   if (success)
   {
