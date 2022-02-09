@@ -331,7 +331,7 @@ void CJobManager::CancelJob(unsigned int jobID)
     it->m_callback = NULL; // job is in progress, so only thing to do is to remove callback
 }
 
-void CJobManager::StartWorkers(JobPriority priority)
+void CJobManager::StartWorkers(const JobPriority& priority)
 {
   std::unique_lock<CCriticalSection> lock(m_section);
 

@@ -210,7 +210,7 @@ class CJobManager final
   class CWorkItem
   {
   public:
-    CWorkItem(CJob* job, unsigned int id, JobPriority priority, IJobCallback* callback)
+    CWorkItem(CJob* job, unsigned int id, const JobPriority& priority, IJobCallback* callback)
     {
       m_job = job;
       m_id = id;
@@ -354,7 +354,7 @@ private:
    */
   CJob* PopJob();
 
-  void StartWorkers(JobPriority priority);
+  void StartWorkers(const JobPriority& priority);
   void RemoveWorker(const CJobWorker* worker);
   static unsigned int GetMaxWorkers(JobPriority priority);
 
