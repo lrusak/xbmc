@@ -10,6 +10,7 @@
 
 class CJob;
 
+#include <cstdint>
 #include <stddef.h>
 
 #define kJobTypeMediaFlags  "mediaflags"
@@ -119,7 +120,7 @@ enum class JobPriority
 class CJob
 {
 public:
-  CJob() { m_callback = NULL; }
+  CJob() = default;
 
   /*!
    \brief Destructor for job objects.
@@ -172,7 +173,29 @@ public:
    \sa IJobCallback::OnJobProgress()
    */
   virtual bool ShouldCancel(unsigned int progress, unsigned int total) const;
-private:
+
+  void CancelJob();
+
+  void FreeJob();
+
+  void SetJobManager(CJobManager* jobManager) { m_manager = jobManager; }
+
+  void SetJobID(const uint32_t id) { m_id = id; }
+  uint32_t GetJobID() const { return m_id; }
+
+  void SetCallback(IJobCallback* callback) { m_callback = callback; }
+  IJobCallback* GetCallback() const { return m_callback; }
+
+  void SetPriority(const JobPriority& priority) { m_priority = priority; }
+  JobPriority GetPriority() const { return m_priority; }
+
+protected:
   friend class CJobManager;
-  CJobManager *m_callback;
+
+private:
+  IJobCallback* m_callback{nullptr};
+  CJobManager* m_manager{nullptr};
+
+  uint32_t m_id{0};
+  JobPriority m_priority{JobPriority::LOW};
 };

@@ -62,30 +62,6 @@ private:
  */
 class CJobQueue : public IJobCallback
 {
-  class CJobPointer
-  {
-  public:
-    explicit CJobPointer(CJob* job)
-    {
-      m_job = job;
-      m_id = 0;
-    };
-    void CancelJob();
-    void FreeJob()
-    {
-      delete m_job;
-      m_job = NULL;
-    };
-    bool operator==(const CJob* job) const
-    {
-      if (m_job)
-        return *m_job == job;
-      return false;
-    };
-    CJob* m_job;
-    unsigned int m_id;
-  };
-
 public:
   /*!
    \brief CJobQueue constructor
@@ -183,8 +159,8 @@ private:
   void OnJobNotify(CJob* job);
   void QueueNextJob();
 
-  typedef std::deque<CJobPointer> Queue;
-  typedef std::vector<CJobPointer> Processing;
+  typedef std::deque<CJob*> Queue;
+  typedef std::vector<CJob*> Processing;
   Queue m_jobQueue;
   Processing m_processing;
 
@@ -207,30 +183,6 @@ private:
  */
 class CJobManager final
 {
-  class CWorkItem
-  {
-  public:
-    CWorkItem(CJob* job, unsigned int id, const JobPriority& priority, IJobCallback* callback)
-    {
-      m_job = job;
-      m_id = id;
-      m_callback = callback;
-      m_priority = priority;
-    }
-    bool operator==(unsigned int jobID) const { return m_id == jobID; };
-    bool operator==(const CJob* job) const { return m_job == job; };
-    void FreeJob()
-    {
-      delete m_job;
-      m_job = NULL;
-    };
-    void Cancel() { m_callback = NULL; };
-    CJob* m_job;
-    unsigned int m_id;
-    IJobCallback* m_callback;
-    JobPriority m_priority;
-  };
-
 public:
   /*!
    \brief The only way through which the global instance of the CJobManager should be accessed.
@@ -367,8 +319,8 @@ private:
 
   unsigned int m_jobCounter;
 
-  typedef std::deque<CWorkItem> JobQueue;
-  typedef std::vector<CWorkItem> Processing;
+  typedef std::deque<CJob*> JobQueue;
+  typedef std::vector<CJob*> Processing;
   typedef std::vector<CJobWorker*> Workers;
 
   std::map<JobPriority, JobQueue> m_jobQueue;

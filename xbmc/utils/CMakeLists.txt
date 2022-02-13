@@ -31,6 +31,7 @@ set(SOURCES ActorProtocol.cpp
             HttpRangeUtils.cpp
             HttpResponse.cpp
             InfoLoader.cpp
+            Job.cpp
             JobManager.cpp
             JSONVariantParser.cpp
             JSONVariantWriter.cpp
