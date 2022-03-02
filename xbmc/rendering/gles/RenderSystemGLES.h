@@ -14,6 +14,8 @@
 
 #include <map>
 
+#include <fmt/format.h>
+
 #include "system_gl.h"
 
 enum class ShaderMethodGLES
@@ -30,6 +32,37 @@ enum class ShaderMethodGLES
   SM_TEXTURE_RGBA_BOB,
   SM_TEXTURE_RGBA_BOB_OES,
   SM_TEXTURE_NOALPHA
+};
+
+template<>
+struct fmt::formatter<ShaderMethodGLES> : fmt::formatter<std::string_view>
+{
+  template<typename FormatContext>
+  constexpr auto format(const ShaderMethodGLES& shaderMethod, FormatContext& ctx)
+  {
+    const auto it = ShaderMethodGLESMap.find(shaderMethod);
+    if (it == ShaderMethodGLESMap.cend())
+      throw std::range_error("no string mapping found for shader method");
+
+    return fmt::formatter<string_view>::format(it->second, ctx);
+  }
+
+private:
+  //! @todo: update to constexpr map when available
+  const std::map<ShaderMethodGLES, std::string_view> ShaderMethodGLESMap = {
+      {SM_DEFAULT, "default"},
+      {SM_TEXTURE, "texture"},
+      {SM_MULTI, "multi"},
+      {SM_FONTS, "fonts"},
+      {SM_TEXTURE_NOBLEND, "texture no blending"},
+      {SM_MULTI_BLENDCOLOR, "multi blend colour"},
+      {SM_TEXTURE_RGBA, "texure rgba"},
+      {SM_TEXTURE_RGBA_OES, "texture rgba OES"},
+      {SM_TEXTURE_RGBA_BLENDCOLOR, "texture rgba blend colour"},
+      {SM_TEXTURE_RGBA_BOB, "texture rgba bob"},
+      {SM_TEXTURE_RGBA_BOB_OES, "texture rgba bob OES"},
+      {SM_TEXTURE_NOALPHA "texture no alpha"},
+  };
 };
 
 class CRenderSystemGLES : public CRenderSystemBase

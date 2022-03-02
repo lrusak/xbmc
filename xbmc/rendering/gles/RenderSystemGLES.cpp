@@ -562,7 +562,7 @@ void CRenderSystemGLES::EnableGUIShader(ShaderMethodGLES method)
   }
   else
   {
-    CLog::Log(LOGERROR, "Invalid GUI Shader selected - {}", method);
+    CLog::Log(LOGERROR, "Invalid GUI Shader selected: {}", method);
   }
 }
 
