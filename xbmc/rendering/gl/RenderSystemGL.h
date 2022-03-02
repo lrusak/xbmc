@@ -15,6 +15,8 @@
 #include <map>
 #include <memory>
 
+#include <fmt/format.h>
+
 #include "system_gl.h"
 
 enum class ShaderMethodGL
@@ -26,6 +28,33 @@ enum class ShaderMethodGL
   SM_FONTS,
   SM_TEXTURE_NOBLEND,
   SM_MULTI_BLENDCOLOR
+};
+
+template<>
+struct fmt::formatter<ShaderMethodGL> : fmt::formatter<std::string_view>
+{
+  template<typename FormatContext>
+
+  constexpr auto format(const ShaderMethodGL& shaderMethod, FormatContext& ctx)
+  {
+    const auto it = ShaderMethodGLMap.find(shaderMethod);
+    if (it == ShaderMethodGLMap.cend())
+      throw std::range_error("no string mapping found for shader method");
+
+    return fmt::formatter<string_view>::format(it->second, ctx);
+  }
+
+private:
+  //! @todo: update to constexpr map when available
+  const std::map<ShaderMethodGL, std::string_view> ShaderMethodGLMap = {
+      {ShaderMethodGL::SM_DEFAULT, "default"},
+      {ShaderMethodGL::SM_TEXTURE, "texture"},
+      {ShaderMethodGL::SM_TEXTURE_LIM, "texture limited"},
+      {ShaderMethodGL::SM_MULTI, "multi"},
+      {ShaderMethodGL::SM_FONTS, "fonts"},
+      {ShaderMethodGL::SM_TEXTURE_NOBLEND, "texture no blending"},
+      {ShaderMethodGL::SM_MULTI_BLENDCOLOR, "multi blend colour"},
+  };
 };
 
 class CRenderSystemGL : public CRenderSystemBase
