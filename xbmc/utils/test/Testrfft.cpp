@@ -35,7 +35,7 @@ TEST(TestRFFT, SimpleSignal)
 
   for (int i=0;i<size/2;++i)
   {
-    EXPECT_NEAR(output[2*i],(i==freq1?1.0:0.0), 1e-7);
-    EXPECT_NEAR(output[2*i+1], ((i==freq2[0]||i==freq2[1])?1.0:0.0), 1e-7);
+    EXPECT_NEAR(output[2 * i], (i == freq1 ? 1.0f : 0.0f), 1e-7f);
+    EXPECT_NEAR(output[2 * i + 1], ((i == freq2[0] || i == freq2[1]) ? 1.0f : 0.0f), 1e-7f);
   }
 }
