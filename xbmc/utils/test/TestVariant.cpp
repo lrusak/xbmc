@@ -91,8 +91,7 @@ TEST(TestVariant, VariantTypeDouble)
   EXPECT_TRUE(b.isDouble());
   EXPECT_EQ(CVariant::VariantTypeDouble, b.type());
 
-  EXPECT_EQ((float)0.0f, a.asDouble());
-  EXPECT_EQ((double)0.1f, b.asDouble());
+  EXPECT_EQ(0.1, b.asDouble());
 }
 
 TEST(TestVariant, VariantTypeArray)
