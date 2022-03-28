@@ -8,7 +8,10 @@
 
 #pragma once
 
+#include <map>
 #include <string>
+
+#include <fmt/format.h>
 
 namespace UTILS
 {
@@ -71,3 +74,25 @@ DiscInfo ProbeBlurayDiscInfo(const std::string& mediaPath);
 
 } // namespace DISCS
 } // namespace UTILS
+
+template<>
+struct fmt::formatter<UTILS::DISCS::DiscType> : fmt::formatter<std::string_view>
+{
+  template<typename FormatContext>
+  constexpr auto format(const UTILS::DISCS::DiscType& discType, FormatContext& ctx)
+  {
+    const auto it = DiscTypeMap.find(discType);
+    if (it == DiscTypeMap.cend())
+      throw std::range_error("no string mapping found for disc type");
+
+    return fmt::formatter<string_view>::format(it->second, ctx);
+  }
+
+private:
+  //! @todo: update to constexpr map when available
+  const std::map<UTILS::DISCS::DiscType, std::string_view> DiscTypeMap = {
+      {UTILS::DISCS::DiscType::UNKNOWN, "unknown"},
+      {UTILS::DISCS::DiscType::DVD, "dvd"},
+      {UTILS::DISCS::DiscType::BLURAY, "bluray"},
+  };
+};
