@@ -108,6 +108,18 @@ pw_time CPipewireStream::GetTime() const
   return time;
 }
 
+bool CPipewireStream::SetControl(uint32_t control, std::vector<float> values) const
+{
+  int ret = pw_stream_set_control(m_stream.get(), control, values.size(), values.data(), 0);
+  if (ret < 0)
+  {
+    CLog::Log(LOGERROR, "CPipewireStream: failed to set control: {}", spa_strerror(errno));
+    return false;
+  }
+
+  return true;
+}
+
 void CPipewireStream::StateChanged(void* userdata,
                                    enum pw_stream_state old,
                                    enum pw_stream_state state,

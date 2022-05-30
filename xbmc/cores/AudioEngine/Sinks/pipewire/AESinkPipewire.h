@@ -49,6 +49,9 @@ public:
   unsigned int AddPackets(uint8_t** data, unsigned int frames, unsigned int offset) override;
   void Drain() override;
 
+  bool HasVolume() override { return true; }
+  void SetVolume(float volume) override;
+
 private:
   AEAudioFormat m_format;
   std::chrono::duration<double, std::ratio<1>> m_latency;

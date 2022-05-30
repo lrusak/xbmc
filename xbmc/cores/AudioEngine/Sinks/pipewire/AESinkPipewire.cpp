@@ -23,6 +23,7 @@
 #include <pipewire/keys.h>
 #include <spa/param/audio/format-utils.h>
 #include <spa/param/audio/raw.h>
+#include <spa/param/props.h>
 #include <spa/pod/builder.h>
 
 using namespace std::chrono_literals;
@@ -641,5 +642,17 @@ void CAESinkPipewire::Drain()
   if (ret == -ETIMEDOUT)
   {
     CLog::Log(LOGDEBUG, "CAESinkPipewire::{} - wait timed out, already drained?", __FUNCTION__);
+  }
+}
+
+void CAESinkPipewire::SetVolume(float volume)
+{
+  auto& loop = pipewire->GetThreadLoop();
+
+  PIPEWIRE::CLoopLockGuard lock(loop);
+
+  if (!m_stream->SetControl(SPA_PROP_volume, {std::cbrtf(volume)}))
+  {
+    CLog::Log(LOGERROR, "CAESinkPipewire::{} - failed to set volume: {}", __FUNCTION__, volume);
   }
 }

@@ -53,6 +53,8 @@ public:
 
   pw_time GetTime() const;
 
+  bool SetControl(uint32_t control, std::vector<float> values) const;
+
 private:
   static void StateChanged(void* userdata,
                            enum pw_stream_state old,
