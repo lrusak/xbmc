@@ -340,8 +340,7 @@ bool CDataCacheCore::HasPerformedSeek(int64_t lastSecondInterval) const
     return false;
   }
   return (std::chrono::system_clock::now() - m_stateInfo.m_lastSeekTime) <
-         std::chrono::duration_cast<std::chrono::seconds>(
-             std::chrono::duration<int64_t>(lastSecondInterval));
+         std::chrono::seconds(lastSecondInterval);
 }
 
 void CDataCacheCore::SetStateSeeking(bool active)
