@@ -1090,9 +1090,9 @@ unsigned int CAESinkPULSE::AddPackets(uint8_t **data, unsigned int frames, unsig
   unsigned int available = frames * m_format.m_frameSize;
   unsigned int length = m_periodSize;
   void *buffer = data[0]+offset*m_format.m_frameSize;
-  auto wait_time =
-      std::chrono::duration<double>(static_cast<double>(m_BufferSize) / m_BytesPerSecond);
-  XbmcThreads::EndTime<std::chrono::duration<double>> timer(wait_time);
+  auto wait_time = std::chrono::duration<double, std::ratio<1, 1>>(
+      static_cast<double>(m_BufferSize) / m_BytesPerSecond);
+  XbmcThreads::EndTime<std::chrono::duration<double, std::ratio<1, 1>>> timer(wait_time);
   // we don't want to block forever - if timer expires pa_stream_write will
   // fail - therefore we don't care and just return 0;
   while (!timer.IsTimePast())
