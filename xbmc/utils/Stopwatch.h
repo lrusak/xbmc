@@ -76,14 +76,15 @@ public:
   */
   float GetElapsedSeconds() const
   {
-    std::chrono::duration<float> elapsed;
+    std::chrono::nanoseconds elapsed;
 
     if (m_isRunning)
       elapsed = std::chrono::steady_clock::now() - m_startTick;
     else
       elapsed = m_stopTick - m_startTick;
 
-    return elapsed.count();
+    return std::chrono::duration_cast<std::chrono::duration<float, std::ratio<1, 1>>>(elapsed)
+        .count();
   }
 
   /*!
@@ -94,14 +95,14 @@ public:
   */
   float GetElapsedMilliseconds() const
   {
-    std::chrono::duration<float, std::milli> elapsed;
+    std::chrono::nanoseconds elapsed;
 
     if (m_isRunning)
       elapsed = std::chrono::steady_clock::now() - m_startTick;
     else
       elapsed = m_stopTick - m_startTick;
 
-    return elapsed.count();
+    return std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(elapsed).count();
   }
 
 private:
