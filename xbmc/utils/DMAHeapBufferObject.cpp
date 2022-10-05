@@ -15,11 +15,9 @@
 #include <array>
 
 #include <drm_fourcc.h>
-#include <fcntl.h>
 #include <linux/dma-heap.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
-#include <unistd.h>
 
 namespace
 {
