@@ -185,7 +185,7 @@ void CJobQueue::QueueNextJob()
 {
   std::unique_lock<CCriticalSection> lock(m_section);
 
-  while (m_jobQueue.size() && m_processing.size() < m_jobsAtOnce)
+  while (!m_jobQueue.empty() && m_processing.size() < m_jobsAtOnce)
   {
     CJobPointer& job = m_jobQueue.back();
     job.m_id = CServiceBroker::GetJobManager()->AddJob(job.m_job, this, m_priority);
@@ -273,7 +273,7 @@ void CJobManager::CancelJobs()
                 });
 
   // tell our workers to finish
-  while (m_workers.size())
+  while (!m_workers.empty())
   {
     lock.unlock();
     m_jobEvent.Set();
@@ -362,7 +362,8 @@ CJob* CJobManager::PopJob()
     if (priority == JobPriority::LOW_PAUSABLE && m_pauseJobs)
       continue;
 
-    if (m_jobQueue[priority].size() && m_processing.size() < JobPriorityToMaxWorkerCount(priority))
+    if (!m_jobQueue[priority].empty() &&
+        m_processing.size() < JobPriorityToMaxWorkerCount(priority))
     {
       // pop the job off the queue
       CWorkItem job = m_jobQueue[priority].front();
