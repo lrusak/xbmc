@@ -83,6 +83,9 @@ public:
   constexpr auto cbegin() const { return m_map.cbegin(); }
   constexpr auto cend() const { return m_map.cend(); }
 
+  constexpr auto crbegin() const { return m_map.crbegin(); }
+  constexpr auto crend() const { return m_map.crend(); }
+
 private:
   CMap() = delete;
 
