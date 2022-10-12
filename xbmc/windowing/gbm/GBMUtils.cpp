@@ -70,13 +70,20 @@ bool CGBMUtils::CGBMDevice::CreateSurface(
   return true;
 }
 
-CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurface(gbm_surface* surface) : m_surface(surface)
+CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurface(gbm_surface* surface)
+  : m_lastupdate(std::chrono::steady_clock::now()), m_surface(surface),
 {
 }
 
 CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurfaceBuffer* CGBMUtils::CGBMDevice::CGBMSurface::
     LockFrontBuffer()
 {
+  const auto now = std::chrono::steady_clock::now();
+  const auto diff = now - m_lastupdate;
+  CLog::Log(LOGDEBUG, "diff: {:.3f} ms",
+            std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(diff).count());
+  m_lastupdate = now;
+
   m_buffers.emplace(std::make_unique<CGBMSurfaceBuffer>(m_surface));
 
   if (!static_cast<bool>(gbm_surface_has_free_buffers(m_surface)))

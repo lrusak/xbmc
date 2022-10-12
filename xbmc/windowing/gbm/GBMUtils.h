@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <chrono>
 #include <memory>
 #include <queue>
 
@@ -128,6 +129,7 @@ public:
       CGBMSurfaceBuffer* LockFrontBuffer();
 
     private:
+      std::chrono::steady_clock::time_point m_lastupdate;
       gbm_surface* m_surface{nullptr};
       std::queue<std::unique_ptr<CGBMSurfaceBuffer>> m_buffers;
     };
