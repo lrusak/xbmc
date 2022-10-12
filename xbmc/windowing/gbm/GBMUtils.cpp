@@ -10,14 +10,7 @@
 
 #include "utils/log.h"
 
-#include <mutex>
-
 using namespace KODI::WINDOWING::GBM;
-
-namespace
-{
-std::once_flag flag;
-}
 
 bool CGBMUtils::CreateDevice(int fd)
 {
@@ -71,7 +64,10 @@ bool CGBMUtils::CGBMDevice::CreateSurface(
 }
 
 CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurface(gbm_surface* surface)
-  : m_lastupdate(std::chrono::steady_clock::now()), m_surface(surface),
+  : m_lastupdate(std::chrono::steady_clock::now()),
+    m_surface(surface),
+    m_front_buffer(std::make_unique<CGBMSurfaceBuffer>(surface)),
+    m_back_buffer(std::make_unique<CGBMSurfaceBuffer>(surface))
 {
 }
 
@@ -84,30 +80,31 @@ CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurfaceBuffer* CGBMUtils::CGBMDevice::CG
             std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(diff).count());
   m_lastupdate = now;
 
-  m_buffers.emplace(std::make_unique<CGBMSurfaceBuffer>(m_surface));
+  std::swap(m_front_buffer, m_back_buffer);
 
-  if (!static_cast<bool>(gbm_surface_has_free_buffers(m_surface)))
-  {
-    /*
-     * We want to use call_once here because we want it to be logged the first time that
-     * we have to release buffers. This means that the maximum amount of buffers had been reached.
-     * For mesa this should be 4 buffers but it may vary across other implementations.
-     */
-    std::call_once(
-        flag, [this]() { CLog::Log(LOGDEBUG, "CGBMUtils - using {} buffers", m_buffers.size()); });
+  m_front_buffer->Lock();
 
-    m_buffers.pop();
-  }
+  m_back_buffer->Release();
 
-  return m_buffers.back().get();
+  return m_front_buffer.get();
 }
 
 CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurfaceBuffer::CGBMSurfaceBuffer(gbm_surface* surface)
-  : m_surface(surface), m_buffer(gbm_surface_lock_front_buffer(surface))
+  : m_surface(surface), m_buffer(nullptr)
 {
 }
 
 CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurfaceBuffer::~CGBMSurfaceBuffer()
+{
+  Release();
+}
+
+void CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurfaceBuffer::Lock()
+{
+  m_buffer = gbm_surface_lock_front_buffer(m_surface);
+}
+
+void CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurfaceBuffer::Release()
 {
   if (m_surface && m_buffer)
     gbm_surface_release_buffer(m_surface, m_buffer);

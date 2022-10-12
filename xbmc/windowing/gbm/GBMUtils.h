@@ -109,6 +109,9 @@ public:
         explicit CGBMSurfaceBuffer(gbm_surface* surface);
         ~CGBMSurfaceBuffer();
 
+        void Lock();
+        void Release();
+
         /**
          * @brief Get the underlying gbm_bo
          *
@@ -131,7 +134,8 @@ public:
     private:
       std::chrono::steady_clock::time_point m_lastupdate;
       gbm_surface* m_surface{nullptr};
-      std::queue<std::unique_ptr<CGBMSurfaceBuffer>> m_buffers;
+      std::unique_ptr<CGBMSurfaceBuffer> m_front_buffer;
+      std::unique_ptr<CGBMSurfaceBuffer> m_back_buffer;
     };
 
     /**
