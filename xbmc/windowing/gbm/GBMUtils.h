@@ -134,8 +134,7 @@ public:
     private:
       std::chrono::steady_clock::time_point m_lastupdate;
       gbm_surface* m_surface{nullptr};
-      std::unique_ptr<CGBMSurfaceBuffer> m_front_buffer;
-      std::unique_ptr<CGBMSurfaceBuffer> m_back_buffer;
+      std::unique_ptr<CGBMSurfaceBuffer> m_buffer;
     };
 
     /**

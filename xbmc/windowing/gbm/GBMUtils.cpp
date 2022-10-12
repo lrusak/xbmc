@@ -66,8 +66,7 @@ bool CGBMUtils::CGBMDevice::CreateSurface(
 CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurface(gbm_surface* surface)
   : m_lastupdate(std::chrono::steady_clock::now()),
     m_surface(surface),
-    m_front_buffer(std::make_unique<CGBMSurfaceBuffer>(surface)),
-    m_back_buffer(std::make_unique<CGBMSurfaceBuffer>(surface))
+    m_buffer(std::make_unique<CGBMSurfaceBuffer>(surface))
 {
 }
 
@@ -80,13 +79,9 @@ CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurfaceBuffer* CGBMUtils::CGBMDevice::CG
             std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(diff).count());
   m_lastupdate = now;
 
-  std::swap(m_front_buffer, m_back_buffer);
+  m_buffer->Lock();
 
-  m_front_buffer->Lock();
-
-  m_back_buffer->Release();
-
-  return m_front_buffer.get();
+  return m_buffer.get();
 }
 
 CGBMUtils::CGBMDevice::CGBMSurface::CGBMSurfaceBuffer::CGBMSurfaceBuffer(gbm_surface* surface)
