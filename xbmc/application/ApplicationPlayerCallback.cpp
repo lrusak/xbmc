@@ -28,6 +28,7 @@
 #include "settings/AdvancedSettings.h"
 #include "settings/MediaSettings.h"
 #include "settings/SettingsComponent.h"
+#include "utils/JobManagerNew.h"
 #include "utils/SaveFileStateJob.h"
 #include "utils/URIUtils.h"
 #include "utils/log.h"
@@ -86,6 +87,7 @@ void CApplicationPlayerCallback::OnPlayBackStarted(const CFileItem& file)
   if (file.IsVideo() || file.IsGame())
   {
     CServiceBroker::GetJobManager()->PauseJobs();
+    CJobManagerNew::Get().Pause();
   }
 
   CServiceBroker::GetPVRManager().OnPlaybackStarted(m_itemCurrentFile);

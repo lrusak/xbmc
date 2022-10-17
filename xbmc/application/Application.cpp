@@ -186,6 +186,7 @@
 #include "cores/FFmpeg.h"
 #include "pictures/GUIWindowSlideShow.h"
 #include "utils/CharsetConverter.h"
+#include "utils/JobManagerNew.h"
 
 #include <mutex>
 
@@ -1861,6 +1862,8 @@ int CApplication::Run()
     CServiceBroker::GetAppMessenger()->PostMsg(TMSG_PLAYLISTPLAYER_PLAY, -1);
   }
 
+  CJobManagerNew::Get().Submit<CJobNew>(JobPriorityNew::HIGH, "test-job");
+
   // Run the app
   while (!m_bStop)
   {
@@ -2082,6 +2085,8 @@ bool CApplication::Stop(int exitCode)
 
     // cancel any jobs from the jobmanager
     CServiceBroker::GetJobManager()->CancelJobs();
+
+    CJobManagerNew::Get().Stop();
 
     // stop scanning before we kill the network and so on
     if (CMusicLibraryQueue::GetInstance().IsRunning())
@@ -3103,10 +3108,12 @@ void CApplication::ProcessSlow()
       currentWindow == WINDOW_SLIDESHOW)
   {
     CServiceBroker::GetJobManager()->PauseJobs();
+    CJobManagerNew::Get().Pause();
   }
   else
   {
     CServiceBroker::GetJobManager()->UnPauseJobs();
+    CJobManagerNew::Get().UnPause();
   }
 
   // Check if we need to activate the screensaver / DPMS.
@@ -3181,6 +3188,8 @@ void CApplication::ProcessSlow()
   // after the screensaver start time.
   if (!m_renderGUI)
     ResetScreenSaverTimer();
+
+  CJobManagerNew::Get().Process();
 }
 
 void CApplication::DelayedPlayerRestart()
