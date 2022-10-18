@@ -71,7 +71,6 @@ protected:
   {
     /* Always cancel jobs test completion */
     CServiceBroker::GetJobManager()->CancelJobs();
-    CServiceBroker::GetJobManager()->Restart();
     CServiceBroker::UnregisterJobManager();
   }
 };

@@ -212,8 +212,7 @@ void CJobQueue::CancelJobs()
 
 bool CJobQueue::IsProcessing() const
 {
-  return CServiceBroker::GetJobManager()->m_running &&
-         (!m_processing.empty() || !m_jobQueue.empty());
+  return (!m_processing.empty() || !m_jobQueue.empty());
 }
 
 bool CJobQueue::QueueEmpty() const
@@ -226,25 +225,12 @@ bool CJobQueue::QueueEmpty() const
 CJobManager::CJobManager()
 {
   m_jobCounter = 0;
-  m_running = true;
   m_pauseJobs = false;
-}
-
-void CJobManager::Restart()
-{
-  std::unique_lock<CCriticalSection> lock(m_section);
-
-  if (m_running)
-    throw std::logic_error("CJobManager already running");
-
-  m_running = true;
 }
 
 void CJobManager::CancelJobs()
 {
   std::unique_lock<CCriticalSection> lock(m_section);
-
-  m_running = false;
 
   // clear any pending jobs
   for (auto it = jobPriorityMap.crbegin(); it != jobPriorityMap.crend(); it++)
@@ -285,12 +271,6 @@ void CJobManager::CancelJobs()
 unsigned int CJobManager::AddJob(CJob* job, IJobCallback* callback, JobPriority priority)
 {
   std::unique_lock<CCriticalSection> lock(m_section);
-
-  if (!m_running)
-  {
-    delete job;
-    return 0;
-  }
 
   // increment the job counter, ensuring 0 (invalid job) is never hit
   m_jobCounter++;
@@ -428,20 +408,21 @@ CJob* CJobManager::GetNextJob()
 {
   std::unique_lock<CCriticalSection> lock(m_section);
 
-  while (m_running)
+  // grab a job off the queue if we have one
+  CJob* job = PopJob();
+  if (job)
+    return job;
+
+  // no jobs are left - sleep for 30 seconds to allow new jobs to come in
+  lock.unlock();
+  bool newJob = m_jobEvent.Wait(30000ms);
+  lock.lock();
+
+  if (newJob)
   {
-    // grab a job off the queue if we have one
     CJob* job = PopJob();
     if (job)
       return job;
-
-    // no jobs are left - sleep for 30 seconds to allow new jobs to come in
-    lock.unlock();
-    bool newJob = m_jobEvent.Wait(30000ms);
-    lock.lock();
-
-    if (!newJob)
-      break;
   }
 
   // ensure no jobs have come in during the period after
