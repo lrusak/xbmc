@@ -121,11 +121,6 @@ void CJobQueue::OnJobComplete(unsigned int jobID, bool success, CJob* job)
   OnJobNotify(job);
 }
 
-void CJobQueue::OnJobAbort(unsigned int jobID, CJob* job)
-{
-  OnJobNotify(job);
-}
-
 void CJobQueue::CancelJob(const CJob* job)
 {
   std::unique_lock<CCriticalSection> lock(m_section);
@@ -238,25 +233,12 @@ void CJobManager::CancelJobs()
     const JobPriority& priority = it->first;
 
     std::for_each(m_jobQueue[priority].begin(), m_jobQueue[priority].end(),
-                  [](CWorkItem& wi)
-                  {
-                    if (wi.m_callback)
-                      wi.m_callback->OnJobAbort(wi.m_id, wi.m_job);
-
-                    wi.FreeJob();
-                  });
+                  [](CWorkItem& wi) { wi.FreeJob(); });
     m_jobQueue[priority].clear();
   }
 
   // cancel any callbacks on jobs still processing
-  std::for_each(m_processing.begin(), m_processing.end(),
-                [](CWorkItem& wi)
-                {
-                  if (wi.m_callback)
-                    wi.m_callback->OnJobAbort(wi.m_id, wi.m_job);
-
-                  wi.Cancel();
-                });
+  std::for_each(m_processing.begin(), m_processing.end(), [](CWorkItem& wi) { wi.Cancel(); });
 
   // tell our workers to finish
   while (!m_workers.empty())

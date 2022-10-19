@@ -22,7 +22,7 @@ class CJob;
 
  Used by clients of the CJobManager to receive progress, abort and completion notification of jobs.
  Clients of small jobs wishing to perform actions on job completion or abort should implement the
- IJobCallback::OnJobComplete() and/or IJobCallback::OnJobAbort() function.  Clients of larger jobs
+ IJobCallback::OnJobComplete() function.  Clients of larger jobs
  may choose to implement the IJobCallback::OnJobProgress() function in order to be kept informed of
  progress.
 
@@ -51,19 +51,6 @@ public:
    \sa CJobManager and CJob
    */
   virtual void OnJobComplete(unsigned int jobID, bool success, CJob *job)=0;
-
-  /*!
-   \brief An optional callback function used when a job will be aborted.
-
-   OnJobAbort is called whenever a job gets aborted before or while being executed.
-   Job's DoWork method will not be called, OnJobComplete will not be called.  The job instance will
-   be destroyed by the caller after calling this function.
-
-   \param jobID the unique id of the job (as retrieved from CJobManager::AddJob)
-   \param job the job that has been aborted.
-   \sa CJobManager and CJob
-   */
-  virtual void OnJobAbort(unsigned int jobID, CJob* job) {}
 
   /*!
    \brief An optional callback function that a job may call while processing.
@@ -153,7 +140,7 @@ public:
   /*!
    \brief Destructor for job objects.
 
-   Jobs are destroyed by the CJobManager after the OnJobComplete() or OnJobAbort() callback is
+   Jobs are destroyed by the CJobManager after the OnJobComplete() callback is
    complete.  CJob subclasses should therefore supply a virtual destructor to cleanup any memory
    allocated by complete or cancelled jobs.
 

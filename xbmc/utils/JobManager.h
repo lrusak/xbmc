@@ -160,18 +160,6 @@ public:
    */
   void OnJobComplete(unsigned int jobID, bool success, CJob* job) override;
 
-  /*!
-   \brief The callback used when a job will be aborted.
-
-   CJobQueue implementation will cleanup the internal processing queue and then queue the next
-   job at the job manager, if any.
-
-   \param jobID the unique id of the job (as retrieved from CJobManager::AddJob)
-   \param job the job that has been aborted.
-   \sa CJobManager, IJobCallback and CJob
-   */
-  void OnJobAbort(unsigned int jobID, CJob* job) override;
-
 protected:
   /*!
    \brief Returns if we still have jobs waiting to be processed
