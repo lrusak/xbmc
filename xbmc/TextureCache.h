@@ -12,7 +12,7 @@
 #include "TextureDatabase.h"
 #include "threads/CriticalSection.h"
 #include "threads/Event.h"
-#include "utils/JobManager.h"
+#include "utils/JobManagerNew.h"
 
 #include <memory>
 #include <set>
@@ -33,7 +33,7 @@ class CTexture;
  unused for a set period of time.
 
  */
-class CTextureCache : public CJobQueue
+class CTextureCache : public CJobQueueNew
 {
 public:
   CTextureCache();

@@ -10,7 +10,7 @@
 
 #include "guilib/TextureManager.h"
 #include "threads/CriticalSection.h"
-#include "utils/Job.h"
+#include "utils/JobManagerNew.h"
 
 #include <memory>
 #include <string>
@@ -27,10 +27,14 @@ class CTexture;
 
  \sa CGUILargeTextureManager and CJob
  */
-class CImageLoader : public CJob
+class CImageLoader : public CJobNew
 {
 public:
-  CImageLoader(const std::string &path, const bool useCache);
+  CImageLoader(JobID id,
+               std::string_view name,
+               IJobCallBackNew* callback,
+               const std::string& path,
+               const bool useCache);
   ~CImageLoader() override;
 
   /*!
@@ -52,7 +56,7 @@ public:
 
  \sa IJobCallback, CGUITexture
  */
-class CGUILargeTextureManager : public IJobCallback
+class CGUILargeTextureManager : public IJobCallBackNew
 {
 public:
   CGUILargeTextureManager();
@@ -65,8 +69,12 @@ public:
 
    \sa CImageLoader, IJobCallback
    */
-  void OnJobComplete(unsigned int jobID, bool success, CJob *job) override;
+  void OnJobCompleted(JobID jobID, bool success, CJobNew* job) override;
 
+  bool OnJobProgress(JobID id, int progress, int total, const CJobNew* job) override
+  {
+    return false;
+  }
   /*!
    \brief Request a texture to be loaded in the background.
 

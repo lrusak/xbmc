@@ -13,7 +13,6 @@
 #include "commons/ilog.h"
 #include "guilib/GUIComponent.h"
 #include "guilib/Texture.h"
-#include "utils/JobManager.h"
 #include "utils/TimeUtils.h"
 #include "utils/log.h"
 #include "windowing/GraphicContext.h"
@@ -24,8 +23,12 @@
 #include <exception>
 #include <mutex>
 
-CImageLoader::CImageLoader(const std::string& path, const bool useCache)
-  : m_path(path), m_texture(nullptr)
+CImageLoader::CImageLoader(JobID id,
+                           std::string_view name,
+                           IJobCallBackNew* callback,
+                           const std::string& path,
+                           const bool useCache)
+  : CJobNew(id, name, callback), m_path(path), m_texture(nullptr)
 {
   m_use_cache = useCache;
 }
@@ -55,10 +58,10 @@ bool CImageLoader::DoWork()
                                CServiceBroker::GetWinSystem()->GetGfxContext().GetHeight());
 
     auto end = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    auto duration =
+        std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(end - start);
 
-    if (duration.count() > 100)
-      CLog::Log(LOGDEBUG, "{} - took {} ms to load {}", __FUNCTION__, duration.count(), loadPath);
+    CLog::Log(LOGDEBUG, "{} - took {:.3f} ms to load {}", __FUNCTION__, duration.count(), loadPath);
 
     if (m_texture)
     {
@@ -222,12 +225,12 @@ void CGUILargeTextureManager::QueueImage(const std::string &path, bool useCache)
 
   // queue the item
   CLargeTexture *image = new CLargeTexture(path);
-  unsigned int jobID = CServiceBroker::GetJobManager()->AddJob(new CImageLoader(path, useCache), this,
-                                                         JobPriority::NORMAL);
+  uint32_t jobID = CJobManagerNew::Get().Submit<CImageLoader>(
+      JobPriorityNew::LOW, "LargeImageLoader", this, path, useCache);
   m_queued.emplace_back(jobID, image);
 }
 
-void CGUILargeTextureManager::OnJobComplete(unsigned int jobID, bool success, CJob *job)
+void CGUILargeTextureManager::OnJobCompleted(JobID jobID, bool success, CJobNew* job)
 {
   // see if we still have this job id
   std::unique_lock<CCriticalSection> lock(m_listSection);

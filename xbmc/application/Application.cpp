@@ -328,6 +328,8 @@ bool CApplication::Create()
   // Register JobManager service
   CServiceBroker::RegisterJobManager(std::make_shared<CJobManager>());
 
+  CJobManagerNew::Get().Start();
+
   // Announcement service
   m_pAnnouncementManager = std::make_shared<ANNOUNCEMENT::CAnnouncementManager>();
   m_pAnnouncementManager->Start();
@@ -621,10 +623,12 @@ bool CApplication::Initialize()
   CDatabaseManager &databaseManager = m_ServiceManager->GetDatabaseManager();
 
   CEvent event(true);
-  CServiceBroker::GetJobManager()->Submit([&databaseManager, &event]() {
-    databaseManager.Initialize();
-    event.Set();
-  });
+  CJobManagerNew::Get().Submit(JobPriorityNew::LOW, "databasemanager-init", nullptr,
+                               [&databaseManager, &event]()
+                               {
+                                 databaseManager.Initialize();
+                                 event.Set();
+                               });
 
   std::string localizedStr = g_localizeStrings.Get(24150);
   int iDots = 1;
@@ -644,10 +648,12 @@ bool CApplication::Initialize()
   //! @todo Move GUIFontManager into service broker and drop the global reference
   event.Reset();
   GUIFontManager& guiFontManager = g_fontManager;
-  CServiceBroker::GetJobManager()->Submit([&guiFontManager, &event]() {
-    guiFontManager.Initialize();
-    event.Set();
-  });
+  CJobManagerNew::Get().Submit(JobPriorityNew::LOW, "guiFontManager-init", nullptr,
+                               [&guiFontManager, &event]()
+                               {
+                                 guiFontManager.Initialize();
+                                 event.Set();
+                               });
   localizedStr = g_localizeStrings.Get(39175);
   iDots = 1;
   while (!event.Wait(1000ms))
@@ -684,15 +690,16 @@ bool CApplication::Initialize()
     {
       if (CAddonSystemSettings::GetInstance().GetAddonAutoUpdateMode() == AUTO_UPDATES_ON)
       {
-        CServiceBroker::GetJobManager()->Submit(
-            [&event, &incompatibleAddons]() {
-              if (CServiceBroker::GetRepositoryUpdater().CheckForUpdates())
-                CServiceBroker::GetRepositoryUpdater().Await();
+        CJobManagerNew::Get().Submit(JobPriorityNew::DEDICATED, "addonrepo-migration", nullptr,
+                                     [&event, &incompatibleAddons]()
+                                     {
+                                       if (CServiceBroker::GetRepositoryUpdater().CheckForUpdates())
+                                         CServiceBroker::GetRepositoryUpdater().Await();
 
-              incompatibleAddons = CServiceBroker::GetAddonMgr().MigrateAddons();
-              event.Set();
-            },
-            JobPriority::DEDICATED);
+                                       incompatibleAddons =
+                                           CServiceBroker::GetAddonMgr().MigrateAddons();
+                                       event.Set();
+                                     });
         localizedStr = g_localizeStrings.Get(24151);
         iDots = 1;
         while (!event.Wait(1000ms))
@@ -1861,8 +1868,6 @@ int CApplication::Run()
     CServiceBroker::GetPlaylistPlayer().SetCurrentPlaylist(PLAYLIST::TYPE_MUSIC);
     CServiceBroker::GetAppMessenger()->PostMsg(TMSG_PLAYLISTPLAYER_PLAY, -1);
   }
-
-  CJobManagerNew::Get().Submit<CJobNew>(JobPriorityNew::HIGH, "test-job");
 
   // Run the app
   while (!m_bStop)
@@ -3089,6 +3094,14 @@ void CApplication::ProcessSlow()
 
   CServiceBroker::GetPowerManager().ProcessEvents();
 
+  // CJobManagerNew::Get().Submit(JobPriorityNew::HIGH, "test-job", nullptr, []() {
+  //   CLog::Log(LOGINFO, "sleeping!!!!!!");
+  //   std::this_thread::sleep_for(300ms);
+  //   CLog::Log(LOGINFO, "done sleeping!!!!!!");
+
+  //   return true;
+  // });
+
 #if defined(TARGET_DARWIN_OSX) && defined(SDL_FOUND)
   // There is an issue on OS X that several system services ask the cursor to become visible
   // during their startup routines.  Given that we can't control this, we hack it in by
@@ -3188,8 +3201,6 @@ void CApplication::ProcessSlow()
   // after the screensaver start time.
   if (!m_renderGUI)
     ResetScreenSaverTimer();
-
-  CJobManagerNew::Get().Process();
 }
 
 void CApplication::DelayedPlayerRestart()

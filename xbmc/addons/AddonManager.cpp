@@ -22,6 +22,7 @@
 #include "filesystem/Directory.h"
 #include "filesystem/File.h"
 #include "filesystem/SpecialProtocol.h"
+#include "utils/JobManagerNew.h"
 #include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 #include "utils/XMLUtils.h"
@@ -798,16 +799,18 @@ void CAddonMgr::OnPostUnInstall(const std::string& id)
 void CAddonMgr::UpdateLastUsed(const std::string& id)
 {
   auto time = CDateTime::GetCurrentDateTime();
-  CServiceBroker::GetJobManager()->Submit([this, id, time]() {
-    {
-      std::unique_lock<CCriticalSection> lock(m_critSection);
-      m_database.SetLastUsed(id, time);
-      auto addonInfo = GetAddonInfo(id);
-      if (addonInfo)
-        addonInfo->SetLastUsed(time);
-    }
-    m_events.Publish(AddonEvents::MetadataChanged(id));
-  });
+  CJobManagerNew::Get().Submit(JobPriorityNew::LOW, "UpdateLastUsed", nullptr,
+                               [this, id, time]()
+                               {
+                                 {
+                                   std::unique_lock<CCriticalSection> lock(m_critSection);
+                                   m_database.SetLastUsed(id, time);
+                                   auto addonInfo = GetAddonInfo(id);
+                                   if (addonInfo)
+                                     addonInfo->SetLastUsed(time);
+                                 }
+                                 m_events.Publish(AddonEvents::MetadataChanged(id));
+                               });
 }
 
 static void ResolveDependencies(const std::string& addonId, std::vector<std::string>& needed, std::vector<std::string>& missing)

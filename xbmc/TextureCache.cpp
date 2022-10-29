@@ -31,7 +31,7 @@
 using namespace XFILE;
 using namespace std::chrono_literals;
 
-CTextureCache::CTextureCache() : CJobQueue(false, 1, JobPriority::LOW_PAUSABLE)
+CTextureCache::CTextureCache() : CJobQueueNew(JobPriorityNew::PAUSABLE, 1, JobQueueMode::FIFO)
 {
 }
 
@@ -46,7 +46,7 @@ void CTextureCache::Initialize()
 
 void CTextureCache::Deinitialize()
 {
-  CancelJobs();
+  // CancelJobs();
 
   std::unique_lock<CCriticalSection> lock(m_databaseSection);
   m_database.Close();
@@ -127,7 +127,8 @@ void CTextureCache::BackgroundCacheImage(const std::string &url)
     return;
 
   // needs (re)caching
-  AddJob(new CTextureCacheJob(path, details.hash));
+  Submit<CTextureCacheJob>("texture-cache-job", path, details.hash);
+  // AddJob(new CTextureCacheJob(path, details.hash));
 }
 
 std::string CTextureCache::CacheImage(const std::string& image,
@@ -299,32 +300,32 @@ void CTextureCache::OnCachingComplete(bool success, CTextureCacheJob *job)
   m_completeEvent.Set();
 }
 
-void CTextureCache::OnJobComplete(unsigned int jobID, bool success, CJob *job)
-{
-  if (strcmp(job->GetType(), kJobTypeCacheImage) == 0)
-    OnCachingComplete(success, static_cast<CTextureCacheJob*>(job));
-  return CJobQueue::OnJobComplete(jobID, success, job);
-}
+// void CTextureCache::OnJobComplete(unsigned int jobID, bool success, CJob *job)
+// {
+//   if (strcmp(job->GetType(), kJobTypeCacheImage) == 0)
+//     OnCachingComplete(success, static_cast<CTextureCacheJob*>(job));
+//   return CJobQueue::OnJobComplete(jobID, success, job);
+// }
 
-void CTextureCache::OnJobProgress(unsigned int jobID, unsigned int progress, unsigned int total, const CJob *job)
-{
-  if (strcmp(job->GetType(), kJobTypeCacheImage) == 0 && !progress)
-  { // check our processing list
-    {
-      std::unique_lock<CCriticalSection> lock(m_processingSection);
-      const CTextureCacheJob *cacheJob = static_cast<const CTextureCacheJob*>(job);
-      std::set<std::string>::iterator i = m_processinglist.find(cacheJob->m_url);
-      if (i == m_processinglist.end())
-      {
-        m_processinglist.insert(cacheJob->m_url);
-        return;
-      }
-    }
-    CancelJob(job);
-  }
-  else
-    CJobQueue::OnJobProgress(jobID, progress, total, job);
-}
+// void CTextureCache::OnJobProgress(unsigned int jobID, unsigned int progress, unsigned int total, const CJob *job)
+// {
+//   if (strcmp(job->GetType(), kJobTypeCacheImage) == 0 && !progress)
+//   { // check our processing list
+//     {
+//       std::unique_lock<CCriticalSection> lock(m_processingSection);
+//       const CTextureCacheJob *cacheJob = static_cast<const CTextureCacheJob*>(job);
+//       std::set<std::string>::iterator i = m_processinglist.find(cacheJob->m_url);
+//       if (i == m_processinglist.end())
+//       {
+//         m_processinglist.insert(cacheJob->m_url);
+//         return;
+//       }
+//     }
+//     CancelJob(job);
+//   }
+//   else
+//     CJobQueue::OnJobProgress(jobID, progress, total, job);
+// }
 
 bool CTextureCache::Export(const std::string &image, const std::string &destination, bool overwrite)
 {
