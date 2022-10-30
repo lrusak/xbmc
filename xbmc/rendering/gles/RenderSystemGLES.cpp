@@ -202,7 +202,7 @@ bool CRenderSystemGLES::EndRender()
 
     m_buffer->BindTexture();
 
-    if (!m_buffer->RenderCube())
+    if (!m_buffer->Render())
       throw std::runtime_error("whoops!");
 
     m_buffer->UnbindTexture();
