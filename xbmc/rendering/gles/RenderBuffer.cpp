@@ -229,7 +229,10 @@ bool CRenderBuffer::Render()
 
   glMatrixProject.Push();
   glMatrixProject->LoadIdentity();
+
+  glMatrixProject->Rotatef(-90.0f, 0, 0, 1.0f);
   glMatrixProject->Ortho2D(0, m_width, 0, m_height);
+
   glMatrixProject.Load();
 
   CRect viewport;
