@@ -43,6 +43,7 @@
 #if !defined(TARGET_WINDOWS) && defined(HAS_DVD_DRIVE)
 #include "storage/DetectDVDType.h"
 #endif
+#include "rendering/vnc/VNCServer.h"
 #include "storage/MediaManager.h"
 #include "utils/FileExtensionProvider.h"
 #include "utils/log.h"
@@ -205,6 +206,8 @@ bool CServiceManager::InitStageThree(const std::shared_ptr<CProfileManager>& pro
     m_PVRManager->Init();
 
   m_playerCoreFactory.reset(new CPlayerCoreFactory(*profileManager));
+
+  m_vncServer = std::make_unique<CVNCServer>();
 
   if (!m_Platform->InitStageThree())
     return false;
