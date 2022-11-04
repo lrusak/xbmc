@@ -676,7 +676,12 @@ RESOLUTION_INFO CDRMUtils::GetResolutionInfo(drmModeModeInfoPtr mode)
   else
     res.fRefreshRate = mode->vrefresh;
   res.iSubtitles = res.iHeight;
+
   res.fPixelRatio = 1.0f;
+
+  if (res.iHeight > res.iWidth)
+    res.fPixelRatio = 2.0f;
+
   res.bFullScreen = true;
 
   if (mode->flags & DRM_MODE_FLAG_3D_MASK)
