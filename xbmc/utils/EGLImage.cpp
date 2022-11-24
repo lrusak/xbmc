@@ -14,7 +14,7 @@
 #include "utils/StringUtils.h"
 #include "utils/log.h"
 
-#include <map>
+#include "utils/Map.h"
 
 namespace
 {
@@ -56,8 +56,7 @@ namespace
 #endif
 
 #define X(VAL) std::make_pair(VAL, #VAL)
-std::map<EGLint, const char*> eglAttributes =
-{
+constexpr auto eglAttributes = make_map<EGLint, const char*>({
   X(EGL_WIDTH),
   X(EGL_HEIGHT),
 
@@ -100,7 +99,7 @@ std::map<EGLint, const char*> eglAttributes =
   X(EGL_DMA_BUF_PLANE3_MODIFIER_LO_EXT),
   X(EGL_DMA_BUF_PLANE3_MODIFIER_HI_EXT),
 #endif
-};
+});
 
 } // namespace
 
@@ -157,7 +156,7 @@ bool CEGLImage::CreateImage(EglAttrs imageAttrs)
       std::string valueStr;
 
       auto eglAttrKey = eglAttributes.find(attrs[i]);
-      if (eglAttrKey != eglAttributes.end())
+      if (eglAttrKey != eglAttributes.cend())
       {
         keyStr = eglAttrKey->second;
       }
@@ -167,13 +166,13 @@ bool CEGLImage::CreateImage(EglAttrs imageAttrs)
       }
 
       auto eglAttrValue = eglAttributes.find(attrs[i + 1]);
-      if (eglAttrValue != eglAttributes.end())
+      if (eglAttrValue != eglAttributes.cend())
       {
         valueStr = eglAttrValue->second;
       }
       else
       {
-        if (eglAttrKey != eglAttributes.end() && eglAttrKey->first == EGL_LINUX_DRM_FOURCC_EXT)
+        if (eglAttrKey != eglAttributes.cend() && eglAttrKey->first == EGL_LINUX_DRM_FOURCC_EXT)
           valueStr = DRMHELPERS::FourCCToString(attrs[i + 1]);
         else
           valueStr = std::to_string(attrs[i + 1]);
