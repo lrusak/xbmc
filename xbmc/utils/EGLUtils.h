@@ -8,13 +8,15 @@
 
 #pragma once
 
+#include "system_egl.h"
+#include "utils/StringUtils.h"
+#include "utils/log.h"
+
 #include <array>
 #include <set>
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#include "system_egl.h"
 
 class CEGLUtils
 {
@@ -23,7 +25,14 @@ public:
   static std::set<std::string> GetExtensions(EGLDisplay eglDisplay);
   static bool HasExtension(EGLDisplay eglDisplay, std::string const & name);
   static bool HasClientExtension(std::string const& name);
-  static void Log(int logLevel, std::string const& what);
+
+  template<typename... Args>
+  static void Log(int logLevel, const std::string_view& format, Args&&... args)
+  {
+    CLog::Log(logLevel, StringUtils::Format("{}: {}", format, EglErrorToString()),
+              std::forward<Args>(args)...);
+  }
+
   template<typename T>
   static T GetRequiredProcAddress(const char * procname)
   {
@@ -37,6 +46,8 @@ public:
 
 private:
   CEGLUtils();
+
+  static std::string_view EglErrorToString();
 };
 
 /**

@@ -154,7 +154,7 @@ bool CEGLUtils::HasClientExtension(const std::string& name)
   return (exts.find(name) != exts.end());
 }
 
-void CEGLUtils::Log(int logLevel, const std::string& what)
+std::string_view CEGLUtils::EglErrorToString()
 {
   EGLenum error = eglGetError();
   std::string errorStr = StringUtils::Format("{:#04X}", error);
@@ -165,11 +165,11 @@ void CEGLUtils::Log(int logLevel, const std::string& what)
     errorStr = eglError->second;
   }
 
-  CLog::Log(logLevel, "{} ({})", what, errorStr);
+  return errorStr;
 }
 
 CEGLContextUtils::CEGLContextUtils(EGLenum platform, std::string const& platformExtension)
-: m_platform{platform}
+  : m_platform{platform}
 {
   if (CEGLUtils::HasClientExtension("EGL_KHR_debug"))
   {
