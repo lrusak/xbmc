@@ -15,8 +15,8 @@
 #include "settings/AdvancedSettings.h"
 #include "settings/SettingsComponent.h"
 #include "utils/StringUtils.h"
+#include "utils/Map.h"
 
-#include <map>
 #include <stdexcept>
 #include <utility>
 
@@ -24,8 +24,7 @@ namespace
 {
 
 #define X(VAL) std::make_pair(VAL, #VAL)
-std::map<GLenum, const char*> glErrors =
-{
+constexpr auto glErrors = make_map<GLenum, std::string_view>({
   // please keep attributes in accordance to:
   // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGetError.xhtml
   X(GL_NO_ERROR),
@@ -38,9 +37,9 @@ std::map<GLenum, const char*> glErrors =
   X(GL_STACK_UNDERFLOW),
   X(GL_STACK_OVERFLOW),
 #endif
-};
+});
 
-std::map<GLenum, const char*> glErrorSource = {
+constexpr auto glErrorSource = make_map<GLenum, std::string_view>({
 #if defined(HAS_GLES) && defined(TARGET_LINUX)
     X(GL_DEBUG_SOURCE_API_KHR),
     X(GL_DEBUG_SOURCE_WINDOW_SYSTEM_KHR),
@@ -49,9 +48,9 @@ std::map<GLenum, const char*> glErrorSource = {
     X(GL_DEBUG_SOURCE_APPLICATION_KHR),
     X(GL_DEBUG_SOURCE_OTHER_KHR),
 #endif
-};
+});
 
-std::map<GLenum, const char*> glErrorType = {
+constexpr auto glErrorType = make_map<GLenum, std::string_view>({
 #if defined(HAS_GLES) && defined(TARGET_LINUX)
     X(GL_DEBUG_TYPE_ERROR_KHR),
     X(GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_KHR),
@@ -61,40 +60,40 @@ std::map<GLenum, const char*> glErrorType = {
     X(GL_DEBUG_TYPE_OTHER_KHR),
     X(GL_DEBUG_TYPE_MARKER_KHR),
 #endif
-};
+});
 
-std::map<GLenum, const char*> glErrorSeverity = {
+constexpr auto glErrorSeverity = make_map<GLenum, std::string_view>({
 #if defined(HAS_GLES) && defined(TARGET_LINUX)
     X(GL_DEBUG_SEVERITY_HIGH_KHR),
     X(GL_DEBUG_SEVERITY_MEDIUM_KHR),
     X(GL_DEBUG_SEVERITY_LOW_KHR),
     X(GL_DEBUG_SEVERITY_NOTIFICATION_KHR),
 #endif
-};
+});
 #undef X
 
 } // namespace
 
 void KODI::UTILS::GL::GlErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
-  std::string sourceStr;
-  std::string typeStr;
-  std::string severityStr;
+  std::string_view sourceStr;
+  std::string_view typeStr;
+  std::string_view severityStr;
 
   auto glSource = glErrorSource.find(source);
-  if (glSource != glErrorSource.end())
+  if (glSource != glErrorSource.cend())
   {
     sourceStr = glSource->second;
   }
 
   auto glType = glErrorType.find(type);
-  if (glType != glErrorType.end())
+  if (glType != glErrorType.cend())
   {
     typeStr = glType->second;
   }
 
   auto glSeverity = glErrorSeverity.find(severity);
-  if (glSeverity != glErrorSeverity.end())
+  if (glSeverity != glErrorSeverity.cend())
   {
     severityStr = glSeverity->second;
   }
@@ -121,7 +120,7 @@ void _VerifyGLState(const char* szfile, const char* szfunction, int lineno)
   }
 
   auto error = glErrors.find(err);
-  if (error != glErrors.end())
+  if (error != glErrors.cend())
   {
     CLog::Log(LOGERROR, "GL(ES) ERROR: {}", error->second);
   }
