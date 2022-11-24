@@ -421,7 +421,7 @@ bool CEGLContextUtils::CreateContext(CEGLAttributesVec contextAttribs)
   if (m_eglContext == EGL_NO_CONTEXT)
   {
     // This is expected to fail under some circumstances, so log as debug
-    CLog::Log(LOGDEBUG, "Failed to create EGL context (EGL error {})", eglGetError());
+    CEGLUtils::Log(LOGDEBUG, "Failed to create EGL context");
     return false;
   }
 
