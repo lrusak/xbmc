@@ -19,9 +19,11 @@
 
 using namespace VAAPI;
 
-void CVaapi1Texture::Init(InteropInfo &interop)
+CVaapi1Texture::CVaapi1Texture(EGLDisplay eglDisplay) : CVaapiTexture(eglDisplay)
 {
-  m_interop = interop;
+  m_glSurface.eglImage = std::make_unique<CEGLImage>(eglDisplay);
+  m_glSurface.eglImageY = std::make_unique<CEGLImage>(eglDisplay);
+  m_glSurface.eglImageVU = std::make_unique<CEGLImage>(eglDisplay);
 }
 
 bool CVaapi1Texture::Map(CVaapiRenderPicture *pic)
@@ -53,183 +55,109 @@ bool CVaapi1Texture::Map(CVaapiRenderPicture *pic)
   m_texWidth = m_glSurface.vaImage.width;
   m_texHeight = m_glSurface.vaImage.height;
 
-  GLint attribs[23], *attrib;
-
   switch (m_glSurface.vaImage.format.fourcc)
   {
     case VA_FOURCC('N','V','1','2'):
     {
-      attrib = attribs;
-      *attrib++ = EGL_LINUX_DRM_FOURCC_EXT;
-      *attrib++ = fourcc_code('R', '8', ' ', ' ');
-      *attrib++ = EGL_WIDTH;
-      *attrib++ = m_glSurface.vaImage.width;
-      *attrib++ = EGL_HEIGHT;
-      *attrib++ = m_glSurface.vaImage.height;
-      *attrib++ = EGL_DMA_BUF_PLANE0_FD_EXT;
-      *attrib++ = (intptr_t)m_glSurface.vBufInfo.handle;
-      *attrib++ = EGL_DMA_BUF_PLANE0_OFFSET_EXT;
-      *attrib++ = m_glSurface.vaImage.offsets[0];
-      *attrib++ = EGL_DMA_BUF_PLANE0_PITCH_EXT;
-      *attrib++ = m_glSurface.vaImage.pitches[0];
-      *attrib++ = EGL_NONE;
-      m_glSurface.eglImageY = m_interop.eglCreateImageKHR(m_interop.eglDisplay,
-                                          EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, (EGLClientBuffer)NULL,
-                                          attribs);
-      if (!m_glSurface.eglImageY)
-      {
-        EGLint err = eglGetError();
-        CLog::Log(LOGERROR, "failed to import VA buffer NV12 into EGL image: {}", err);
-        return false;
-      }
+      std::array<CEGLImage::EglPlane, CEGLImage::MAX_NUM_PLANES> planes;
 
-      attrib = attribs;
-      *attrib++ = EGL_LINUX_DRM_FOURCC_EXT;
-      *attrib++ = fourcc_code('G', 'R', '8', '8');
-      *attrib++ = EGL_WIDTH;
-      *attrib++ = (m_glSurface.vaImage.width + 1) >> 1;
-      *attrib++ = EGL_HEIGHT;
-      *attrib++ = (m_glSurface.vaImage.height + 1) >> 1;
-      *attrib++ = EGL_DMA_BUF_PLANE0_FD_EXT;
-      *attrib++ = (intptr_t)m_glSurface.vBufInfo.handle;
-      *attrib++ = EGL_DMA_BUF_PLANE0_OFFSET_EXT;
-      *attrib++ = m_glSurface.vaImage.offsets[1];
-      *attrib++ = EGL_DMA_BUF_PLANE0_PITCH_EXT;
-      *attrib++ = m_glSurface.vaImage.pitches[1];
-      *attrib++ = EGL_NONE;
-      m_glSurface.eglImageVU = m_interop.eglCreateImageKHR(m_interop.eglDisplay,
-                                          EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, (EGLClientBuffer)NULL,
-                                          attribs);
-      if (!m_glSurface.eglImageVU)
-      {
-        EGLint err = eglGetError();
-        CLog::Log(LOGERROR, "failed to import VA buffer NV12 into EGL image: {}", err);
+      planes[0].fd = (intptr_t)m_glSurface.vBufInfo.handle;
+      planes[0].offset = m_glSurface.vaImage.offsets[0];
+      planes[0].pitch = m_glSurface.vaImage.pitches[0];
+
+      CEGLImage::EglAttrs attribs;
+
+      attribs.width = m_glSurface.vaImage.width;
+      attribs.height = m_glSurface.vaImage.height;
+      attribs.format = fourcc_code('R', '8', ' ', ' ');
+      attribs.planes = planes;
+
+      if (!m_glSurface.eglImageY->CreateImage(attribs))
         return false;
-      }
+
+      planes[0].fd = (intptr_t)m_glSurface.vBufInfo.handle;
+      planes[0].offset = m_glSurface.vaImage.offsets[1];
+      planes[0].pitch = m_glSurface.vaImage.pitches[1];
+
+      attribs.width = (m_glSurface.vaImage.width + 1) >> 1;
+      attribs.height = (m_glSurface.vaImage.height + 1) >> 1;
+      attribs.format = fourcc_code('G', 'R', '8', '8');
+      attribs.planes = planes;
+
+      if (!m_glSurface.eglImageVU->CreateImage(attribs))
+        return false;
 
       glGenTextures(1, &m_textureY);
-      glBindTexture(m_interop.textureTarget, m_textureY);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      m_interop.glEGLImageTargetTexture2DOES(m_interop.textureTarget, m_glSurface.eglImageY);
+      glBindTexture(GL_TEXTURE_2D, m_textureY);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      m_glSurface.eglImageY->UploadImage(GL_TEXTURE_2D);
+      m_glSurface.eglImageY->DestroyImage();
 
       glGenTextures(1, &m_textureVU);
-      glBindTexture(m_interop.textureTarget, m_textureVU);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      m_interop.glEGLImageTargetTexture2DOES(m_interop.textureTarget, m_glSurface.eglImageVU);
+      glBindTexture(GL_TEXTURE_2D, m_textureVU);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      m_glSurface.eglImageVU->UploadImage(GL_TEXTURE_2D);
+      m_glSurface.eglImageVU->DestroyImage();
 
-      glBindTexture(m_interop.textureTarget, 0);
+      glBindTexture(GL_TEXTURE_2D, 0);
 
       break;
     }
     case VA_FOURCC('P','0','1','0'):
     {
-      attrib = attribs;
-      *attrib++ = EGL_LINUX_DRM_FOURCC_EXT;
-      *attrib++ = fourcc_code('R', '1', '6', ' ');
-      *attrib++ = EGL_WIDTH;
-      *attrib++ = m_glSurface.vaImage.width;
-      *attrib++ = EGL_HEIGHT;
-      *attrib++ = m_glSurface.vaImage.height;
-      *attrib++ = EGL_DMA_BUF_PLANE0_FD_EXT;
-      *attrib++ = (intptr_t)m_glSurface.vBufInfo.handle;
-      *attrib++ = EGL_DMA_BUF_PLANE0_OFFSET_EXT;
-      *attrib++ = m_glSurface.vaImage.offsets[0];
-      *attrib++ = EGL_DMA_BUF_PLANE0_PITCH_EXT;
-      *attrib++ = m_glSurface.vaImage.pitches[0];
-      *attrib++ = EGL_NONE;
-      m_glSurface.eglImageY = m_interop.eglCreateImageKHR(m_interop.eglDisplay,
-                                          EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, (EGLClientBuffer)NULL,
-                                          attribs);
-      if (!m_glSurface.eglImageY)
-      {
-        EGLint err = eglGetError();
-        CLog::Log(LOGERROR, "failed to import VA buffer P010 into EGL image: {}", err);
-        return false;
-      }
+      std::array<CEGLImage::EglPlane, CEGLImage::MAX_NUM_PLANES> planes;
 
-      attrib = attribs;
-      *attrib++ = EGL_LINUX_DRM_FOURCC_EXT;
-      *attrib++ = fourcc_code('G', 'R', '3', '2');
-      *attrib++ = EGL_WIDTH;
-      *attrib++ = (m_glSurface.vaImage.width + 1) >> 1;
-      *attrib++ = EGL_HEIGHT;
-      *attrib++ = (m_glSurface.vaImage.height + 1) >> 1;
-      *attrib++ = EGL_DMA_BUF_PLANE0_FD_EXT;
-      *attrib++ = (intptr_t)m_glSurface.vBufInfo.handle;
-      *attrib++ = EGL_DMA_BUF_PLANE0_OFFSET_EXT;
-      *attrib++ = m_glSurface.vaImage.offsets[1];
-      *attrib++ = EGL_DMA_BUF_PLANE0_PITCH_EXT;
-      *attrib++ = m_glSurface.vaImage.pitches[1];
-      *attrib++ = EGL_NONE;
-      m_glSurface.eglImageVU = m_interop.eglCreateImageKHR(m_interop.eglDisplay,
-                                          EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, (EGLClientBuffer)NULL,
-                                          attribs);
-      if (!m_glSurface.eglImageVU)
-      {
-        EGLint err = eglGetError();
-        CLog::Log(LOGERROR, "failed to import VA buffer P010 into EGL image: {}", err);
+      planes[0].fd = (intptr_t)m_glSurface.vBufInfo.handle;
+      planes[0].offset = m_glSurface.vaImage.offsets[0];
+      planes[0].pitch = m_glSurface.vaImage.pitches[0];
+
+      CEGLImage::EglAttrs attribs;
+
+      attribs.width = m_glSurface.vaImage.width;
+      attribs.height = m_glSurface.vaImage.height;
+      attribs.format = fourcc_code('R', '1', '6', ' ');
+      attribs.planes = planes;
+
+      if (!m_glSurface.eglImageY->CreateImage(attribs))
         return false;
-      }
+
+      planes[0].fd = (intptr_t)m_glSurface.vBufInfo.handle;
+      planes[0].offset = m_glSurface.vaImage.offsets[1];
+      planes[0].pitch = m_glSurface.vaImage.pitches[1];
+
+      attribs.width = (m_glSurface.vaImage.width + 1) >> 1;
+      attribs.height = (m_glSurface.vaImage.height + 1) >> 1;
+      attribs.format = fourcc_code('G', 'R', '3', '2');
+      attribs.planes = planes;
+
+      if (!m_glSurface.eglImageVU->CreateImage(attribs))
+        return false;
 
       glGenTextures(1, &m_textureY);
-      glBindTexture(m_interop.textureTarget, m_textureY);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      m_interop.glEGLImageTargetTexture2DOES(m_interop.textureTarget, m_glSurface.eglImageY);
+      glBindTexture(GL_TEXTURE_2D, m_textureY);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      m_glSurface.eglImageY->UploadImage(GL_TEXTURE_2D);
+      m_glSurface.eglImageY->DestroyImage();
 
       glGenTextures(1, &m_textureVU);
-      glBindTexture(m_interop.textureTarget, m_textureVU);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      m_interop.glEGLImageTargetTexture2DOES(m_interop.textureTarget, m_glSurface.eglImageVU);
+      glBindTexture(GL_TEXTURE_2D, m_textureVU);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      m_glSurface.eglImageVU->UploadImage(GL_TEXTURE_2D);
+      m_glSurface.eglImageVU->DestroyImage();
 
-      glBindTexture(m_interop.textureTarget, 0);
-
-      break;
-    }
-    case VA_FOURCC('B','G','R','A'):
-    {
-      attrib = attribs;
-      *attrib++ = EGL_DRM_BUFFER_FORMAT_MESA;
-      *attrib++ = EGL_DRM_BUFFER_FORMAT_ARGB32_MESA;
-      *attrib++ = EGL_WIDTH;
-      *attrib++ = m_glSurface.vaImage.width;
-      *attrib++ = EGL_HEIGHT;
-      *attrib++ = m_glSurface.vaImage.height;
-      *attrib++ = EGL_DRM_BUFFER_STRIDE_MESA;
-      *attrib++ = m_glSurface.vaImage.pitches[0] / 4;
-      *attrib++ = EGL_NONE;
-      m_glSurface.eglImage = m_interop.eglCreateImageKHR(m_interop.eglDisplay, EGL_NO_CONTEXT,
-                                         EGL_DRM_BUFFER_MESA,
-                                         (EGLClientBuffer)m_glSurface.vBufInfo.handle,
-                                         attribs);
-      if (!m_glSurface.eglImage)
-      {
-        EGLint err = eglGetError();
-        CLog::Log(LOGERROR, "failed to import VA buffer BGRA into EGL image: {}", err);
-        return false;
-      }
-
-      glGenTextures(1, &m_texture);
-      glBindTexture(m_interop.textureTarget, m_texture);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(m_interop.textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-      m_interop.glEGLImageTargetTexture2DOES(m_interop.textureTarget, m_glSurface.eglImage);
-
-      glBindTexture(m_interop.textureTarget, 0);
+      glBindTexture(GL_TEXTURE_2D, 0);
 
       break;
     }
@@ -249,9 +177,6 @@ void CVaapi1Texture::Unmap()
 
   if (m_glSurface.vaImage.image_id == VA_INVALID_ID)
     return;
-
-  m_interop.eglDestroyImageKHR(m_interop.eglDisplay, m_glSurface.eglImageY);
-  m_interop.eglDestroyImageKHR(m_interop.eglDisplay, m_glSurface.eglImageVU);
 
   VAStatus status;
   status = vaReleaseBufferHandle(m_vaapiPic->vadsp, m_glSurface.vaImage.buf);
@@ -295,13 +220,6 @@ void CVaapi1Texture::TestInterop(VADisplay vaDpy, EGLDisplay eglDisplay, bool &g
   general = false;
   deepColor = false;
 
-  PFNEGLCREATEIMAGEKHRPROC eglCreateImageKHR = (PFNEGLCREATEIMAGEKHRPROC)eglGetProcAddress("eglCreateImageKHR");
-  PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR = (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR");
-  if (!eglCreateImageKHR || !eglDestroyImageKHR)
-  {
-    return;
-  }
-
   int width = 1920;
   int height = 1080;
 
@@ -328,23 +246,23 @@ void CVaapi1Texture::TestInterop(VADisplay vaDpy, EGLDisplay eglDisplay, bool &g
     status = vaAcquireBufferHandle(vaDpy, image.buf, &bufferInfo);
     if (status == VA_STATUS_SUCCESS)
     {
-      EGLImageKHR eglImage;
-      EGLint attribs[] = {
-        EGL_LINUX_DRM_FOURCC_EXT, DRM_FORMAT_R8,
-        EGL_WIDTH, image.width,
-        EGL_HEIGHT, image.height,
-        EGL_DMA_BUF_PLANE0_FD_EXT, static_cast<EGLint> (bufferInfo.handle),
-        EGL_DMA_BUF_PLANE0_OFFSET_EXT, static_cast<EGLint> (image.offsets[0]),
-        EGL_DMA_BUF_PLANE0_PITCH_EXT, static_cast<EGLint> (image.pitches[0]),
-        EGL_NONE
-      };
+      std::array<CEGLImage::EglPlane, CEGLImage::MAX_NUM_PLANES> planes;
 
-      eglImage = eglCreateImageKHR(eglDisplay,
-                                   EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, (EGLClientBuffer)NULL,
-                                   attribs);
-      if (eglImage)
+      planes[0].fd = bufferInfo.handle;
+      planes[0].offset = image.offsets[0];
+      planes[0].pitch = image.pitches[0];
+
+      CEGLImage::EglAttrs attribs;
+
+      attribs.width = image.width;
+      attribs.height = image.height;
+      attribs.format = DRM_FORMAT_R8;
+      attribs.planes = planes;
+
+      CEGLImage eglImage(eglDisplay);
+      if (eglImage.CreateImage(attribs))
       {
-        eglDestroyImageKHR(eglDisplay, eglImage);
+        eglImage.DestroyImage();
         general = true;
       }
     }
@@ -361,13 +279,6 @@ void CVaapi1Texture::TestInterop(VADisplay vaDpy, EGLDisplay eglDisplay, bool &g
 bool CVaapi1Texture::TestInteropDeepColor(VADisplay vaDpy, EGLDisplay eglDisplay)
 {
   bool ret = false;
-
-  PFNEGLCREATEIMAGEKHRPROC eglCreateImageKHR = (PFNEGLCREATEIMAGEKHRPROC)eglGetProcAddress("eglCreateImageKHR");
-  PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR = (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR");
-  if (!eglCreateImageKHR || !eglDestroyImageKHR)
-  {
-    return false;
-  }
 
   int width = 1920;
   int height = 1080;
@@ -400,23 +311,24 @@ bool CVaapi1Texture::TestInteropDeepColor(VADisplay vaDpy, EGLDisplay eglDisplay
     status = vaAcquireBufferHandle(vaDpy, image.buf, &bufferInfo);
     if (status == VA_STATUS_SUCCESS)
     {
-      EGLImageKHR eglImage;
-      EGLint attribs[] = {
-        EGL_LINUX_DRM_FOURCC_EXT, DRM_FORMAT_GR1616,
-        EGL_WIDTH, (image.width + 1) >> 1,
-        EGL_HEIGHT, (image.height + 1) >> 1,
-        EGL_DMA_BUF_PLANE0_FD_EXT, static_cast<EGLint> (bufferInfo.handle),
-        EGL_DMA_BUF_PLANE0_OFFSET_EXT, static_cast<EGLint> (image.offsets[1]),
-        EGL_DMA_BUF_PLANE0_PITCH_EXT, static_cast<EGLint> (image.pitches[1]),
-        EGL_NONE
-      };
+      std::array<CEGLImage::EglPlane, CEGLImage::MAX_NUM_PLANES> planes;
 
-      eglImage = eglCreateImageKHR(eglDisplay,
-                                   EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, (EGLClientBuffer)NULL,
-                                   attribs);
-      if (eglImage)
+      planes[0].fd = bufferInfo.handle;
+      planes[0].offset = image.offsets[1];
+      planes[0].pitch = image.pitches[1];
+
+      CEGLImage::EglAttrs attribs;
+
+      attribs.width = (image.width + 1) >> 1;
+      attribs.height = (image.height + 1) >> 1;
+      attribs.format = DRM_FORMAT_GR1616;
+      attribs.planes = planes;
+
+      CEGLImage eglImage(eglDisplay);
+
+      if (eglImage.CreateImage(attribs))
       {
-        eglDestroyImageKHR(eglDisplay, eglImage);
+        eglImage.DestroyImage();
         ret = true;
       }
 
@@ -429,10 +341,12 @@ bool CVaapi1Texture::TestInteropDeepColor(VADisplay vaDpy, EGLDisplay eglDisplay
   return ret;
 }
 
-void CVaapi2Texture::Init(InteropInfo& interop)
+CVaapi2Texture::CVaapi2Texture(EGLDisplay eglDisplay) : CVaapiTexture(eglDisplay)
 {
-  m_interop = interop;
-  m_hasPlaneModifiers = CEGLUtils::HasExtension(m_interop.eglDisplay, "EGL_EXT_image_dma_buf_import_modifiers");
+  m_y.eglImage = std::make_unique<CEGLImage>(eglDisplay);
+  m_vu.eglImage = std::make_unique<CEGLImage>(eglDisplay);
+  m_hasPlaneModifiers =
+      CEGLUtils::HasExtension(eglDisplay, "EGL_EXT_image_dma_buf_import_modifiers");
 }
 
 bool CVaapi2Texture::Map(CVaapiRenderPicture* pic)
@@ -524,33 +438,30 @@ bool CVaapi2Texture::Map(CVaapiRenderPicture* pic)
         return false;
     }
 
-    CEGLAttributes<8> attribs; // 6 static + 2 modifiers
-    attribs.Add({{EGL_LINUX_DRM_FOURCC_EXT, static_cast<EGLint>(layer.drm_format)},
-      {EGL_WIDTH, width},
-      {EGL_HEIGHT, height},
-      {EGL_DMA_BUF_PLANE0_FD_EXT, object.fd},
-      {EGL_DMA_BUF_PLANE0_OFFSET_EXT, static_cast<EGLint>(layer.offset[plane])},
-      {EGL_DMA_BUF_PLANE0_PITCH_EXT, static_cast<EGLint>(layer.pitch[plane])}});
+    std::array<CEGLImage::EglPlane, CEGLImage::MAX_NUM_PLANES> planes;
+
+    planes[0].fd = object.fd;
+    planes[0].offset = static_cast<EGLint>(layer.offset[plane]);
+    planes[0].pitch = static_cast<EGLint>(layer.pitch[plane]);
 
     if (m_hasPlaneModifiers)
-    {
-      attribs.Add({{EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT, static_cast<EGLint>(object.drm_format_modifier)},
-        {EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT, static_cast<EGLint>(object.drm_format_modifier >> 32)}});
-    }
+      planes[0].modifier = object.drm_format_modifier;
 
-    texture->eglImage = m_interop.eglCreateImageKHR(m_interop.eglDisplay,
-      EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, nullptr,
-      attribs.Get());
-    if (!texture->eglImage)
-    {
-      CEGLUtils::Log(LOGERROR, "Failed to import VA DRM surface into EGL image");
+    CEGLImage::EglAttrs attribs;
+
+    attribs.width = width;
+    attribs.height = height;
+    attribs.format = static_cast<EGLint>(layer.drm_format);
+    attribs.planes = planes;
+
+    if (!texture->eglImage->CreateImage(attribs))
       return false;
-    }
 
     glGenTextures(1, &texture->glTexture);
-    glBindTexture(m_interop.textureTarget, texture->glTexture);
-    m_interop.glEGLImageTargetTexture2DOES(m_interop.textureTarget, texture->eglImage);
-    glBindTexture(m_interop.textureTarget, 0);
+    glBindTexture(GL_TEXTURE_2D, texture->glTexture);
+    texture->eglImage->UploadImage(GL_TEXTURE_2D);
+    texture->eglImage->DestroyImage();
+    glBindTexture(GL_TEXTURE_2D, 0);
   }
 
   return true;
@@ -566,12 +477,7 @@ void CVaapi2Texture::Unmap()
 
   for (auto texture : {&m_y, &m_vu})
   {
-    if (texture->eglImage != EGL_NO_IMAGE_KHR)
-    {
-      m_interop.eglDestroyImageKHR(m_interop.eglDisplay, texture->eglImage);
-      texture->eglImage = EGL_NO_IMAGE_KHR;
-      glDeleteTextures(1, &texture->glTexture);
-    }
+    glDeleteTextures(1, &texture->glTexture);
   }
 
   for (auto& fd : m_drmFDs)
@@ -604,13 +510,6 @@ bool CVaapi2Texture::TestEsh(VADisplay vaDpy, EGLDisplay eglDisplay, std::uint32
   int width = 1920;
   int height = 1080;
 
-  PFNEGLCREATEIMAGEKHRPROC eglCreateImageKHR = (PFNEGLCREATEIMAGEKHRPROC) eglGetProcAddress("eglCreateImageKHR");
-  PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR = (PFNEGLDESTROYIMAGEKHRPROC) eglGetProcAddress("eglDestroyImageKHR");
-  if (!eglCreateImageKHR || !eglDestroyImageKHR)
-  {
-    return false;
-  }
-
   // create surfaces
   VASurfaceID surface;
   VAStatus status;
@@ -641,21 +540,24 @@ bool CVaapi2Texture::TestEsh(VADisplay vaDpy, EGLDisplay eglDisplay, std::uint32
   {
     auto const& layer = drmPrimeSurface.layers[0];
     auto const& object = drmPrimeSurface.objects[layer.object_index[0]];
-    EGLint attribs[] = {
-      EGL_LINUX_DRM_FOURCC_EXT, static_cast<EGLint>(drmPrimeSurface.layers[0].drm_format),
-      EGL_WIDTH, width,
-      EGL_HEIGHT, height,
-      EGL_DMA_BUF_PLANE0_FD_EXT, static_cast<EGLint>(object.fd),
-      EGL_DMA_BUF_PLANE0_OFFSET_EXT, static_cast<EGLint>(layer.offset[0]),
-      EGL_DMA_BUF_PLANE0_PITCH_EXT, static_cast<EGLint>(layer.pitch[0]),
-      EGL_NONE};
 
-    EGLImageKHR eglImage = eglCreateImageKHR(eglDisplay,
-      EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, nullptr,
-      attribs);
-    if (eglImage)
+    std::array<CEGLImage::EglPlane, CEGLImage::MAX_NUM_PLANES> planes;
+
+    planes[0].fd = object.fd;
+    planes[0].offset = layer.offset[0];
+    planes[0].pitch = layer.pitch[0];
+
+    CEGLImage::EglAttrs attribs;
+
+    attribs.width = width;
+    attribs.height = height;
+    attribs.format = drmPrimeSurface.layers[0].drm_format;
+    attribs.planes = planes;
+
+    CEGLImage eglImage(eglDisplay);
+    if (eglImage.CreateImage(attribs))
     {
-      eglDestroyImageKHR(eglDisplay, eglImage);
+      eglImage.DestroyImage();
       result = true;
     }
 

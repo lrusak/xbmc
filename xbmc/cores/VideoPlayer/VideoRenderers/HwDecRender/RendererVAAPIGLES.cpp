@@ -83,13 +83,6 @@ bool CRendererVAAPIGLES::Configure(const VideoPicture& picture, float fps, unsig
   else
     m_isVAAPIBuffer = false;
 
-  InteropInfo interop;
-  interop.textureTarget = GL_TEXTURE_2D;
-  interop.eglCreateImageKHR = (PFNEGLCREATEIMAGEKHRPROC)eglGetProcAddress("eglCreateImageKHR");
-  interop.eglDestroyImageKHR = (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR");
-  interop.glEGLImageTargetTexture2DOES = (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC)eglGetProcAddress("glEGLImageTargetTexture2DOES");
-  interop.eglDisplay = m_pWinSystem->GetEGLDisplay();
-
   bool useVaapi2 = VAAPI::CVaapi2Texture::TestInteropGeneral(
       pic->vadsp, CRendererVAAPIGLES::m_pWinSystem->GetEGLDisplay());
 
@@ -97,13 +90,12 @@ bool CRendererVAAPIGLES::Configure(const VideoPicture& picture, float fps, unsig
   {
     if (useVaapi2)
     {
-      tex.reset(new VAAPI::CVaapi2Texture);
+      tex = std::make_unique<VAAPI::CVaapi2Texture>(m_pWinSystem->GetEGLDisplay());
     }
     else
     {
-      tex.reset(new VAAPI::CVaapi1Texture);
+      tex = std::make_unique<VAAPI::CVaapi1Texture>(m_pWinSystem->GetEGLDisplay());
     }
-    tex->Init(interop);
   }
 
   for (auto& fence : m_fences)
