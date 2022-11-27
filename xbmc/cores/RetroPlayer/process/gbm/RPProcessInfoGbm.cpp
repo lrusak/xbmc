@@ -8,10 +8,19 @@
 
 #include "RPProcessInfoGbm.h"
 
+#include "utils/log.h"
+
 using namespace KODI;
 using namespace RETRO;
 
-CRPProcessInfoGbm::CRPProcessInfoGbm() : CRPProcessInfo("GBM")
+namespace
+{
+
+constexpr auto PLATFORM_NAME = "GBM";
+
+}
+
+CRPProcessInfoGbm::CRPProcessInfoGbm() : CRPProcessInfo(PLATFORM_NAME)
 {
 }
 
@@ -22,5 +31,7 @@ CRPProcessInfo* CRPProcessInfoGbm::Create()
 
 void CRPProcessInfoGbm::Register()
 {
+  CLog::Log(LOGINFO, "RetroPlayer[PROCESS]: Registering process control for {}", PLATFORM_NAME);
+
   CRPProcessInfo::RegisterProcessControl(CRPProcessInfoGbm::Create);
 }
