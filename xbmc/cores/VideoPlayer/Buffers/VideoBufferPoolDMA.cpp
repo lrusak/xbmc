@@ -8,12 +8,23 @@
 
 #include "VideoBufferPoolDMA.h"
 
+#include "ServiceBroker.h"
 #include "cores/VideoPlayer/Buffers/VideoBufferDMA.h"
+#include "settings/Settings.h"
+#include "settings/SettingsComponent.h"
+#include "settings/lib/Setting.h"
 #include "utils/BufferObjectFactory.h"
 
 #include <mutex>
 
 #include <drm_fourcc.h>
+
+namespace
+{
+
+constexpr auto SETTING_VIDEOPLAYER_USEPRIMEDECODER = "videoplayer.useprimedecoder";
+
+}
 
 extern "C"
 {
@@ -90,7 +101,18 @@ bool CVideoBufferPoolDMA::IsConfigured()
 {
   std::unique_lock<CCriticalSection> lock(m_critSection);
 
-  return (m_fourcc != 0 && m_size != 0);
+  if (m_fourcc == 0 || m_size == 0)
+    return false;
+
+  const auto settingsComponent = CServiceBroker::GetSettingsComponent();
+  if (!settingsComponent)
+    return false;
+
+  const auto settings = settingsComponent->GetSettings();
+  if (!settings)
+    return false;
+
+  return settings->GetBool(SETTING_VIDEOPLAYER_USEPRIMEDECODER);
 }
 
 bool CVideoBufferPoolDMA::IsCompatible(AVPixelFormat format, int size)
