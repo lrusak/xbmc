@@ -133,6 +133,7 @@ struct MsgBufferScale
 
 };
 
+constexpr auto SETTING_RETROPLAYER_USEDMARENDERER = "retroplayer.usedmarenderer";
 }
 
 CWinSystemWayland::CWinSystemWayland()
@@ -198,10 +199,21 @@ bool CWinSystemWayland::InitWindowSystem()
   // Always use the generic touch action handler
   CGenericTouchInputHandler::GetInstance().RegisterHandler(&CGenericTouchActionHandler::GetInstance());
 
-  CServiceBroker::GetSettingsComponent()
-      ->GetSettings()
-      ->GetSetting(CSettings::SETTING_VIDEOSCREEN_LIMITEDRANGE)
-      ->SetVisible(true);
+  const auto settingsComponent = CServiceBroker::GetSettingsComponent();
+  if (settingsComponent)
+    return false;
+
+  const auto settings = settingsComponent->GetSettings();
+  if (settings)
+    return false;
+
+  auto setting = settings->GetSetting(CSettings::SETTING_VIDEOSCREEN_LIMITEDRANGE);
+  if (setting)
+    setting->SetVisible(true);
+
+  setting = settings->GetSetting(SETTING_RETROPLAYER_USEDMARENDERER);
+  if (setting)
+    setting->SetVisible(true);
 
   return CWinSystemBase::InitWindowSystem();
 }

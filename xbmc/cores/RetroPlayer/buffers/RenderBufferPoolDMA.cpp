@@ -9,12 +9,23 @@
 #include "RenderBufferPoolDMA.h"
 
 #include "RenderBufferDMA.h"
+#include "ServiceBroker.h"
 #include "cores/RetroPlayer/rendering/VideoRenderers/RPRendererDMA.h"
+#include "settings/Settings.h"
+#include "settings/SettingsComponent.h"
+#include "settings/lib/Setting.h"
 
 #include <drm_fourcc.h>
 
 using namespace KODI;
 using namespace RETRO;
+
+namespace
+{
+
+constexpr auto SETTING_RETROPLAYER_USEDMARENDERER = "retroplayer.usedmarenderer";
+
+}
 
 CRenderBufferPoolDMA::CRenderBufferPoolDMA(CRenderContext& context) : m_context(context)
 {
@@ -25,7 +36,15 @@ bool CRenderBufferPoolDMA::IsCompatible(const CRenderVideoSettings& renderSettin
   if (!CRPRendererDMA::SupportsScalingMethod(renderSettings.GetScalingMethod()))
     return false;
 
-  return true;
+  const auto settingsComponent = CServiceBroker::GetSettingsComponent();
+  if (!settingsComponent)
+    return false;
+
+  const auto settings = settingsComponent->GetSettings();
+  if (!settings)
+    return false;
+
+  return settings->GetBool(SETTING_RETROPLAYER_USEDMARENDERER);
 }
 
 IRenderBuffer* CRenderBufferPoolDMA::CreateRenderBuffer(void* header /* = nullptr */)

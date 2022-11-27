@@ -61,6 +61,13 @@ using namespace KODI::WINDOWING::GBM;
 
 using namespace std::chrono_literals;
 
+namespace
+{
+
+constexpr auto SETTING_RETROPLAYER_USEDMARENDERER = "retroplayer.usedmarenderer";
+
+}
+
 CWinSystemGbm::CWinSystemGbm() :
   m_DRM(nullptr),
   m_GBM(new CGBMUtils),
@@ -125,6 +132,10 @@ bool CWinSystemGbm::InitWindowSystem()
     setting->SetVisible(true);
 
   setting = settings->GetSetting("videoscreen.limitguisize");
+  if (setting)
+    setting->SetVisible(true);
+
+  setting = settings->GetSetting(SETTING_RETROPLAYER_USEDMARENDERER);
   if (setting)
     setting->SetVisible(true);
 
