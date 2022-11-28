@@ -221,6 +221,72 @@ void CRPRenderManager::AddFrame(const uint8_t* data,
   }
 }
 
+void CRPRenderManager::RenderFrame(unsigned int width, unsigned int height)
+{
+  std::vector<IRenderBuffer*> renderBuffers;
+  for (IRenderBufferPool* bufferPool : m_processInfo.GetBufferManager().GetBufferPools())
+  {
+    if (!bufferPool->HasVisibleRenderer())
+      continue;
+
+    IRenderBuffer* renderBuffer = bufferPool->GetBuffer(width, height);
+    if (renderBuffer != nullptr)
+    {
+      renderBuffers.emplace_back(renderBuffer);
+    }
+  }
+
+  {
+    std::unique_lock<CCriticalSection> lock(m_bufferMutex);
+
+    // Set render buffers
+    for (auto renderBuffer : m_renderBuffers)
+      renderBuffer->Release();
+    m_renderBuffers = std::move(renderBuffers);
+  }
+}
+
+uintptr_t CRPRenderManager::GetCurrentFramebuffer(unsigned int width, unsigned int height)
+{
+  std::vector<IRenderBuffer*> renderBuffers;
+  for (IRenderBufferPool* bufferPool : m_processInfo.GetBufferManager().GetBufferPools())
+  {
+    if (!bufferPool->HasVisibleRenderer())
+      continue;
+
+    IRenderBuffer* renderBuffer = bufferPool->GetBuffer(width, height);
+    if (renderBuffer != nullptr)
+    {
+      CLog::Log(LOGDEBUG, "RetroPlayer[RENDER]: Libretro called GetCurrentFramebuffer");
+      return renderBuffer->GetCurrentFramebuffer();
+    }
+  }
+
+  return 0;
+}
+
+bool CRPRenderManager::Create(unsigned int width, unsigned int height)
+{
+  std::shared_ptr<CRPBaseRenderer> renderer = GetRenderer(nullptr);
+  if (!renderer)
+    return false;
+
+  renderer->Configure(m_format);
+
+  std::vector<IRenderBuffer*> renderBuffers;
+  for (IRenderBufferPool* bufferPool : m_processInfo.GetBufferManager().GetBufferPools())
+  {
+    if (!bufferPool->HasVisibleRenderer())
+      continue;
+
+    IRenderBuffer* renderBuffer = bufferPool->GetBuffer(width, height);
+    if (renderBuffer != nullptr)
+      return true;
+  }
+
+  return false;
+}
+
 void CRPRenderManager::SetSpeed(double speed)
 {
   m_speed = speed;
