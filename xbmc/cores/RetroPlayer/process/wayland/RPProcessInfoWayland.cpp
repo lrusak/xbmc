@@ -8,6 +8,8 @@
 
 #include "RPProcessInfoWayland.h"
 
+#include "system_egl.h"
+
 using namespace KODI;
 using namespace RETRO;
 
@@ -23,4 +25,9 @@ CRPProcessInfo* CRPProcessInfoWayland::Create()
 void CRPProcessInfoWayland::Register()
 {
   CRPProcessInfo::RegisterProcessControl(CRPProcessInfoWayland::Create);
+}
+
+HwProcedureAddress CRPProcessInfoWayland::GetHwProcedureAddress(const char* symbol)
+{
+  return static_cast<HwProcedureAddress>(eglGetProcAddress(symbol));
 }

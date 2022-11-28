@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "cores/RetroPlayer/process/RPProcessInfo.h"
+#include "cores/RetroPlayer/process/egl/RPProcessInfoEGL.h"
 
 namespace KODI
 {
@@ -18,6 +18,9 @@ class CRPProcessInfoWayland : public CRPProcessInfo
 {
 public:
   CRPProcessInfoWayland();
+
+  // Implementation of CRPProcessInfo
+  HwProcedureAddress GetHwProcedureAddress(const char* symbol) override;
 
   static CRPProcessInfo* Create();
   static void Register();
