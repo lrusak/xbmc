@@ -9,8 +9,10 @@ if(CORE_SYSTEM_NAME STREQUAL windows)
 endif()
 
 if(OPENGL_FOUND OR OPENGLES_FOUND)
-  list(APPEND SOURCES RPRendererOpenGLES.cpp)
-  list(APPEND HEADERS RPRendererOpenGLES.h)
+  list(APPEND SOURCES RPRendererFBO.cpp
+                      RPRendererOpenGLES.cpp)
+  list(APPEND HEADERS RPRendererFBO.h
+                      RPRendererOpenGLES.h)
 endif()
 
 if(OPENGL_FOUND)
