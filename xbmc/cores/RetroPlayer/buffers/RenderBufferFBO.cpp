@@ -23,8 +23,6 @@
 #include "ServiceBroker.h"
 #include "cores/RetroPlayer/rendering/RenderContext.h"
 #include "cores/RetroPlayer/rendering/RenderVideoSettings.h"
-#include "utils/BufferObjectFactory.h"
-#include "utils/EGLImage.h"
 #include "utils/log.h"
 #include "windowing/WinSystem.h"
 #include "windowing/linux/WinSystemEGL.h"
@@ -39,12 +37,11 @@ CRenderBufferFBO::CRenderBufferFBO(CRenderContext& context, uint32_t fbo_id)
 
 CRenderBufferFBO::~CRenderBufferFBO()
 {
+  glDeleteTextures(1, &m_tex_id);
+  m_tex_id = 0;
+
   glDeleteRenderbuffers(1, &m_rbo_id);
   m_rbo_id = 0;
-
-  m_image->DestroyImage();
-
-  m_buffer->DestroyBufferObject();
 }
 
 bool CRenderBufferFBO::Allocate(AVPixelFormat format, unsigned int width, unsigned int height)
@@ -54,38 +51,39 @@ bool CRenderBufferFBO::Allocate(AVPixelFormat format, unsigned int width, unsign
   m_width = width;
   m_height = height;
 
-  m_buffer = CBufferObjectFactory::CreateBufferObject(false);
-  if (!m_buffer->CreateBufferObject(DRM_FORMAT_ARGB8888, width, height))
-  {
-    CLog::Log(LOGERROR, "RetroPlayer[RENDER]: failed to create buffer");
+  if (!CreateTexture())
     return false;
-  }
-
-  auto winSystem = CServiceBroker::GetWinSystem();
-  auto eglWinSystem = dynamic_cast<WINDOWING::LINUX::CWinSystemEGL*>(winSystem);
-
-  m_image = std::make_unique<CEGLImage>(eglWinSystem->GetEGLDisplay());
-
-  std::array<CEGLImage::EglPlane, CEGLImage::MAX_NUM_PLANES> planes;
-  planes[0].fd = m_buffer->GetFd();
-  planes[0].pitch = m_buffer->GetStride();
-  planes[0].offset = 0;
-  planes[0].modifier = m_buffer->GetModifier();
-
-  CEGLImage::EglAttrs attrs;
-  attrs.width = width;
-  attrs.height = height;
-  attrs.format = DRM_FORMAT_ARGB8888;
-  attrs.planes = planes;
-
-  if (!m_image->CreateImage(attrs))
-  {
-    CLog::Log(LOGERROR, "RetroPlayer[RENDER]: failed to create image");
-    return false;
-  }
 
   if (!CreateRenderbuffer())
     return false;
+
+  return true;
+}
+
+void CRenderBufferFBO::Update()
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fbo_id);
+
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tex_id, 0);
+
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rbo_id);
+
+  if (!CheckFrameBufferStatus())
+    throw std::runtime_error("whoops!");
+}
+
+bool CRenderBufferFBO::CreateTexture()
+{
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glGenTextures(1, &m_tex_id);
+
+  glBindTexture(GL_TEXTURE_2D, m_tex_id);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glGenerateMipmap(GL_TEXTURE_2D);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
   return true;
 }
@@ -94,7 +92,7 @@ bool CRenderBufferFBO::CreateRenderbuffer()
 {
   glGenRenderbuffers(1, &m_rbo_id);
   glBindRenderbuffer(GL_RENDERBUFFER, m_rbo_id);
-  m_image->AttachRenderBuffer(GL_RENDERBUFFER);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_width, m_height);
 
   return true;
 }
@@ -108,10 +106,10 @@ bool CRenderBufferFBO::CheckFrameBufferStatus()
     return false;
   }
 
-  return m_fbo_id;
+  return true;
 }
 
-CEGLImage* CRenderBufferFBO::GetImage() const
+uintptr_t CRenderBufferFBO::GetCurrentFramebuffer()
 {
-  return m_image.get();
+  return m_fbo_id;
 }

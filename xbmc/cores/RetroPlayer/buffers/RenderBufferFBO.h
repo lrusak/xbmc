@@ -28,9 +28,6 @@
 
 #include "system_gl.h"
 
-class CBufferObject;
-class CEGLImage;
-
 namespace KODI
 {
 namespace RETRO
@@ -51,9 +48,11 @@ public:
   size_t GetFrameSize() const override { return 0; }
   uint8_t* GetMemory() override { return nullptr; }
 
+  void Update() override;
+
   uintptr_t GetCurrentFramebuffer() override;
 
-  CEGLImage* GetImage() const;
+  GLuint TextureID() const { return m_tex_id; }
 
 protected:
   CRenderContext& m_context;
@@ -63,11 +62,9 @@ private:
   bool CreateRenderbuffer();
   bool CheckFrameBufferStatus();
 
-  std::unique_ptr<CEGLImage> m_image;
-  std::unique_ptr<CBufferObject> m_buffer;
-
   GLuint m_fbo_id;
   GLuint m_rbo_id;
+  GLuint m_tex_id;
 };
 } // namespace RETRO
 } // namespace KODI
