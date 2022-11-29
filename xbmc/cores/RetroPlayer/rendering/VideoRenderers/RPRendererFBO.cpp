@@ -13,6 +13,7 @@
 #include "cores/RetroPlayer/rendering/RenderContext.h"
 #include "cores/RetroPlayer/rendering/RenderVideoSettings.h"
 #include "rendering/MatrixGL.h"
+#include "utils/EGLImage.h"
 #include "utils/GLUtils.h"
 #include "utils/log.h"
 
@@ -52,6 +53,7 @@ CRPRendererFBO::CRPRendererFBO(const CRenderSettings& renderSettings,
 
 CRPRendererFBO::~CRPRendererFBO()
 {
+  glDeleteTextures(1, &m_texture);
 }
 
 void CRPRendererFBO::RenderInternal(bool clear, uint8_t alpha)
@@ -242,7 +244,13 @@ void CRPRendererFBO::Render(uint8_t alpha)
 
   const uint32_t color = (alpha << 24) | 0xFFFFFF;
 
-  glBindTexture(m_textureTarget, renderBuffer->TextureID());
+  if (!glIsTexture(m_texture))
+    glGenTextures(1, &m_texture);
+
+  glBindTexture(GL_TEXTURE_2D, m_texture);
+
+  CEGLImage* image = renderBuffer->GetImage();
+  image->UploadImage(GL_TEXTURE_2D);
 
   CRect viewport;
   m_context.GetViewPort(viewport);

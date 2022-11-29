@@ -73,6 +73,7 @@ protected:
 
   GLenum m_textureTarget = GL_TEXTURE_2D;
   float m_clearColour = 0.0f;
+  GLuint m_texture;
 };
 } // namespace RETRO
 } // namespace KODI
