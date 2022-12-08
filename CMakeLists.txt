@@ -195,6 +195,7 @@ set(optional_deps Alsa
                   DBus
                   Iso9660pp
                   LCMS2
+                  LibVncServer
                   LircClient
                   MDNS
                   MicroHttpd

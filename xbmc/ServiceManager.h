@@ -85,6 +85,7 @@ class CDatabaseManager;
 class CProfileManager;
 class CEventLog;
 class CMediaManager;
+class CVNCServer;
 
 class CServiceManager
 {
@@ -194,6 +195,7 @@ protected:
   std::unique_ptr<CPlayerCoreFactory> m_playerCoreFactory;
   std::unique_ptr<CDatabaseManager> m_databaseManager;
   std::unique_ptr<CMediaManager> m_mediaManager;
+  std::unique_ptr<CVNCServer> m_vncServer;
 #if !defined(TARGET_WINDOWS) && defined(HAS_DVD_DRIVE)
   std::unique_ptr<MEDIA_DETECT::CDetectDVDMedia> m_DetectDVDType;
 #endif
