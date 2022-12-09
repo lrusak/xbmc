@@ -80,6 +80,7 @@ class CPlatform;
 class CTextureCache;
 class CJobManager;
 class CKeyboardLayoutManager;
+class CVNCServer;
 
 namespace WSDiscovery
 {
@@ -217,6 +218,8 @@ public:
       const std::shared_ptr<speech::ISpeechRecognition>& speechRecognition);
   static void UnregisterSpeechRecognition();
   static std::shared_ptr<speech::ISpeechRecognition> GetSpeechRecognition();
+
+  static CVNCServer* GetVNCServer();
 
 private:
   std::shared_ptr<CAppParams> m_appParams;

@@ -11,6 +11,8 @@
 #include "ServiceBroker.h"
 #include "application/AppInboundProtocol.h"
 #include "input/mouse/MouseStat.h"
+#include "rendering/gles/RenderBuffer.h"
+#include "utils/BufferObject.h"
 #include "utils/Map.h"
 #include "utils/log.h"
 #include "windowing/GraphicContext.h"
@@ -123,8 +125,11 @@ struct ClientData
 
 } // namespace
 
-CVNCServer::CVNCServer(int maxWidth, int maxHeight)
+void CVNCServer::Start(int maxWidth, int maxHeight)
 {
+  if (m_screen)
+    return;
+
   m_width = maxWidth;
   m_height = maxHeight;
 
@@ -160,21 +165,40 @@ CVNCServer::CVNCServer(int maxWidth, int maxHeight)
   rfbInitServer(m_screen);
 }
 
-CVNCServer::~CVNCServer()
+void CVNCServer::Stop()
 {
+  if (!m_screen)
+    return;
+
   rfbShutdownServer(m_screen, TRUE);
   rfbScreenCleanup(m_screen);
 }
 
 void CVNCServer::PumpEvents()
 {
-  rfbMarkRectAsModified(m_screen, 0, 0, m_width, m_height);
+  if (!m_screen)
+    return;
+
   rfbProcessEvents(m_screen, 0);
 }
 
 void CVNCServer::UpdateFrameBuffer(char* buffer)
 {
+  if (!m_screen)
+    return;
+
   m_screen->frameBuffer = buffer;
+}
+
+void CVNCServer::AddBuffer(std::shared_ptr<CRenderBuffer> renderBuffer)
+{
+  if (!m_screen)
+    return;
+
+  auto buffer = renderBuffer->GetBuffer();
+  m_screen->frameBuffer = reinterpret_cast<char*>(buffer->GetMemory());
+  rfbMarkRectAsModified(m_screen, 0, 0, m_width, m_height);
+  rfbProcessEvents(m_screen, 0);
 }
 
 void CVNCServer::ClientRemoved(rfbClientPtr client)

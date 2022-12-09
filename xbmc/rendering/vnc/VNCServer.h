@@ -8,17 +8,26 @@
 
 #pragma once
 
+#include <memory>
+
 #include <rfb/rfb.h>
+
+class CRenderBuffer;
 
 class CVNCServer
 {
 public:
-  CVNCServer(int maxWidth, int maxHeight);
-  ~CVNCServer();
+  CVNCServer() = default;
+  ~CVNCServer() = default;
+
+  void Start(int maxWidth, int maxHeight);
+  void Stop();
 
   void PumpEvents();
 
   void UpdateFrameBuffer(char* buffer);
+
+  void AddBuffer(std::shared_ptr<CRenderBuffer> renderBuffer);
 
 private:
   static rfbNewClientAction ClientAdded(rfbClientPtr client);

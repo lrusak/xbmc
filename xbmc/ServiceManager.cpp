@@ -177,6 +177,8 @@ bool CServiceManager::InitStageTwo(const std::string& profilesUserDataFolder)
   m_WSDiscovery = WSDiscovery::IWSDiscovery::GetInstance();
 #endif
 
+  m_vncServer = std::make_unique<CVNCServer>();
+
   if (!m_Platform->InitStageTwo())
     return false;
 
@@ -206,8 +208,6 @@ bool CServiceManager::InitStageThree(const std::shared_ptr<CProfileManager>& pro
     m_PVRManager->Init();
 
   m_playerCoreFactory.reset(new CPlayerCoreFactory(*profileManager));
-
-  m_vncServer = std::make_unique<CVNCServer>();
 
   if (!m_Platform->InitStageThree())
     return false;
@@ -441,4 +441,9 @@ CDatabaseManager& CServiceManager::GetDatabaseManager()
 CMediaManager& CServiceManager::GetMediaManager()
 {
   return *m_mediaManager;
+}
+
+CVNCServer* CServiceManager::GetVNCServer()
+{
+  return m_vncServer.get();
 }

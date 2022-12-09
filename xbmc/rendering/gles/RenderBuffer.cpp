@@ -12,8 +12,13 @@
 #include "rendering/MatrixGL.h"
 #include "rendering/RenderSystem.h"
 #include "rendering/gles/RenderSystemGLES.h"
+#include "utils/BufferObject.h"
+#include "utils/BufferObjectFactory.h"
+#include "utils/EGLImage.h"
 #include "utils/GLUtils.h"
 #include "utils/log.h"
+#include "windowing/WinSystem.h"
+#include "windowing/linux/WinSystemEGL.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -136,8 +141,11 @@ CRenderBuffer::~CRenderBuffer()
   if (m_fboid != 0)
     glDeleteFramebuffers(1, &m_fboid);
 
-  if (m_texid != 0)
-    glDeleteTextures(1, &m_texid);
+  if (m_rboid != 0)
+    glDeleteTextures(1, &m_rboid);
+
+  m_image->DestroyImage();
+  m_buffer->DestroyBufferObject();
 }
 
 bool CRenderBuffer::Allocate(uint32_t width, uint32_t height)
@@ -157,9 +165,45 @@ bool CRenderBuffer::Allocate(uint32_t width, uint32_t height)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glBindTexture(GL_TEXTURE_2D, 0);
 
+  m_buffer = CBufferObjectFactory::CreateBufferObject(false);
+  if (!m_buffer->CreateBufferObject(DRM_FORMAT_ARGB8888, width, height))
+  {
+    return false;
+  }
+
+  std::array<CEGLImage::EglPlane, CEGLImage::MAX_NUM_PLANES> planes;
+
+  planes[0].fd = m_buffer->GetFd();
+  planes[0].offset = 0;
+  planes[0].pitch = m_buffer->GetStride();
+  planes[0].modifier = m_buffer->GetModifier();
+
+  CEGLImage::EglAttrs attribs;
+
+  attribs.width = m_width;
+  attribs.height = m_height;
+  attribs.format = DRM_FORMAT_ARGB8888;
+  attribs.planes = planes;
+
+  auto winSystemEGL =
+      dynamic_cast<KODI::WINDOWING::LINUX::CWinSystemEGL*>(CServiceBroker::GetWinSystem());
+  if (!winSystemEGL)
+  {
+    return false;
+  }
+
+  m_image = std::make_unique<CEGLImage>(winSystemEGL->GetEGLDisplay());
+
+  if (!m_image->CreateImage(attribs))
+    return false;
+
+  glGenRenderbuffers(1, &m_rboid);
+  glBindRenderbuffer(GL_RENDERBUFFER, m_rboid);
+  m_image->AttachRenderBuffer(GL_RENDERBUFFER);
+
   glGenFramebuffers(1, &m_fboid);
   glBindFramebuffer(GL_FRAMEBUFFER, m_fboid);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texid, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_rboid);
 
   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -195,6 +239,7 @@ void CRenderBuffer::BindTexture()
   // CLog::Log(LOGDEBUG, "CRenderBuffer::{} - addr: {} id: {}", __FUNCTION__, fmt::ptr(this), m_texid);
 
   glBindTexture(GL_TEXTURE_2D, m_texid);
+  m_image->UploadImage(GL_TEXTURE_2D);
 }
 
 void CRenderBuffer::UnbindTexture()
@@ -230,7 +275,7 @@ bool CRenderBuffer::Render()
   glMatrixProject.Push();
   glMatrixProject->LoadIdentity();
 
-  glMatrixProject->Rotatef(-90.0f, 0, 0, 1.0f);
+  glMatrixProject->Rotatef(-180.0f, 0, 0, 1.0f);
   glMatrixProject->Ortho2D(0, m_width, 0, m_height);
 
   glMatrixProject.Load();
@@ -288,6 +333,8 @@ bool CRenderBuffer::Render()
 
   glDisableVertexAttribArray(vertLoc);
   glDisableVertexAttribArray(loc);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
 
   renderSystemGLES->DisableGUIShader();
 

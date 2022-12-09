@@ -12,6 +12,7 @@
 #include "guilib/DirtyRegion.h"
 #include "guilib/GUITextureGLES.h"
 #include "rendering/MatrixGL.h"
+#include "rendering/vnc/VNCServer.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/SettingsComponent.h"
 #include "utils/GLUtils.h"
@@ -141,11 +142,16 @@ bool CRenderSystemGLES::ResetRenderSystem(int width, int height)
 
   if (m_width != 0 && m_height != 0)
   {
-    if (m_buffer)
-      m_buffer->Release();
+    for (auto& buffer : m_buffer)
+    {
+      if (buffer)
+        buffer->Release();
 
-    m_buffer = m_pool->GetBuffer(m_width, m_height);
+      buffer = m_pool->GetBuffer(m_width, m_height);
+    }
   }
+
+  CServiceBroker::GetVNCServer()->Start(m_width, m_height);
 
   return true;
 }
@@ -161,11 +167,15 @@ bool CRenderSystemGLES::DestroyRenderSystem()
   glFinish();
   PresentRenderImpl(true);
 
-  m_buffer.reset();
+  for (auto& buffer : m_buffer)
+    buffer.reset();
+
   m_pool.reset();
 
   ReleaseShaders();
   m_bRenderCreated = false;
+
+  CServiceBroker::GetVNCServer()->Stop();
 
   return true;
 }
@@ -185,8 +195,13 @@ bool CRenderSystemGLES::BeginRender()
 
   m_limitedColorRange = useLimited;
 
-  if (m_buffer)
-    m_buffer->BindFrameBuffer();
+  // if (m_buffer)
+  //   m_buffer->Release();
+
+  // m_buffer = m_pool->GetBuffer(m_width, m_height);
+
+  if (m_buffer[m_currentBuffer])
+    m_buffer[m_currentBuffer]->BindFrameBuffer();
 
   return true;
 }
@@ -196,17 +211,22 @@ bool CRenderSystemGLES::EndRender()
   if (!m_bRenderCreated)
     return false;
 
-  if (m_buffer)
+  if (m_buffer[m_currentBuffer])
   {
-    m_buffer->UnbindFrameBuffer();
+    m_buffer[m_currentBuffer]->UnbindFrameBuffer();
 
-    m_buffer->BindTexture();
+    m_buffer[m_currentBuffer]->BindTexture();
 
-    if (!m_buffer->Render())
+    if (!m_buffer[m_currentBuffer]->Render())
       throw std::runtime_error("whoops!");
 
-    m_buffer->UnbindTexture();
+    m_buffer[m_currentBuffer]->UnbindTexture();
   }
+
+  CServiceBroker::GetVNCServer()->AddBuffer(m_buffer[m_currentBuffer % 2]);
+
+  m_currentBuffer++;
+  m_currentBuffer %= 2;
 
   return true;
 }
@@ -733,8 +753,8 @@ GLint CRenderSystemGLES::GUIShaderGetNormal()
 
 uint32_t CRenderSystemGLES::GetDefaultFrameBufferID() const
 {
-  if (m_buffer)
-    return m_buffer->GetFrameBufferID();
+  if (m_buffer[m_currentBuffer])
+    return m_buffer[m_currentBuffer]->GetFrameBufferID();
 
   return 0;
 }

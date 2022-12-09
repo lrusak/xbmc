@@ -92,6 +92,7 @@
 #include "playlists/SmartPlayList.h"
 #include "powermanagement/PowerManager.h"
 #include "profiles/ProfileManager.h"
+#include "rendering/vnc/VNCServer.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/DisplaySettings.h"
 #include "settings/MediaSettings.h"
@@ -3107,6 +3108,8 @@ void CApplication::Process()
 
   // update sound
   GetComponent<CApplicationPlayer>()->DoAudioWork();
+
+  CServiceBroker::GetVNCServer()->PumpEvents();
 
   // do any processing that isn't needed on each run
   if( m_slowTimer.GetElapsedMilliseconds() > 500 )

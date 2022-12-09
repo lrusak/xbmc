@@ -434,3 +434,8 @@ std::shared_ptr<speech::ISpeechRecognition> CServiceBroker::GetSpeechRecognition
 {
   return g_serviceBroker.m_speechRecognition;
 }
+
+CVNCServer* CServiceBroker::GetVNCServer()
+{
+  return g_application.m_ServiceManager->GetVNCServer();
+}

@@ -144,6 +144,8 @@ public:
 
   CMediaManager& GetMediaManager();
 
+  CVNCServer* GetVNCServer();
+
 #if !defined(TARGET_WINDOWS) && defined(HAS_DVD_DRIVE)
   MEDIA_DETECT::CDetectDVDMedia& GetDetectDVDMedia();
 #endif

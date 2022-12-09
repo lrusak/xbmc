@@ -153,6 +153,7 @@ protected:
   GLint      m_viewPort[4];
 
 private:
-  std::shared_ptr<CRenderBuffer> m_buffer;
+  int m_currentBuffer{0};
+  std::shared_ptr<CRenderBuffer> m_buffer[2];
   std::shared_ptr<CRenderBufferPool> m_pool;
 };

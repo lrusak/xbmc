@@ -14,6 +14,8 @@
 
 #include "system_gl.h"
 
+class CBufferObject;
+class CEGLImage;
 class CRenderBufferPool;
 
 class CRenderBuffer : public std::enable_shared_from_this<CRenderBuffer>
@@ -40,7 +42,10 @@ public:
 
   void SetPool(std::shared_ptr<CRenderBufferPool> pool) { m_pool = pool; }
 
+  CBufferObject* GetBuffer() const { return m_buffer.get(); }
+
 private:
+  GLuint m_rboid{0};
   GLuint m_fboid{0};
   GLuint m_texid{0};
 
@@ -50,6 +55,9 @@ private:
   std::shared_ptr<CRenderBufferPool> m_pool;
 
   uint32_t m_i{0};
+
+  std::unique_ptr<CBufferObject> m_buffer;
+  std::unique_ptr<CEGLImage> m_image;
 };
 
 class CRenderBufferPool : public std::enable_shared_from_this<CRenderBufferPool>
