@@ -39,7 +39,6 @@ CActiveAEStream::CActiveAEStream(AEAudioFormat* format, unsigned int streamid, C
   m_streamIsBuffering = false;
   m_streamIsFlushed = false;
   m_streamSlave = NULL;
-  m_leftoverBuffer = new uint8_t[m_format.m_frameSize];
   m_leftoverBytes = 0;
   m_forceResampler = false;
   m_remapper = NULL;
@@ -57,7 +56,6 @@ CActiveAEStream::CActiveAEStream(AEAudioFormat* format, unsigned int streamid, C
 
 CActiveAEStream::~CActiveAEStream()
 {
-  delete [] m_leftoverBuffer;
   delete m_remapper;
 }
 

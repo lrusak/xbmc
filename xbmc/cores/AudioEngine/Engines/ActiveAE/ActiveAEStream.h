@@ -203,7 +203,6 @@ protected:
   IAEStream *m_streamSlave;
   CCriticalSection m_streamLock;
   CCriticalSection m_statsLock;
-  uint8_t *m_leftoverBuffer;
   int m_leftoverBytes;
   CSampleBuffer *m_currentBuffer;
   std::unique_ptr<CSoundPacket> m_remapBuffer;
