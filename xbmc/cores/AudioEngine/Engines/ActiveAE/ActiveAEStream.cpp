@@ -43,7 +43,7 @@ CActiveAEStream::CActiveAEStream(AEAudioFormat* format, unsigned int streamid, C
   m_leftoverBytes = 0;
   m_forceResampler = false;
   m_remapper = NULL;
-  m_remapBuffer = NULL;
+  m_remapBuffer = nullptr;
   m_streamResampleRatio = 1.0;
   m_streamResampleMode = 0;
   m_profile = 0;
@@ -59,7 +59,6 @@ CActiveAEStream::~CActiveAEStream()
 {
   delete [] m_leftoverBuffer;
   delete m_remapper;
-  delete m_remapBuffer;
 }
 
 void CActiveAEStream::IncFreeBuffers()
@@ -162,7 +161,9 @@ void CActiveAEStream::InitRemapper()
                      false);
 
     // extra sound packet, we can't resample to the same buffer
-    m_remapBuffer = new CSoundPacket(m_inputBuffers->m_allSamples[0]->pkt->config, m_inputBuffers->m_allSamples[0]->pkt->max_nb_samples);
+    m_remapBuffer =
+        std::make_unique<CSoundPacket>(m_inputBuffers->m_allSamples[0]->pkt->config,
+                                       m_inputBuffers->m_allSamples[0]->pkt->max_nb_samples);
   }
 }
 
@@ -180,9 +181,7 @@ void CActiveAEStream::RemapBuffer()
     }
 
     // swap sound packets
-    CSoundPacket *tmp = m_currentBuffer->pkt;
-    m_currentBuffer->pkt = m_remapBuffer;
-    m_remapBuffer = tmp;
+    std::swap(m_currentBuffer->pkt, m_remapBuffer);
   }
 }
 
