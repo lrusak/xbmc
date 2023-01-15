@@ -262,7 +262,7 @@ CActiveAE::CActiveAE() :
   m_muted = false;
   m_aeMuted = false;
   m_mode = MODE_PCM;
-  m_encoder = NULL;
+  m_encoder = nullptr;
   m_vizInitialized = false;
   m_sinkHasVolume = false;
   m_aeGUISoundForce = false;
@@ -1227,8 +1227,7 @@ void CActiveAE::Configure(AEAudioFormat *desiredFmt)
     bool streaming = false;
     m_sink.m_controlPort.SendOutMessage(CSinkControlProtocol::STREAMING, &streaming, sizeof(bool));
 
-    delete m_encoder;
-    m_encoder = NULL;
+    m_encoder.reset();
 
     if (m_encoderBuffers)
     {
@@ -1266,7 +1265,7 @@ void CActiveAE::Configure(AEAudioFormat *desiredFmt)
       // setup encoder
       if (!m_encoder)
       {
-        m_encoder = new CAEEncoderFFmpeg();
+        m_encoder = std::make_unique<CAEEncoderFFmpeg>();
         m_encoder->Initialize(outputFormat, true);
         m_encoderFormat = outputFormat;
       }

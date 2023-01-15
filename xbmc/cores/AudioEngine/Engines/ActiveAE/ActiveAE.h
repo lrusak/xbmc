@@ -364,7 +364,7 @@ protected:
   AEAudioFormat m_inputFormat;
   AudioSettings m_settings;
   CEngineStats m_stats;
-  IAEEncoder *m_encoder;
+  std::unique_ptr<IAEEncoder> m_encoder;
   std::string m_currDevice;
   std::unique_ptr<CActiveAESettings> m_settingsHandler;
 
