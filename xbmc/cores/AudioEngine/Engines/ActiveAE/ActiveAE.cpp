@@ -3248,7 +3248,8 @@ bool CActiveAE::ResampleSound(CActiveAESound *sound)
     }
   }
 
-  IAEResample *resampler = CAEResampleFactory::Create(AERESAMPLEFACTORY_QUICK_RESAMPLE);
+  std::unique_ptr<IAEResample> resampler =
+      CAEResampleFactory::Create(AERESAMPLEFACTORY_QUICK_RESAMPLE);
 
   resampler->Init(dst_config, orig_config,
                   false,
@@ -3264,10 +3265,8 @@ bool CActiveAE::ResampleSound(CActiveAESound *sound)
 
   dst_buffer = sound->InitSound(false, dst_config, dst_samples);
   if (!dst_buffer)
-  {
-    delete resampler;
     return false;
-  }
+
   int samples = resampler->Resample(dst_buffer, dst_samples,
                                     sound->GetSound(true)->data,
                                     sound->GetSound(true)->nb_samples,
@@ -3275,7 +3274,6 @@ bool CActiveAE::ResampleSound(CActiveAESound *sound)
 
   sound->GetSound(false)->nb_samples = samples;
 
-  delete resampler;
   sound->SetConverted(true);
   return true;
 }
