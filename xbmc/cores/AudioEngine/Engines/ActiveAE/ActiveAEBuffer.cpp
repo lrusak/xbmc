@@ -140,8 +140,6 @@ CActiveAEBufferPoolResample::CActiveAEBufferPoolResample(const AEAudioFormat& in
 CActiveAEBufferPoolResample::~CActiveAEBufferPoolResample()
 {
   Flush();
-
-  delete m_resampler;
 }
 
 bool CActiveAEBufferPoolResample::Create(unsigned int totaltime, bool remap, bool upmix, bool normalize)
@@ -167,12 +165,6 @@ bool CActiveAEBufferPoolResample::Create(unsigned int totaltime, bool remap, boo
 
 void CActiveAEBufferPoolResample::ChangeResampler()
 {
-  if (m_resampler)
-  {
-    delete m_resampler;
-    m_resampler = NULL;
-  }
-
   m_resampler = CAEResampleFactory::Create();
 
   SampleConfig dstConfig, srcConfig;
