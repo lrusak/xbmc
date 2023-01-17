@@ -40,24 +40,12 @@ bool CAESinkFactory::HasSinks()
 
 void CAESinkFactory::ParseDevice(std::string &device, std::string &driver)
 {
-  int pos = device.find_first_of(':');
-  bool found = false;
-  if (pos > 0)
+  std::vector<std::string> parsed = StringUtils::Split(device, ":");
+  if (parsed.size() > 1)
   {
-    driver = device.substr(0, pos);
-
-    for (const auto& [name, entry] : m_AESinkRegEntry)
-    {
-      if (!StringUtils::EqualsNoCase(driver, entry.sinkName))
-        continue;
-
-      device = device.substr(pos + 1, device.length() - pos - 1);
-      found = true;
-    }
+    driver = parsed[0];
+    device = parsed[1];
   }
-
-  if (!found)
-    driver.clear();
 }
 
 IAESink *CAESinkFactory::Create(std::string &device, AEAudioFormat &desiredFormat)
