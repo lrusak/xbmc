@@ -151,8 +151,17 @@ public:
    \param delimiter Delimiter to be used to split the input string
    \param iMaxStrings (optional) Maximum number of splitted strings
    */
-  static std::vector<std::string> Split(const std::string& input, const std::string& delimiter, unsigned int iMaxStrings = 0);
-  static std::vector<std::string> Split(const std::string& input, const char delimiter, size_t iMaxStrings = 0);
+  template<typename String,
+           typename = std::enable_if<std::is_convertible_v<std::string_view, String>>>
+  static std::vector<std::string> Split(const std::string& input,
+                                        const String& delimiter,
+                                        unsigned int iMaxStrings = 0)
+  {
+    std::vector<std::string> result;
+    SplitTo(std::back_inserter(result), input, delimiter, iMaxStrings);
+    return result;
+  }
+
   static std::vector<std::string> Split(const std::string& input, const std::vector<std::string> &delimiters);
   /*! \brief Splits the given input string using the given delimiter into separate strings.
 
@@ -166,7 +175,10 @@ public:
    *       that was put there
    */
   template<typename OutputIt>
-  static OutputIt SplitTo(OutputIt d_first, const std::string& input, const std::string& delimiter, unsigned int iMaxStrings = 0)
+  static OutputIt SplitTo(OutputIt d_first,
+                          const std::string& input,
+                          const std::string_view& delimiter,
+                          unsigned int iMaxStrings = 0)
   {
     OutputIt dest = d_first;
 

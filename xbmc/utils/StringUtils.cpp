@@ -733,20 +733,6 @@ bool StringUtils::EndsWithNoCase(const std::string &str1, const char *s2)
   return true;
 }
 
-std::vector<std::string> StringUtils::Split(const std::string& input, const std::string& delimiter, unsigned int iMaxStrings)
-{
-  std::vector<std::string> result;
-  SplitTo(std::back_inserter(result), input, delimiter, iMaxStrings);
-  return result;
-}
-
-std::vector<std::string> StringUtils::Split(const std::string& input, const char delimiter, size_t iMaxStrings)
-{
-  std::vector<std::string> result;
-  SplitTo(std::back_inserter(result), input, delimiter, iMaxStrings);
-  return result;
-}
-
 std::vector<std::string> StringUtils::Split(const std::string& input, const std::vector<std::string>& delimiters)
 {
   std::vector<std::string> result;
