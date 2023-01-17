@@ -21,6 +21,8 @@ class IAESink;
 namespace AE
 {
 
+constexpr auto DRIVER_DEVICE_DELIMITER = ":";
+
 struct AESinkInfo
 {
   std::string m_sinkName;

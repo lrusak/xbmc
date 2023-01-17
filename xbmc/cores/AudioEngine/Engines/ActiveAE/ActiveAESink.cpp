@@ -755,7 +755,7 @@ void CActiveAESink::EnumerateOutputDevices(AEDeviceList &devices, bool passthrou
       if (devInfo.m_onlyPCM && passthrough)
         continue;
 
-      std::string device = sinkInfo.m_sinkName + ":" + devInfo.m_deviceName;
+      std::string device = sinkInfo.m_sinkName + DRIVER_DEVICE_DELIMITER + devInfo.m_deviceName;
 
       std::stringstream ss;
 

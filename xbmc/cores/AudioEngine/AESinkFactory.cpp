@@ -40,7 +40,7 @@ bool CAESinkFactory::HasSinks()
 
 void CAESinkFactory::ParseDevice(std::string &device, std::string &driver)
 {
-  std::vector<std::string> parsed = StringUtils::Split(device, ":");
+  std::vector<std::string> parsed = StringUtils::Split(device, DRIVER_DEVICE_DELIMITER);
   if (parsed.size() > 1)
   {
     driver = parsed[0];
