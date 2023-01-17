@@ -1352,7 +1352,7 @@ int StringUtils::AlphaNumericCollation(int nKey1, const void* pKey1, int nKey2, 
 
 int StringUtils::DateStringToYYYYMMDD(const std::string &dateString)
 {
-  std::vector<std::string> days = StringUtils::Split(dateString, '-');
+  std::vector<std::string> days = StringUtils::Split(dateString, "-");
   if (days.size() == 1)
     return atoi(days[0].c_str());
   else if (days.size() == 2)
@@ -1413,7 +1413,7 @@ long StringUtils::TimeStringToSeconds(const std::string &timeString)
   }
   else
   {
-    std::vector<std::string> secs = StringUtils::Split(strCopy, ':');
+    std::vector<std::string> secs = StringUtils::Split(strCopy, ":");
     int timeInSecs = 0;
     for (unsigned int i = 0; i < 3 && i < secs.size(); i++)
     {

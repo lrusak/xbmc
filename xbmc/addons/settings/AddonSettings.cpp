@@ -1386,7 +1386,7 @@ SettingPtr CAddonSettings::InitializeFromOldSettingSlider(const std::string& set
 {
   // parse range
   double min = 0.0, max = 100.0, step = 1.0;
-  const auto range = StringUtils::Split(XMLUtils::GetAttribute(settingElement, "range"), ',');
+  const auto range = StringUtils::Split(XMLUtils::GetAttribute(settingElement, "range"), ",");
 
   if (range.size() > 1)
   {

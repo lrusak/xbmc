@@ -103,7 +103,7 @@ bool URIUtils::HasExtension(const std::string& strFileName, const std::string& s
   const std::string extensionLower = StringUtils::ToLower(strFileName.substr(pos));
 
   const std::vector<std::string> extensionsLower =
-      StringUtils::Split(StringUtils::ToLower(strExtensions), '|');
+      StringUtils::Split(StringUtils::ToLower(strExtensions), "|");
 
   for (const auto& ext : extensionsLower)
   {

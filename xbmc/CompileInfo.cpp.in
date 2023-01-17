@@ -85,14 +85,14 @@ const char*  CCompileInfo::GetVersionCode()
 std::vector<ADDON::RepoInfo> CCompileInfo::LoadOfficialRepoInfos()
 {
   const std::vector<std::string> officialAddonRepos =
-      StringUtils::Split("@APP_ADDON_REPOS@", ',');
+      StringUtils::Split("@APP_ADDON_REPOS@", ",");
 
   std::vector<ADDON::RepoInfo> officialRepoInfos;
   ADDON::RepoInfo newRepoInfo;
 
   for (const auto& addonRepo : officialAddonRepos)
   {
-    const std::vector<std::string> tmpRepoInfo = StringUtils::Split(addonRepo, '|');
+    const std::vector<std::string> tmpRepoInfo = StringUtils::Split(addonRepo, "|");
     newRepoInfo.m_repoId = tmpRepoInfo.front();
     newRepoInfo.m_origin = tmpRepoInfo.back();
     officialRepoInfos.emplace_back(newRepoInfo);
@@ -103,7 +103,7 @@ std::vector<ADDON::RepoInfo> CCompileInfo::LoadOfficialRepoInfos()
 
 std::vector<std::string> CCompileInfo::GetAvailableWindowSystems()
 {
-  return StringUtils::Split("@CORE_PLATFORM_NAME_LC@", ' ');
+  return StringUtils::Split("@CORE_PLATFORM_NAME_LC@", " ");
 }
 
 // Return version of python built against as format MAJOR.MINOR
@@ -114,5 +114,5 @@ std::string CCompileInfo::GetPythonVersion()
 
 std::vector<std::string> CCompileInfo::GetWebserverExtraWhitelist()
 {
-  return StringUtils::Split("@KODI_WEBSERVER_EXTRA_WHITELIST@", ',');
+  return StringUtils::Split("@KODI_WEBSERVER_EXTRA_WHITELIST@", ",");
 }

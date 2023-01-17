@@ -132,7 +132,7 @@ void MysqlDatabase::configure_connection()
       if ((row = mysql_fetch_row(res)) != NULL)
       {
         std::string column = row[0];
-        std::vector<std::string> split = StringUtils::Split(column, ',');
+        std::vector<std::string> split = StringUtils::Split(column, ",");
 
         for (std::string& itIn : split)
         {

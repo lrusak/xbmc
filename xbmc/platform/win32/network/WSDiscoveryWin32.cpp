@@ -289,7 +289,7 @@ std::wstring CWSDiscoveryWindows::ResolveHostName(const std::wstring& serverIP)
 {
   std::wstring hostName = serverIP;
 
-  std::vector<std::string> ip = StringUtils::Split(FromW(serverIP), '.', 4);
+  std::vector<std::string> ip = StringUtils::Split(FromW(serverIP), ".", 4);
   std::string reverse = StringUtils::Format("{}.{}.{}.{}.IN-ADDR.ARPA", ip[3], ip[2], ip[1], ip[0]);
 
   PDNS_RECORD pDnsRecord = nullptr;

@@ -174,7 +174,7 @@ CSkinInfo::CSkinInfo(const AddonInfoPtr& addonInfo) : CAddon(addonInfo, AddonTyp
     std::string strAspect = values.second.GetValue("res@aspect").asString();
     float aspect = 0;
 
-    std::vector<std::string> fracs = StringUtils::Split(strAspect, ':');
+    std::vector<std::string> fracs = StringUtils::Split(strAspect, ":");
     if (fracs.size() == 2)
       aspect = (float)(atof(fracs[0].c_str()) / atof(fracs[1].c_str()));
     if (width > 0 && height > 0)

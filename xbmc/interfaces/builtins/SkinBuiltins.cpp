@@ -114,7 +114,7 @@ static int SelectBool(const std::vector<std::string>& params)
   {
     if (params[i].find('|') != std::string::npos)
     {
-      std::vector<std::string> values = StringUtils::Split(params[i], '|');
+      std::vector<std::string> values = StringUtils::Split(params[i], "|");
       std::string label = g_localizeStrings.Get(atoi(values[0].c_str()));
       settings.emplace_back(label, values[1].c_str());
       pDlgSelect->Add(label);

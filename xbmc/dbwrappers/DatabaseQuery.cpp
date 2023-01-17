@@ -244,7 +244,7 @@ std::string CDatabaseQueryRule::FormatParameter(const std::string& operatorStrin
   std::string parameter;
   if (GetFieldType(m_field) == TEXTIN_FIELD)
   {
-    std::vector<std::string> split = StringUtils::Split(param, ',');
+    std::vector<std::string> split = StringUtils::Split(param, ",");
     for (std::string& itIn : split)
     {
       if (!parameter.empty())

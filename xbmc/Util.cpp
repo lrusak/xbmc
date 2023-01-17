@@ -1996,7 +1996,7 @@ void CUtil::ScanForExternalSubtitles(const std::string& strMovie, std::vector<st
     items.Append(moreItems);
   }
 
-  std::vector<std::string> exts = StringUtils::Split(subtitleExtensions, '|');
+  std::vector<std::string> exts = StringUtils::Split(subtitleExtensions, "|");
   exts.erase(std::remove(exts.begin(), exts.end(), ".zip"), exts.end());
   exts.erase(std::remove(exts.begin(), exts.end(), ".rar"), exts.end());
 

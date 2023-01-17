@@ -422,7 +422,7 @@ void CWebVTTHandler::DecodeLine(std::string line, std::vector<subtitleData>* sub
         m_feedCssStyle = webvttCssStyle();
 
       // Collect cue selectors (also handle multiple inline selectors)
-      for (std::string& cueSelector : StringUtils::Split(line, ','))
+      for (std::string& cueSelector : StringUtils::Split(line, ","))
       {
         if (m_cueCssTagRegex.RegFind(cueSelector) >= 0)
         {

@@ -208,12 +208,9 @@ public:
     return dest;
   }
   template<typename OutputIt>
-  static OutputIt SplitTo(OutputIt d_first, const std::string& input, const char delimiter, size_t iMaxStrings = 0)
-  {
-    return SplitTo(d_first, input, std::string(1, delimiter), iMaxStrings);
-  }
-  template<typename OutputIt>
-  static OutputIt SplitTo(OutputIt d_first, const std::string& input, const std::vector<std::string> &delimiters)
+  static OutputIt SplitTo(OutputIt d_first,
+                          const std::string& input,
+                          const std::vector<std::string>& delimiters)
   {
     OutputIt dest = d_first;
     if (input.empty())
