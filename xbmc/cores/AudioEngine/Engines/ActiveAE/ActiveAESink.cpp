@@ -75,29 +75,37 @@ AEDeviceType CActiveAESink::GetDeviceType(const AEDevice& aeDevice)
 {
   auto& [driver, device] = aeDevice;
 
-  for (auto itt = m_sinkInfoList.begin(); itt != m_sinkInfoList.end(); ++itt)
+  for (const auto& sinkInfo : m_sinkInfoList)
   {
-    for (AEDeviceInfoList::iterator itt2 = itt->m_deviceInfoList.begin(); itt2 != itt->m_deviceInfoList.end(); ++itt2)
-    {
-      CAEDeviceInfo& info = *itt2;
-      if (info.m_deviceName == device)
-        return info.m_deviceType;
-    }
+    auto& deviceInfoList = sinkInfo.m_deviceInfoList;
+
+    const auto it =
+        std::find_if(deviceInfoList.cbegin(), deviceInfoList.cend(),
+                     [&device](const CAEDeviceInfo& info) { return info.m_deviceName == device; });
+
+    if (it != deviceInfoList.cend())
+      return it->m_deviceType;
   }
+
   return AE_DEVTYPE_PCM;
 }
 
 bool CActiveAESink::HasPassthroughDevice()
 {
-  for (auto itt = m_sinkInfoList.begin(); itt != m_sinkInfoList.end(); ++itt)
+  for (const auto& sinkInfo : m_sinkInfoList)
   {
-    for (AEDeviceInfoList::iterator itt2 = itt->m_deviceInfoList.begin(); itt2 != itt->m_deviceInfoList.end(); ++itt2)
-    {
-      CAEDeviceInfo& info = *itt2;
-      if (info.m_deviceType != AE_DEVTYPE_PCM && !info.m_streamTypes.empty())
-        return true;
-    }
+    auto& deviceInfoList = sinkInfo.m_deviceInfoList;
+
+    const auto it =
+        std::find_if(deviceInfoList.cbegin(), deviceInfoList.cend(),
+                     [](const CAEDeviceInfo& info) {
+                       return (info.m_deviceType != AE_DEVTYPE_PCM && !info.m_streamTypes.empty());
+                     });
+
+    if (it != deviceInfoList.cend())
+      return true;
   }
+
   return false;
 }
 
@@ -105,74 +113,79 @@ bool CActiveAESink::SupportsFormat(const AEDevice& aeDevice, AEAudioFormat& form
 {
   auto& [driver, device] = aeDevice;
 
-  for (auto itt = m_sinkInfoList.begin(); itt != m_sinkInfoList.end(); ++itt)
+  for (const auto& sinkInfo : m_sinkInfoList)
   {
-    if (driver == itt->m_sinkName)
+    if (driver != sinkInfo.m_sinkName)
+      continue;
+
+    auto& deviceInfoList = sinkInfo.m_deviceInfoList;
+
+    for (const auto& deviceInfo : deviceInfoList)
     {
-      for (auto itt2 = itt->m_deviceInfoList.begin(); itt2 != itt->m_deviceInfoList.end(); ++itt2)
+      if (deviceInfo.m_deviceName != device)
+        continue;
+
+      bool isRaw = format.m_dataFormat == AE_FMT_RAW;
+      bool formatExists = false;
+
+      // PCM sample rate
+      unsigned int samplerate = format.m_sampleRate;
+
+      if (isRaw && deviceInfo.m_wantsIECPassthrough)
       {
-        CAEDeviceInfo& info = *itt2;
-        if (info.m_deviceName == device)
+        switch (format.m_streamInfo.m_type)
         {
-          bool isRaw = format.m_dataFormat == AE_FMT_RAW;
-          bool formatExists = false;
+          case CAEStreamInfo::STREAM_TYPE_EAC3:
+            samplerate = 192000;
+            break;
 
-          // PCM sample rate
-          unsigned int samplerate = format.m_sampleRate;
+          case CAEStreamInfo::STREAM_TYPE_TRUEHD:
+            if (format.m_streamInfo.m_sampleRate == 48000 ||
+                format.m_streamInfo.m_sampleRate == 96000 ||
+                format.m_streamInfo.m_sampleRate == 192000)
+              samplerate = 192000;
+            else
+              samplerate = 176400;
+            break;
 
-          if (isRaw && info.m_wantsIECPassthrough)
-          {
-            switch (format.m_streamInfo.m_type)
-            {
-              case CAEStreamInfo::STREAM_TYPE_EAC3:
-                samplerate = 192000;
-                break;
+          case CAEStreamInfo::STREAM_TYPE_DTSHD:
+          case CAEStreamInfo::STREAM_TYPE_DTSHD_MA:
+            samplerate = 192000;
+            break;
 
-              case CAEStreamInfo::STREAM_TYPE_TRUEHD:
-                if (format.m_streamInfo.m_sampleRate == 48000 || format.m_streamInfo.m_sampleRate == 96000 || format.m_streamInfo.m_sampleRate == 192000)
-                  samplerate = 192000;
-                else
-                  samplerate = 176400;
-                break;
-
-              case CAEStreamInfo::STREAM_TYPE_DTSHD:
-              case CAEStreamInfo::STREAM_TYPE_DTSHD_MA:
-                samplerate = 192000;
-                break;
-
-              default:
-                break;
-            }
-            AEDataTypeList::iterator iit3;
-            iit3 = find(info.m_streamTypes.begin(), info.m_streamTypes.end(), format.m_streamInfo.m_type);
-            formatExists = (iit3 != info.m_streamTypes.end());
-          }
-          else if (isRaw && !info.m_wantsIECPassthrough)
-          {
-            samplerate = 48000;
-            AEDataTypeList::iterator iit3;
-            iit3 = find(info.m_streamTypes.begin(), info.m_streamTypes.end(), format.m_streamInfo.m_type);
-            formatExists = (iit3 != info.m_streamTypes.end());
-          }
-          else // PCM case
-          {
-            AEDataFormatList::iterator itt3;
-            itt3 = find(info.m_dataFormats.begin(), info.m_dataFormats.end(), format.m_dataFormat);
-            formatExists = (itt3 != info.m_dataFormats.end());
-          }
-
-          // check if samplerate is available
-          if (formatExists)
-          {
-            AESampleRateList::iterator itt4;
-            itt4 = find(info.m_sampleRates.begin(), info.m_sampleRates.end(), samplerate);
-            return itt4 != info.m_sampleRates.end();
-          }
-          else // format is not existent
-          {
-            return false;
-          }
+          default:
+            break;
         }
+
+        const auto it = std::find(deviceInfo.m_streamTypes.cbegin(),
+                                  deviceInfo.m_streamTypes.cend(), format.m_streamInfo.m_type);
+        formatExists = (it != deviceInfo.m_streamTypes.cend());
+      }
+      else if (isRaw && !deviceInfo.m_wantsIECPassthrough)
+      {
+        samplerate = 48000;
+
+        const auto it = std::find(deviceInfo.m_streamTypes.cbegin(),
+                                  deviceInfo.m_streamTypes.cend(), format.m_streamInfo.m_type);
+        formatExists = (it != deviceInfo.m_streamTypes.cend());
+      }
+      else // PCM case
+      {
+        const auto it = std::find(deviceInfo.m_dataFormats.cbegin(),
+                                  deviceInfo.m_dataFormats.cend(), format.m_dataFormat);
+        formatExists = (it != deviceInfo.m_dataFormats.cend());
+      }
+
+      // check if samplerate is available
+      if (formatExists)
+      {
+        const auto it = std::find(deviceInfo.m_sampleRates.cbegin(),
+                                  deviceInfo.m_sampleRates.cend(), samplerate);
+        return it != deviceInfo.m_sampleRates.cend();
+      }
+      else // format is not existent
+      {
+        return false;
       }
     }
   }
@@ -183,20 +196,22 @@ bool CActiveAESink::NeedIECPacking()
 {
   auto& [driver, device] = m_device;
 
-  for (auto itt = m_sinkInfoList.begin(); itt != m_sinkInfoList.end(); ++itt)
+  for (const auto& sinkInfo : m_sinkInfoList)
   {
-    if (driver == itt->m_sinkName)
+    if (driver != sinkInfo.m_sinkName)
+      continue;
+
+    auto& deviceInfoList = sinkInfo.m_deviceInfoList;
+
+    for (const auto& deviceInfo : deviceInfoList)
     {
-      for (auto itt2 = itt->m_deviceInfoList.begin(); itt2 != itt->m_deviceInfoList.end(); ++itt2)
-      {
-        CAEDeviceInfo& info = *itt2;
-        if (info.m_deviceName == device)
-        {
-          return info.m_wantsIECPassthrough;
-        }
-      }
+      if (deviceInfo.m_deviceName != device)
+        continue;
+
+      return deviceInfo.m_wantsIECPassthrough;
     }
   }
+
   return true;
 }
 
