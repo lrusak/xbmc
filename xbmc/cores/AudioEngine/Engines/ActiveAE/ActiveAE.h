@@ -9,6 +9,7 @@
 #pragma once
 
 #include "ActiveAESink.h"
+#include "cores/AudioEngine/AESinkFactory.h"
 #include "cores/AudioEngine/Engines/ActiveAE/ActiveAEBuffer.h"
 #include "cores/AudioEngine/Interfaces/AESound.h"
 #include "cores/AudioEngine/Interfaces/AEStream.h"
@@ -42,9 +43,8 @@ class CActiveAESettings;
 
 struct AudioSettings
 {
-  std::string device;
-  std::string driver;
-  std::string passthroughdevice;
+  AE::AEDevice device;
+  AE::AEDevice passthroughdevice;
   int channels;
   bool ac3passthrough;
   bool ac3transcode;
@@ -365,7 +365,7 @@ protected:
   AudioSettings m_settings;
   CEngineStats m_stats;
   std::unique_ptr<IAEEncoder> m_encoder;
-  std::string m_currDevice;
+  AE::AEDevice m_currDevice;
   std::unique_ptr<CActiveAESettings> m_settingsHandler;
 
   // buffers

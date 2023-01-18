@@ -38,32 +38,36 @@ bool CAESinkFactory::HasSinks()
   return !m_AESinkRegEntry.empty();
 }
 
-void CAESinkFactory::ParseDevice(std::string &device, std::string &driver)
+AEDevice CAESinkFactory::ParseDevice(const std::string& device)
 {
+  AEDevice aeDevice;
+
   std::vector<std::string> parsed = StringUtils::Split(device, DRIVER_DEVICE_DELIMITER);
   if (parsed.size() > 1)
   {
-    driver = parsed[0];
-    device = parsed[1];
+    aeDevice = std::make_pair(parsed[0], parsed[1]);
   }
+  else
+  {
+    aeDevice = std::make_pair("", device);
+  }
+
+  return aeDevice;
 }
 
-IAESink *CAESinkFactory::Create(std::string &device, AEAudioFormat &desiredFormat)
+IAESink* CAESinkFactory::Create(const AEDevice& aeDevice, AEAudioFormat& desiredFormat)
 {
-  // extract the driver from the device string if it exists
-  std::string driver;
-  ParseDevice(device, driver);
+  auto& [driver, device] = aeDevice;
 
   AEAudioFormat tmpFormat = desiredFormat;
-  IAESink *sink;
-  std::string tmpDevice = device;
+  IAESink* sink;
 
   for (const auto& [name, entry] : m_AESinkRegEntry)
   {
     if (driver != entry.sinkName)
       continue;
 
-    sink = entry.createFunc(tmpDevice, tmpFormat);
+    sink = entry.createFunc(device, tmpFormat);
     if (sink)
     {
       desiredFormat = tmpFormat;

@@ -23,14 +23,14 @@ public:
   ~CAESinkPipewire() override = default;
 
   static bool Register();
-  static IAESink* Create(std::string& device, AEAudioFormat& desiredFormat);
+  static IAESink* Create(const std::string& device, AEAudioFormat& desiredFormat);
   static void EnumerateDevicesEx(AEDeviceInfoList& list, bool force = false);
   static void Destroy();
 
   // overrides via IAESink
   const char* GetName() override { return "PIPEWIRE"; }
 
-  bool Initialize(AEAudioFormat& format, std::string& device) override;
+  bool Initialize(AEAudioFormat& format, const std::string& device) override;
   void Deinitialize() override;
 
   double GetCacheTotal() override;

@@ -25,11 +25,11 @@ public:
   virtual ~IAESink() = default;
 
   /*
-    The sink does NOT have to honour anything in the format struct or the device
-    if however it does not honour what is requested, it MUST update device/format
+    The sink does NOT have to honour anything in the format struct
+    if however it does not honour what is requested, it MUST update format
     with what it does support.
   */
-  virtual bool Initialize  (AEAudioFormat &format, std::string &device) = 0;
+  virtual bool Initialize(AEAudioFormat& format, const std::string& device) = 0;
 
   /*
     Deinitialize the sink for destruction

@@ -23,13 +23,20 @@ namespace AE
 
 constexpr auto DRIVER_DEVICE_DELIMITER = ":";
 
+/*! This type is used to hold the DRIVER:DEVICE pair that is saved
+    in the SETTING_AUDIOOUTPUT_AUDIODEVICE setting. The setting needs
+    to be parsed as it is just a string. The ParseDevice method can be
+    used to transform std::string into AEDevice.
+ */
+using AEDevice = std::pair<std::string, std::string>;
+
 struct AESinkInfo
 {
   std::string m_sinkName;
   AEDeviceInfoList m_deviceInfoList;
 };
 
-typedef IAESink* (*CreateSink)(std::string &device, AEAudioFormat &desiredFormat);
+typedef IAESink* (*CreateSink)(const std::string& device, AEAudioFormat& desiredFormat);
 typedef void (*Enumerate)(AEDeviceInfoList &list, bool force);
 typedef void (*Cleanup)();
 
@@ -48,8 +55,8 @@ public:
   static void ClearSinks();
   static bool HasSinks();
 
-  static void ParseDevice(std::string &device, std::string &driver);
-  static IAESink *Create(std::string &device, AEAudioFormat &desiredFormat);
+  static AEDevice ParseDevice(const std::string& device);
+  static IAESink* Create(const AEDevice& aeDevice, AEAudioFormat& desiredFormat);
   static void EnumerateEx(std::vector<AESinkInfo>& list, bool force, const std::string& driver);
   static void Cleanup();
 

@@ -208,7 +208,7 @@ bool CAESinkPipewire::Register()
   return true;
 }
 
-IAESink* CAESinkPipewire::Create(std::string& device, AEAudioFormat& desiredFormat)
+IAESink* CAESinkPipewire::Create(const std::string& device, AEAudioFormat& desiredFormat)
 {
   IAESink* sink = new CAESinkPipewire();
   if (sink->Initialize(desiredFormat, device))
@@ -294,7 +294,7 @@ void CAESinkPipewire::Destroy()
   pipewire.reset();
 }
 
-bool CAESinkPipewire::Initialize(AEAudioFormat& format, std::string& device)
+bool CAESinkPipewire::Initialize(AEAudioFormat& format, const std::string& device)
 {
   auto core = pipewire->GetCore();
   auto loop = pipewire->GetThreadLoop();

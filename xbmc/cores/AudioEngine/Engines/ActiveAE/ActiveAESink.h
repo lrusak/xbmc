@@ -32,7 +32,7 @@ struct SinkConfig
 {
   AEAudioFormat format;
   CEngineStats *stats;
-  const std::string *device;
+  AE::AEDevice aeDevice;
 };
 
 struct SinkReply
@@ -99,10 +99,10 @@ public:
   void EnumerateOutputDevices(AEDeviceList &devices, bool passthrough);
   void Start();
   void Dispose();
-  AEDeviceType GetDeviceType(const std::string &device);
+  AEDeviceType GetDeviceType(const AE::AEDevice& aeDevice);
   bool HasPassthroughDevice();
-  bool SupportsFormat(const std::string &device, AEAudioFormat &format);
-  bool DeviceExist(std::string driver, const std::string& device);
+  bool SupportsFormat(const AE::AEDevice& aeDevice, AEAudioFormat& format);
+  bool DeviceExist(const AE::AEDevice& aeDevice);
   CSinkControlProtocol m_controlPort;
   CSinkDataProtocol m_dataPort;
 
@@ -145,7 +145,7 @@ protected:
   std::vector<uint8_t> m_mergeBuffer;
 
   std::string m_deviceFriendlyName;
-  std::string m_device;
+  AE::AEDevice m_device;
   std::vector<AE::AESinkInfo> m_sinkInfoList;
   std::unique_ptr<IAESink> m_sink;
   AEAudioFormat m_sinkFormat, m_requestedFormat;
