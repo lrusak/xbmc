@@ -49,7 +49,7 @@ static void process_input(struct android_app* app, struct android_poll_source* s
         processed = 1;
     }
     if (processed == 0 && errno != EAGAIN) {
-        CXBMCApp::android_printf("process_input: Failure reading next input event: %s", strerror(errno));
+        CLog::LogF(LOGERROR, "Failure reading next input event: {}", strerror(errno));
     }
 }
 
@@ -114,9 +114,9 @@ extern void android_main(struct android_app* state)
       theApp.Quit();
     }
     else
-      CXBMCApp::android_printf("android_main: setup failed");
+      CLog::LogF(LOGERROR, "setup failed");
 
-    CXBMCApp::android_printf("android_main: Exiting");
+    CLog::LogF(LOGINFO, "Exiting");
 
     CXBMCApp::Destroy();
   }

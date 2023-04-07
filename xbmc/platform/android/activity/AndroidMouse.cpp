@@ -27,7 +27,7 @@ bool CAndroidMouse::onMouseEvent(AInputEvent* event)
 
 #ifdef DEBUG_VERBOSE
   int32_t mousePointerId = AMotionEvent_getPointerId(event, mousePointerIdx);
-  CXBMCApp::android_printf("%s idx:%i, id:%i", __PRETTY_FUNCTION__, mousePointerIdx, mousePointerId);
+  CLog::LogF(LOGINFO, "{} idx:{}, id:{}", mousePointerIdx, mousePointerId);
 #endif
   float x = AMotionEvent_getX(event, mousePointerIdx);
   float y = AMotionEvent_getY(event, mousePointerIdx);
@@ -51,7 +51,7 @@ bool CAndroidMouse::onMouseEvent(AInputEvent* event)
 void CAndroidMouse::MouseMove(float x, float y)
 {
 #ifdef DEBUG_VERBOSE
-  CXBMCApp::android_printf("%s: x:%f, y:%f", __PRETTY_FUNCTION__, x, y);
+  CLog::LogF(LOGINFO, "x:{}, y:{}", x, y);
 #endif
   XBMC_Event newEvent = {};
 
@@ -66,7 +66,7 @@ void CAndroidMouse::MouseMove(float x, float y)
 void CAndroidMouse::MouseButton(float x, float y, int32_t action, int32_t buttons)
 {
 #ifdef DEBUG_VERBOSE
-  CXBMCApp::android_printf("%s: x:%f, y:%f, action:%i, buttons:%i", __PRETTY_FUNCTION__, x, y, action, buttons);
+  CLog::LogF(LOGINFO, "x:{}, y:{}, action:{}, buttons:{}", x, y, action, buttons);
 #endif
   XBMC_Event newEvent = {};
 
@@ -94,7 +94,7 @@ void CAndroidMouse::MouseButton(float x, float y, int32_t action, int32_t button
 void CAndroidMouse::MouseWheel(float x, float y, float value)
 {
 #ifdef DEBUG_VERBOSE
-  CXBMCApp::android_printf("%s: val:%f", __PRETTY_FUNCTION__, value);
+  CLog::LogF(LOGINFO, "val:{}", value);
 #endif
   XBMC_Event newEvent = {};
 

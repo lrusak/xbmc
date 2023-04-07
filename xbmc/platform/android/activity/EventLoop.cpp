@@ -34,7 +34,7 @@ void CEventLoop::run(IActivityHandler &activityHandler, IInputHandler &inputHand
   m_activityHandler = &activityHandler;
   m_inputHandler = &inputHandler;
 
-  CXBMCApp::android_printf("CEventLoop: starting event loop");
+  CLog::LogF(LOGINFO, "starting event loop");
   while (true)
   {
     // We will block forever waiting for events.
@@ -47,7 +47,7 @@ void CEventLoop::run(IActivityHandler &activityHandler, IInputHandler &inputHand
       // Check if we are exiting.
       if (m_application->destroyRequested)
       {
-        CXBMCApp::android_printf("CEventLoop: we are being destroyed");
+        CLog::LogF(LOGINFO, "we are being destroyed");
         return;
       }
     }

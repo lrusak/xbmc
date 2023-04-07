@@ -236,7 +236,7 @@ bool CAndroidKey::onKeyboardEvent(AInputEvent *event)
   // check if this is a key we don't want to handle
   if (sym == XBMCK_LAST || sym == XBMCK_UNKNOWN)
   {
-    CXBMCApp::android_printf("CAndroidKey: key ignored (code: %d)", keycode);
+    CLog::LogF(LOGINFO, "key ignored (code: {})", keycode);
     return false;
   }
 
@@ -262,44 +262,44 @@ bool CAndroidKey::onKeyboardEvent(AInputEvent *event)
   {
     case AKEY_EVENT_ACTION_DOWN:
 #if 1
-      CXBMCApp::android_printf("CAndroidKey: key down (dev:%d; src:%d; code: %d; repeat: %d; flags: 0x%0X; alt: %s; shift: %s; sym: %s)",
-        deviceId, source, keycode, repeat, flags,
-        (state & AMETA_ALT_ON) ? "yes" : "no",
-        (state & AMETA_SHIFT_ON) ? "yes" : "no",
-        (state & AMETA_SYM_ON) ? "yes" : "no");
+      CLog::LogF(LOGINFO,
+                 "key down (dev:{}; src:{}; code: {}; repeat: {}; flags: 0x{:0X}; alt: {}; shift: "
+                 "{}; sym: {})",
+                 deviceId, source, keycode, repeat, flags, (state & AMETA_ALT_ON) ? "yes" : "no",
+                 (state & AMETA_SHIFT_ON) ? "yes" : "no", (state & AMETA_SYM_ON) ? "yes" : "no");
 #endif
       XBMC_Key((uint8_t)keycode, sym, modifiers, unicode, false);
       break;
 
     case AKEY_EVENT_ACTION_UP:
 #if 1
-      CXBMCApp::android_printf("CAndroidKey: key up (dev:%d; src:%d; code: %d; repeat: %d; flags: 0x%0X; alt: %s; shift: %s; sym: %s)",
-        deviceId, source, keycode, repeat, flags,
-        (state & AMETA_ALT_ON) ? "yes" : "no",
-        (state & AMETA_SHIFT_ON) ? "yes" : "no",
-        (state & AMETA_SYM_ON) ? "yes" : "no");
+      CLog::LogF(LOGINFO,
+                 "key up (dev:{}; src:{}; code: {}; repeat: {}; flags: 0x{:0X}; alt: {}; shift: "
+                 "{}; sym: {})",
+                 deviceId, source, keycode, repeat, flags, (state & AMETA_ALT_ON) ? "yes" : "no",
+                 (state & AMETA_SHIFT_ON) ? "yes" : "no", (state & AMETA_SYM_ON) ? "yes" : "no");
 #endif
       XBMC_Key((uint8_t)keycode, sym, modifiers, unicode, true);
       break;
 
     case AKEY_EVENT_ACTION_MULTIPLE:
 #if 1
-      CXBMCApp::android_printf("CAndroidKey: key multiple (dev:%d; src:%d; code: %d; repeat: %d; flags: 0x%0X; alt: %s; shift: %s; sym: %s)",
-        deviceId, source, keycode, repeat, flags,
-        (state & AMETA_ALT_ON) ? "yes" : "no",
-        (state & AMETA_SHIFT_ON) ? "yes" : "no",
-        (state & AMETA_SYM_ON) ? "yes" : "no");
+      CLog::LogF(LOGINFO,
+                 "key multiple (dev:{}; src:{}; code: {}; repeat: {}; flags: 0x{:0X}; alt: {}; "
+                 "shift: {}; sym: {})",
+                 deviceId, source, keycode, repeat, flags, (state & AMETA_ALT_ON) ? "yes" : "no",
+                 (state & AMETA_SHIFT_ON) ? "yes" : "no", (state & AMETA_SYM_ON) ? "yes" : "no");
 #endif
       return false;
       break;
 
     default:
 #if 1
-      CXBMCApp::android_printf("CAndroidKey: unknown key (dev:%d; src:%d; code: %d; repeat: %d; flags: 0x%0X; alt: %s; shift: %s; sym: %s)",
-        deviceId, source, keycode, repeat, flags,
-        (state & AMETA_ALT_ON) ? "yes" : "no",
-        (state & AMETA_SHIFT_ON) ? "yes" : "no",
-        (state & AMETA_SYM_ON) ? "yes" : "no");
+      CLog::LogF(LOGINFO,
+                 "unknown key (dev:{}; src:{}; code: {}; repeat: {}; flags: 0x{:0X}; alt: {}; "
+                 "shift: {}; sym: {})",
+                 deviceId, source, keycode, repeat, flags, (state & AMETA_ALT_ON) ? "yes" : "no",
+                 (state & AMETA_SHIFT_ON) ? "yes" : "no", (state & AMETA_SYM_ON) ? "yes" : "no");
 #endif
       return false;
       break;
@@ -323,6 +323,6 @@ void CAndroidKey::XBMC_Key(uint8_t code, uint16_t key, uint16_t modifiers, uint1
   newEvent.key.keysym.unicode = unicode;
   newEvent.key.keysym.mod = (XBMCMod)modifiers;
 
-  //CXBMCApp::android_printf("XBMC_Key(%u, %u, 0x%04X, %d)", code, key, modifiers, up);
+  // CLog::LogF(LOGINFO, "({}, {}, 0x{:04X}, {})", code, key, modifiers, up);
   winSystem->MessagePush(&newEvent);
 }

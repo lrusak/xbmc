@@ -31,7 +31,7 @@ bool CAndroidTouch::onTouchEvent(AInputEvent* event)
   size_t numPointers = AMotionEvent_getPointerCount(event);
   if (numPointers <= 0)
   {
-    CXBMCApp::android_printf(" => aborting touch event because there are no active pointers");
+    CLog::LogF(LOGINFO, "=> aborting touch event because there are no active pointers");
     return false;
   }
 

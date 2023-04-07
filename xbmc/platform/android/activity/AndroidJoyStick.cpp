@@ -20,7 +20,7 @@ bool CAndroidJoyStick::onJoyStickEvent(AInputEvent* event)
   if ((source & (AINPUT_SOURCE_GAMEPAD | AINPUT_SOURCE_JOYSTICK)) != 0)
     return CXBMCApp::Get().onInputDeviceEvent(event);
 
-  CXBMCApp::android_printf("CAndroidJoyStick::onJoyStickEvent(type = %d, keycode = %d, source = %d): ignoring non-joystick input event",
-                           AInputEvent_getType(event), AKeyEvent_getKeyCode(event), source);
+  CLog::LogF(LOGINFO, "(type = {}, keycode = {}, source = {}): ignoring non-joystick input event",
+             AInputEvent_getType(event), AKeyEvent_getKeyCode(event), source);
   return false;
 }

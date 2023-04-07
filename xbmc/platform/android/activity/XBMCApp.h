@@ -152,7 +152,6 @@ public:
   std::shared_ptr<CNativeWindow> GetNativeWindow(int timeout) const;
 
   bool SetBuffersGeometry(int width, int height, int format);
-  static int android_printf(const char *format, ...);
 
   int GetBatteryLevel() const;
   void KeepScreenOn(bool on);
