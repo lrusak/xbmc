@@ -37,6 +37,15 @@
 #else
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+
+#if defined(TARGET_ANDROID)
+#ifdef HAS_GLES_VAO_OES
+#define glGenVertexArrays glGenVertexArraysOES
+#define glDeleteVertexArrays glDeleteVertexArraysOES
+#define glBindVertexArray glBindVertexArrayOES
+#endif
+#endif
+
 #endif
 #if HAS_GLES == 3
 #include <GLES3/gl3.h>
