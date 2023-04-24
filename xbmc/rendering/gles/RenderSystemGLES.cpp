@@ -53,6 +53,8 @@ bool CRenderSystemGLES::InitRenderSystem()
     m_RenderVersion = ver;
   }
 
+  KODI::UTILS::GL::SetVAOsSupported(true);
+
   // Get our driver vendor and renderer
   const char *tmpVendor = (const char*) glGetString(GL_VENDOR);
   m_RenderVendor.clear();

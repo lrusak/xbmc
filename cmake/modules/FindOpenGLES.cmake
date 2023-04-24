@@ -36,6 +36,11 @@ find_package_handle_standard_args(OpenGLES
 find_path(OPENGLES3_INCLUDE_DIR GLES3/gl3.h
                                 PATHS ${PC_OPENGLES_INCLUDEDIR})
 
+include(CheckSymbolExists)
+set(CMAKE_REQUIRED_LIBRARIES ${OPENGLES_gl_LIBRARY})
+set(CMAKE_REQUIRED_INCLUDES ${OPENGLES_INCLUDE_DIR})
+check_symbol_exists(glGenVertexArraysOES ES2/glext.h OPENGLES_HAS_VAO_OES)
+
 if(OPENGLES_FOUND)
   set(OPENGLES_LIBRARIES ${OPENGLES_gl_LIBRARY})
   if(OPENGLES3_INCLUDE_DIR)
@@ -46,5 +51,9 @@ if(OPENGLES_FOUND)
     set(OPENGLES_INCLUDE_DIRS ${OPENGLES_INCLUDE_DIR})
     set(OPENGLES_DEFINITIONS -DHAS_GLES=2)
     mark_as_advanced(OPENGLES_INCLUDE_DIR OPENGLES_gl_LIBRARY)
+  endif()
+
+  if(OPENGLES_HAS_VAO_OES)
+    list(APPEND OPENGLES_DEFINITIONS -DHAS_GLES_VAO_OES)
   endif()
 endif()

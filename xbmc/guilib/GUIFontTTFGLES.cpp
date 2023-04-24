@@ -41,6 +41,7 @@ CGUIFontTTF* CGUIFontTTF::CreateGUIFontTTF(const std::string& fontIdent)
 
 CGUIFontTTFGLES::CGUIFontTTFGLES(const std::string& fontIdent) : CGUIFontTTF(fontIdent)
 {
+  KODI::UTILS::GL::GLGenVertexArrays(1, &m_vao);
 }
 
 CGUIFontTTFGLES::~CGUIFontTTFGLES(void)
@@ -50,10 +51,14 @@ CGUIFontTTFGLES::~CGUIFontTTFGLES(void)
   // our virtual methods won't be accessible after this point
   m_dynamicCache.Flush();
   DeleteHardwareTexture();
+
+  KODI::UTILS::GL::GLDeleteVertexArrays(1, &m_vao);
 }
 
 bool CGUIFontTTFGLES::FirstBegin()
 {
+  KODI::UTILS::GL::GLBindVertexArray(m_vao);
+
   CRenderSystemGLES* renderSystem =
       dynamic_cast<CRenderSystemGLES*>(CServiceBroker::GetRenderSystem());
   renderSystem->EnableGUIShader(ShaderMethodGLES::SM_FONTS);
@@ -238,6 +243,8 @@ void CGUIFontTTFGLES::LastEnd()
   glDisableVertexAttribArray(tex0Loc);
 
   renderSystem->DisableGUIShader();
+
+  KODI::UTILS::GL::GLBindVertexArray(0);
 }
 
 CVertexBuffer CGUIFontTTFGLES::CreateVertexBuffer(const std::vector<SVertex>& vertices) const

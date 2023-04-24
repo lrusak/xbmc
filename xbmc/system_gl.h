@@ -27,6 +27,13 @@
 #if defined(TARGET_DARWIN)
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
+
+#ifdef HAS_GLES_VAO_OES
+#define glGenVertexArrays glGenVertexArraysOES
+#define glDeleteVertexArrays glDeleteVertexArraysOES
+#define glBindVertexArray glBindVertexArrayOES
+#endif
+
 #else
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>

@@ -313,24 +313,18 @@ void KODI::UTILS::GL::SetVAOsSupported(bool supported)
 
 void KODI::UTILS::GL::GLGenVertexArrays(GLsizei size, GLuint* array)
 {
-#if defined(HAS_GL)
   if (supportsVAOs)
     glGenVertexArrays(size, array);
-#endif
 }
 
 void KODI::UTILS::GL::GLBindVertexArray(GLuint array)
 {
-#if defined(HAS_GL)
   if (supportsVAOs)
     glBindVertexArray(array);
-#endif
 }
 
 void KODI::UTILS::GL::GLDeleteVertexArrays(GLsizei size, GLuint* array)
 {
-#if defined(HAS_GL)
   if (supportsVAOs)
     glDeleteVertexArrays(size, array);
-#endif
 }

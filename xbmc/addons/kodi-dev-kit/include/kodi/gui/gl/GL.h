@@ -91,6 +91,13 @@
 #else
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
+
+#ifdef HAS_GLES_VAO_OES
+#define glGenVertexArrays glGenVertexArraysOES
+#define glDeleteVertexArrays glDeleteVertexArraysOES
+#define glBindVertexArray glBindVertexArrayOES
+#endif
+
 #endif
 #else
 #if HAS_GLES == 3

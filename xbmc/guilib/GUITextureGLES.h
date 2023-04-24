@@ -39,7 +39,7 @@ public:
                        const CRect* texCoords = nullptr);
 
   CGUITextureGLES(float posX, float posY, float width, float height, const CTextureInfo& texture);
-  ~CGUITextureGLES() override = default;
+  ~CGUITextureGLES() override;
 
   CGUITextureGLES* Clone() const override;
 
@@ -49,9 +49,11 @@ protected:
   void End() override;
 
 private:
-  CGUITextureGLES(const CGUITextureGLES& texture) = default;
+  CGUITextureGLES(const CGUITextureGLES& texture);
 
   std::array<GLubyte, 4> m_col;
+
+  GLuint m_vao;
 
   PackedVertices m_packedVertices;
   std::vector<GLushort> m_idx;

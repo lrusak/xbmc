@@ -81,16 +81,12 @@ CRPRendererGuiTexture::CRPRendererGuiTexture(const CRenderSettings& renderSettin
                                              std::shared_ptr<IRenderBufferPool> bufferPool)
   : CRPBaseRenderer(renderSettings, context, std::move(bufferPool))
 {
-#if defined(HAS_GL)
   KODI::UTILS::GL::GLGenVertexArrays(1, &m_vao);
-#endif
 }
 
 CRPRendererGuiTexture::~CRPRendererGuiTexture()
 {
-#if defined(HAS_GL)
   KODI::UTILS::GL::GLDeleteVertexArrays(1, &m_vao);
-#endif
 }
 
 bool CRPRendererGuiTexture::Supports(RENDERFEATURE feature) const
@@ -245,6 +241,8 @@ void CRPRendererGuiTexture::RenderInternal(bool clear, uint8_t alpha)
 
 #elif defined(HAS_GLES)
 
+  KODI::UTILS::GL::GLBindVertexArray(m_vao);
+
   renderBuffer->BindToUnit(0);
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -295,6 +293,8 @@ void CRPRendererGuiTexture::RenderInternal(bool clear, uint8_t alpha)
   glDisableVertexAttribArray(tex0Loc);
 
   m_context.DisableGUIShader();
+
+  KODI::UTILS::GL::GLBindVertexArray(0);
 
 #endif
 }

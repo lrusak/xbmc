@@ -35,6 +35,23 @@ CGUITextureGLES::CGUITextureGLES(
   : CGUITexture(posX, posY, width, height, texture)
 {
   m_renderSystem = dynamic_cast<CRenderSystemGLES*>(CServiceBroker::GetRenderSystem());
+
+  KODI::UTILS::GL::GLGenVertexArrays(1, &m_vao);
+}
+
+CGUITextureGLES::CGUITextureGLES(const CGUITextureGLES& texture)
+  : CGUITexture(texture),
+    m_col(texture.m_col),
+    m_packedVertices(texture.m_packedVertices),
+    m_idx(texture.m_idx),
+    m_renderSystem(texture.m_renderSystem)
+{
+  KODI::UTILS::GL::GLGenVertexArrays(1, &m_vao);
+}
+
+CGUITextureGLES::~CGUITextureGLES()
+{
+  KODI::UTILS::GL::GLDeleteVertexArrays(1, &m_vao);
 }
 
 CGUITextureGLES* CGUITextureGLES::Clone() const
@@ -44,6 +61,8 @@ CGUITextureGLES* CGUITextureGLES::Clone() const
 
 void CGUITextureGLES::Begin(UTILS::COLOR::Color color)
 {
+  KODI::UTILS::GL::GLBindVertexArray(m_vao);
+
   CTexture* texture = m_texture.m_textures[m_currentFrame].get();
   texture->LoadToGPU();
   if (m_diffuse.size())
@@ -143,6 +162,8 @@ void CGUITextureGLES::End()
     glActiveTexture(GL_TEXTURE0);
   glEnable(GL_BLEND);
   m_renderSystem->DisableGUIShader();
+
+  KODI::UTILS::GL::GLBindVertexArray(0);
 }
 
 void CGUITextureGLES::Draw(float *x, float *y, float *z, const CRect &texture, const CRect &diffuse, int orientation)
