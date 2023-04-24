@@ -375,6 +375,12 @@ void KODI::UTILS::GL::TestVAOSupport()
 #endif // GL_OES_vertex_array_object
 #endif // HAS_GLES && HAS_EGL
 
+#if defined(TARGET_DARWIN_EMBEDDED)
+  s_glBindVertexArray = glBindVertexArrayOES;
+  s_glDeleteVertexArrays = glDeleteVertexArraysOES;
+  s_glGenVertexArrays = glGenVertexArraysOES;
+#endif // TARGET_DARWIN_EMBEDDED
+
 #if defined(HAS_GL)
   unsigned int major;
   unsigned int minor;
