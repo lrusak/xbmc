@@ -81,12 +81,16 @@ CRPRendererGuiTexture::CRPRendererGuiTexture(const CRenderSettings& renderSettin
                                              std::shared_ptr<IRenderBufferPool> bufferPool)
   : CRPBaseRenderer(renderSettings, context, std::move(bufferPool))
 {
+#if !defined(HAS_DX)
   KODI::UTILS::GL::GLGenVertexArrays(1, &m_vao);
+#endif
 }
 
 CRPRendererGuiTexture::~CRPRendererGuiTexture()
 {
+#if !defined(HAS_DX)
   KODI::UTILS::GL::GLDeleteVertexArrays(1, &m_vao);
+#endif
 }
 
 bool CRPRendererGuiTexture::Supports(RENDERFEATURE feature) const
