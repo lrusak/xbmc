@@ -129,7 +129,7 @@ bool CDVDFileInfo::ExtractThumb(const CFileItem& fileItem,
   {
 
     const std::string& strPath = item.GetPath();
-    DemuxerToStreamDetails(pInputStream, pDemuxer.get(), *pStreamDetails, strPath);
+    DemuxerToStreamDetails(pInputStream, *pDemuxer, *pStreamDetails, strPath);
 
     //extern subtitles
     std::vector<std::string> filenames;
@@ -339,9 +339,8 @@ bool CDVDFileInfo::GetFileStreamDetails(CFileItem *pItem)
   auto pDemuxer = std::unique_ptr<CDVDDemux>(CDVDFactoryDemuxer::CreateDemuxer(pInputStream, true));
   if (pDemuxer)
   {
-    bool retVal =
-        DemuxerToStreamDetails(pInputStream, pDemuxer.get(),
-                               pItem->GetVideoInfoTag()->m_streamDetails, strFileNameAndPath);
+    bool retVal = DemuxerToStreamDetails(
+        pInputStream, *pDemuxer, pItem->GetVideoInfoTag()->m_streamDetails, strFileNameAndPath);
     return retVal;
   }
   else
@@ -351,11 +350,11 @@ bool CDVDFileInfo::GetFileStreamDetails(CFileItem *pItem)
 }
 
 bool CDVDFileInfo::DemuxerToStreamDetails(const std::shared_ptr<CDVDInputStream>& pInputStream,
-                                          CDVDDemux* pDemuxer,
+                                          CDVDDemux& demuxer,
                                           const std::vector<CStreamDetailSubtitle>& subs,
                                           CStreamDetails& details)
 {
-  bool result = DemuxerToStreamDetails(pInputStream, pDemuxer, details);
+  bool result = DemuxerToStreamDetails(pInputStream, demuxer, details);
   for (unsigned int i = 0; i < subs.size(); i++)
   {
     CStreamDetailSubtitle* sub = new CStreamDetailSubtitle();
@@ -368,7 +367,7 @@ bool CDVDFileInfo::DemuxerToStreamDetails(const std::shared_ptr<CDVDInputStream>
 
 /* returns true if details have been added */
 bool CDVDFileInfo::DemuxerToStreamDetails(const std::shared_ptr<CDVDInputStream>& pInputStream,
-                                          CDVDDemux* pDemux,
+                                          CDVDDemux& demux,
                                           CStreamDetails& details,
                                           const std::string& path)
 {
@@ -376,7 +375,7 @@ bool CDVDFileInfo::DemuxerToStreamDetails(const std::shared_ptr<CDVDInputStream>
   details.Reset();
 
   const CURL pathToUrl(path);
-  for (CDemuxStream* stream : pDemux->GetStreams())
+  for (CDemuxStream* stream : demux.GetStreams())
   {
     if (stream->type == STREAM_VIDEO && !(stream->flags & AV_DISPOSITION_ATTACHED_PIC))
     {
@@ -387,8 +386,8 @@ bool CDVDFileInfo::DemuxerToStreamDetails(const std::shared_ptr<CDVDInputStream>
       p->m_fAspect = static_cast<float>(vstream->fAspect);
       if (p->m_fAspect == 0.0f && p->m_iHeight > 0)
         p->m_fAspect = (float)p->m_iWidth / p->m_iHeight;
-      p->m_strCodec = pDemux->GetStreamCodecName(stream->demuxerId, stream->uniqueId);
-      p->m_iDuration = pDemux->GetStreamLength();
+      p->m_strCodec = demux.GetStreamCodecName(stream->demuxerId, stream->uniqueId);
+      p->m_iDuration = demux.GetStreamLength();
       p->m_strStereoMode = vstream->stereo_mode;
       p->m_strLanguage = vstream->language;
       p->m_strHdrType = CStreamDetails::HdrTypeToString(vstream->hdr_type);
@@ -422,7 +421,7 @@ bool CDVDFileInfo::DemuxerToStreamDetails(const std::shared_ptr<CDVDInputStream>
       CStreamDetailAudio *p = new CStreamDetailAudio();
       p->m_iChannels = static_cast<CDemuxStreamAudio*>(stream)->iChannels;
       p->m_strLanguage = stream->language;
-      p->m_strCodec = pDemux->GetStreamCodecName(stream->demuxerId, stream->uniqueId);
+      p->m_strCodec = demux.GetStreamCodecName(stream->demuxerId, stream->uniqueId);
       details.AddStream(p);
       retVal = true;
     }

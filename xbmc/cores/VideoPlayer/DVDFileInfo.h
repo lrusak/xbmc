@@ -31,7 +31,7 @@ public:
   // Probe the files streams and store the info in the VideoInfoTag
   static bool GetFileStreamDetails(CFileItem *pItem);
   static bool DemuxerToStreamDetails(const std::shared_ptr<CDVDInputStream>& pInputStream,
-                                     CDVDDemux* pDemux,
+                                     CDVDDemux& demux,
                                      CStreamDetails& details,
                                      const std::string& path = "");
 
@@ -39,7 +39,7 @@ public:
   *   \param[out] details The file's StreamDetails consisting of internal streams and external subtitle streams.
   */
   static bool DemuxerToStreamDetails(const std::shared_ptr<CDVDInputStream>& pInputStream,
-                                     CDVDDemux* pDemuxer,
+                                     CDVDDemux& demuxer,
                                      const std::vector<CStreamDetailSubtitle>& subs,
                                      CStreamDetails& details);
 
