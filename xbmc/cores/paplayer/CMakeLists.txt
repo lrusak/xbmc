@@ -4,7 +4,6 @@ set(SOURCES AudioDecoder.cpp
             VideoPlayerCodec.cpp)
 
 set(HEADERS AudioDecoder.h
-            CachingCodec.h
             CodecFactory.h
             ICodec.h
             PAPlayer.h
