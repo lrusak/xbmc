@@ -57,6 +57,8 @@ CGUIFontTTFGL::~CGUIFontTTFGL(void)
 
 bool CGUIFontTTFGL::FirstBegin()
 {
+  KODI::UTILS::GL::GLBindVertexArray(m_vao);
+
   GLenum pixformat = GL_RED;
   GLenum internalFormat;
   unsigned int major, minor;
@@ -130,8 +132,6 @@ void CGUIFontTTFGL::LastEnd()
   GLint colLoc = renderSystem->ShaderGetCol();
   GLint tex0Loc = renderSystem->ShaderGetCoord0();
   GLint modelLoc = renderSystem->ShaderGetModel();
-
-  KODI::UTILS::GL::GLBindVertexArray(m_vao);
 
   CreateStaticVertexBuffers();
 

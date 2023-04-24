@@ -62,6 +62,8 @@ CGUITextureGL* CGUITextureGL::Clone() const
 
 void CGUITextureGL::Begin(UTILS::COLOR::Color color)
 {
+  KODI::UTILS::GL::GLBindVertexArray(m_vao);
+
   CTexture* texture = m_texture.m_textures[m_currentFrame].get();
   texture->LoadToGPU();
   if (m_diffuse.size())
@@ -126,8 +128,6 @@ void CGUITextureGL::End()
     GLint tex1Loc = m_renderSystem->ShaderGetCoord1();
     GLint uniColLoc = m_renderSystem->ShaderGetUniCol();
 
-    KODI::UTILS::GL::GLBindVertexArray(m_vao);
-
     GLuint VertexVBO;
     GLuint IndexVBO;
 
@@ -170,8 +170,6 @@ void CGUITextureGL::End()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glDeleteBuffers(1, &VertexVBO);
     glDeleteBuffers(1, &IndexVBO);
-
-    KODI::UTILS::GL::GLBindVertexArray(0);
   }
 
   if (m_diffuse.size())
@@ -179,6 +177,8 @@ void CGUITextureGL::End()
   glEnable(GL_BLEND);
 
   m_renderSystem->DisableShader();
+
+  KODI::UTILS::GL::GLBindVertexArray(0);
 }
 
 void CGUITextureGL::Draw(float *x, float *y, float *z, const CRect &texture, const CRect &diffuse, int orientation)
