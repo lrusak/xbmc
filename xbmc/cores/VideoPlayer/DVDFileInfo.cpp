@@ -108,11 +108,11 @@ bool CDVDFileInfo::ExtractThumb(const CFileItem& fileItem,
     return false;
   }
 
-  CDVDDemux *pDemuxer = NULL;
+  std::unique_ptr<CDVDDemux> pDemuxer;
 
   try
   {
-    pDemuxer = CDVDFactoryDemuxer::CreateDemuxer(pInputStream, true);
+    pDemuxer.reset(CDVDFactoryDemuxer::CreateDemuxer(pInputStream, true));
     if(!pDemuxer)
     {
       CLog::Log(LOGERROR, "{} - Error creating demuxer", __FUNCTION__);
@@ -122,9 +122,6 @@ bool CDVDFileInfo::ExtractThumb(const CFileItem& fileItem,
   catch(...)
   {
     CLog::Log(LOGERROR, "{} - Exception thrown when opening demuxer", __FUNCTION__);
-    if (pDemuxer)
-      delete pDemuxer;
-
     return false;
   }
 
@@ -132,7 +129,7 @@ bool CDVDFileInfo::ExtractThumb(const CFileItem& fileItem,
   {
 
     const std::string& strPath = item.GetPath();
-    DemuxerToStreamDetails(pInputStream, pDemuxer, *pStreamDetails, strPath);
+    DemuxerToStreamDetails(pInputStream, pDemuxer.get(), *pStreamDetails, strPath);
 
     //extern subtitles
     std::vector<std::string> filenames;
@@ -288,9 +285,6 @@ bool CDVDFileInfo::ExtractThumb(const CFileItem& fileItem,
     }
   }
 
-  if (pDemuxer)
-    delete pDemuxer;
-
   if(!bOk)
   {
     XFILE::CFile file;
@@ -342,11 +336,12 @@ bool CDVDFileInfo::GetFileStreamDetails(CFileItem *pItem)
     return false;
   }
 
-  CDVDDemux *pDemuxer = CDVDFactoryDemuxer::CreateDemuxer(pInputStream, true);
+  auto pDemuxer = std::unique_ptr<CDVDDemux>(CDVDFactoryDemuxer::CreateDemuxer(pInputStream, true));
   if (pDemuxer)
   {
-    bool retVal = DemuxerToStreamDetails(pInputStream, pDemuxer, pItem->GetVideoInfoTag()->m_streamDetails, strFileNameAndPath);
-    delete pDemuxer;
+    bool retVal =
+        DemuxerToStreamDetails(pInputStream, pDemuxer.get(),
+                               pItem->GetVideoInfoTag()->m_streamDetails, strFileNameAndPath);
     return retVal;
   }
   else
