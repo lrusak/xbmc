@@ -35,6 +35,13 @@
 #endif
 
 #else
+
+#if defined(TARGET_ANDROID)
+#if !defined(GL_GLEXT_PROTOTYPES)
+#define GL_GLEXT_PROTOTYPES
+#endif
+#endif
+
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #endif
