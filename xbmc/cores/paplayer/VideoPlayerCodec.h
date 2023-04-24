@@ -41,7 +41,7 @@ public:
 private:
   CAEStreamInfo::DataType GetPassthroughStreamType(AVCodecID codecId, int samplerate, int profile);
 
-  CDVDDemux* m_pDemuxer{nullptr};
+  std::unique_ptr<CDVDDemux> m_pDemuxer;
   std::shared_ptr<CDVDInputStream> m_pInputStream;
   std::unique_ptr<CDVDAudioCodec> m_pAudioCodec;
 

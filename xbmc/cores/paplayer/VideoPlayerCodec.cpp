@@ -89,11 +89,9 @@ bool VideoPlayerCodec::Init(const CFileItem &file, unsigned int filecache)
     return false;
   }
 
-  m_pDemuxer = NULL;
-
   try
   {
-    m_pDemuxer = CDVDFactoryDemuxer::CreateDemuxer(m_pInputStream);
+    m_pDemuxer.reset(CDVDFactoryDemuxer::CreateDemuxer(m_pInputStream));
     if (!m_pDemuxer)
     {
       if (m_pInputStream.use_count() > 1)
@@ -106,11 +104,6 @@ bool VideoPlayerCodec::Init(const CFileItem &file, unsigned int filecache)
   catch(...)
   {
     CLog::Log(LOGERROR, "{}: Exception thrown when opening demuxer", __FUNCTION__);
-    if (m_pDemuxer)
-    {
-      delete m_pDemuxer;
-      m_pDemuxer = NULL;
-    }
     return false;
   }
 
@@ -131,8 +124,6 @@ bool VideoPlayerCodec::Init(const CFileItem &file, unsigned int filecache)
   if (m_nAudioStream == -1)
   {
     CLog::Log(LOGERROR, "{}: Could not find audio stream", __FUNCTION__);
-    delete m_pDemuxer;
-    m_pDemuxer = NULL;
     if (m_pInputStream.use_count() > 1)
       throw std::runtime_error("m_pInputStream reference count is greater than 1");
     m_pInputStream.reset();
@@ -147,8 +138,6 @@ bool VideoPlayerCodec::Init(const CFileItem &file, unsigned int filecache)
   if (!m_pAudioCodec)
   {
     CLog::Log(LOGERROR, "{}: Could not create audio codec", __FUNCTION__);
-    delete m_pDemuxer;
-    m_pDemuxer = NULL;
     if (m_pInputStream.use_count() > 1)
       throw std::runtime_error("m_pInputStream reference count is greater than 1");
     m_pInputStream.reset();
@@ -275,11 +264,7 @@ bool VideoPlayerCodec::Init(const CFileItem &file, unsigned int filecache)
 
 void VideoPlayerCodec::DeInit()
 {
-  if (m_pDemuxer != NULL)
-  {
-    delete m_pDemuxer;
-    m_pDemuxer = NULL;
-  }
+  m_pDemuxer.reset();
 
   if (m_pInputStream.use_count() > 1)
     throw std::runtime_error("m_pInputStream reference count is greater than 1");
