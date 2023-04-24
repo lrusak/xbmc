@@ -19,7 +19,7 @@
 
 using namespace KODI::ADDONS;
 
-ICodec* CodecFactory::CreateCodec(const CURL& urlFile)
+std::unique_ptr<ICodec> CodecFactory::CreateCodec(const CURL& urlFile)
 {
   std::string fileType = urlFile.GetFileType();
   StringUtils::ToLower(fileType);
@@ -35,11 +35,11 @@ ICodec* CodecFactory::CreateCodec(const CURL& urlFile)
       if (!result->CreateDecoder())
         continue;
 
-      return result.release();
+      return result;
     }
   }
 
-  VideoPlayerCodec *dvdcodec = new VideoPlayerCodec();
+  auto dvdcodec = std::make_unique<VideoPlayerCodec>();
   return dvdcodec;
 }
 
@@ -109,6 +109,6 @@ std::unique_ptr<ICodec> CodecFactory::CreateCodecDemux(const CFileItem& file,
     return dvdcodec;
   }
   else
-    return std::unique_ptr<ICodec>(CreateCodec(urlFile));
+    return CreateCodec(urlFile);
 }
 

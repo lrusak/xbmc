@@ -19,7 +19,7 @@ class CodecFactory
 public:
   CodecFactory() = default;
   virtual ~CodecFactory() = default;
-  static ICodec* CreateCodec(const CURL& urlFile);
+  static std::unique_ptr<ICodec> CreateCodec(const CURL& urlFile);
   static std::unique_ptr<ICodec> CreateCodecDemux(const CFileItem& file, unsigned int filecache);
 };
 
