@@ -1,3 +1,4 @@
+
 /*
  *  Copyright (C) 2005-2018 Team Kodi
  *  This file is part of Kodi - https://kodi.tv
@@ -42,7 +43,8 @@ ICodec* CodecFactory::CreateCodec(const CURL& urlFile)
   return dvdcodec;
 }
 
-ICodec* CodecFactory::CreateCodecDemux(const CFileItem& file, unsigned int filecache)
+std::unique_ptr<ICodec> CodecFactory::CreateCodecDemux(const CFileItem& file,
+                                                       unsigned int filecache)
 {
   CURL urlFile(file.GetDynPath());
   std::string content = file.GetMimeType();
@@ -60,7 +62,7 @@ ICodec* CodecFactory::CreateCodecDemux(const CFileItem& file, unsigned int filec
         if (!result->CreateDecoder() && result->SupportsFile(file.GetPath()))
           continue;
 
-        return result.release();
+        return result;
       }
     }
   }
@@ -81,13 +83,13 @@ ICodec* CodecFactory::CreateCodecDemux(const CFileItem& file, unsigned int filec
       content == "application/x-flac"
       )
   {
-    VideoPlayerCodec *dvdcodec = new VideoPlayerCodec();
+    auto dvdcodec = std::make_unique<VideoPlayerCodec>();
     dvdcodec->SetContentType(content);
     return dvdcodec;
   }
   else if (urlFile.IsProtocol("shout"))
   {
-    VideoPlayerCodec *dvdcodec = new VideoPlayerCodec();
+    auto dvdcodec = std::make_unique<VideoPlayerCodec>();
     dvdcodec->SetContentType("audio/mp3");
     return dvdcodec; // if we got this far with internet radio - content-type was wrong. gamble on mp3.
   }
@@ -95,18 +97,18 @@ ICodec* CodecFactory::CreateCodecDemux(const CFileItem& file, unsigned int filec
       content == "audio/wav" ||
       content == "audio/x-wav")
   {
-    VideoPlayerCodec *dvdcodec = new VideoPlayerCodec();
+    auto dvdcodec = std::make_unique<VideoPlayerCodec>();
     dvdcodec->SetContentType("audio/x-spdif-compressed");
     if (dvdcodec->Init(file, filecache))
     {
       return dvdcodec;
     }
 
-    dvdcodec = new VideoPlayerCodec();
+    dvdcodec = std::make_unique<VideoPlayerCodec>();
     dvdcodec->SetContentType(content);
     return dvdcodec;
   }
   else
-    return CreateCodec(urlFile);
+    return std::unique_ptr<ICodec>(CreateCodec(urlFile));
 }
 

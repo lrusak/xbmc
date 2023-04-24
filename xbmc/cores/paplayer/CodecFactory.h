@@ -10,6 +10,8 @@
 
 #include "ICodec.h"
 
+#include <memory>
+
 class CFileItem;
 
 class CodecFactory
@@ -18,6 +20,6 @@ public:
   CodecFactory() = default;
   virtual ~CodecFactory() = default;
   static ICodec* CreateCodec(const CURL& urlFile);
-  static ICodec* CreateCodecDemux(const CFileItem& file, unsigned int filecache);
+  static std::unique_ptr<ICodec> CreateCodecDemux(const CFileItem& file, unsigned int filecache);
 };
 

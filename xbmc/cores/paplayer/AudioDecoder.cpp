@@ -74,7 +74,7 @@ bool CAudioDecoder::Create(const CFileItem &file, int64_t seekOffset)
     filecache = settings->GetInt(CSettings::SETTING_CACHEAUDIO_LAN);
 
   // create our codec
-  m_codec.reset(CodecFactory::CreateCodecDemux(file, filecache * 1024));
+  m_codec = CodecFactory::CreateCodecDemux(file, filecache * 1024);
 
   if (!m_codec || !m_codec->Init(file, filecache * 1024))
   {
