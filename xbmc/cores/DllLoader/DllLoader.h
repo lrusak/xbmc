@@ -31,6 +31,8 @@
 #endif
 // clang-format on
 
+#include <vector>
+
 #ifndef NULL
 #define NULL 0
 #endif
@@ -51,12 +53,6 @@ typedef struct ExportEntry
   Export exp;
   ExportEntry* next;
 } ExportEntry;
-
-typedef struct _LoadedList
-{
-  DllLoader* pDll;
-  _LoadedList* pNext;
-} LoadedList;
 
 class DllLoader : public CoffLoader, public LibraryLoader
 {
@@ -94,7 +90,7 @@ protected:
   bool m_bUnloadSymbols;
   ExportEntry* m_pExportHead;
   Export* m_pStaticExports;
-  LoadedList* m_pDlls;
+  std::vector<DllLoader*> m_dlls;
 
 #ifdef USE_LDT_KEEPER
   ldt_fs_t* m_ldt_fs;

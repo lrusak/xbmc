@@ -70,8 +70,6 @@ DllLoader::DllLoader(const char *sDll, bool bTrack, bool bSystemDll, bool bLoadS
   m_pStaticExports = exps;
   m_bTrack = bTrack;
   m_bSystemDll = bSystemDll;
-  m_pDlls = NULL;
-
 
   if(!bSystemDll)
   {
@@ -104,13 +102,13 @@ DllLoader::~DllLoader()
     free(entry);
   }
 
-  while (m_pDlls)
+  for (auto* dll : m_dlls)
   {
-    LoadedList* entry = m_pDlls;
-    m_pDlls = entry->pNext;
-    LibraryLoader* lib = entry->pDll;
-    if (entry->pDll) DllLoaderContainer::ReleaseModule(lib);
-    delete entry;
+    LibraryLoader* lib = dll;
+    if (lib)
+      DllLoaderContainer::ReleaseModule(lib);
+
+    delete dll;
   }
 
   // can't unload a system dll, as this might be happening during xbmc destruction
@@ -352,10 +350,7 @@ const char* DllLoader::ResolveReferencedDll(const char* dll)
   }
   else if (!pDll->IsSystemDll())
   {
-    LoadedList* entry=new LoadedList;
-    entry->pDll=pDll;
-    entry->pNext=m_pDlls;
-    m_pDlls=entry;
+    m_dlls.emplace_back(pDll);
   }
 
   return pDll->GetFileName();
