@@ -18,30 +18,6 @@
 
 using namespace KODI::ADDONS;
 
-ICodec* CodecFactory::CreateCodec(const CURL& urlFile)
-{
-  std::string fileType = urlFile.GetFileType();
-  StringUtils::ToLower(fileType);
-
-  auto addonInfos = CServiceBroker::GetExtsMimeSupportList().GetExtensionSupportedAddonInfos(
-      "." + fileType, CExtsMimeSupportList::FilterSelect::all);
-  for (const auto& addonInfo : addonInfos)
-  {
-    // Check asked and given extension is supported by only for here allowed audiodecoder addons.
-    if (addonInfo.first == ADDON::AddonType::AUDIODECODER)
-    {
-      std::unique_ptr<CAudioDecoder> result = std::make_unique<CAudioDecoder>(addonInfo.second);
-      if (!result->CreateDecoder())
-        continue;
-
-      return result.release();
-    }
-  }
-
-  VideoPlayerCodec *dvdcodec = new VideoPlayerCodec();
-  return dvdcodec;
-}
-
 ICodec* CodecFactory::CreateCodecDemux(const CFileItem& file, unsigned int filecache)
 {
   CURL urlFile(file.GetDynPath());
