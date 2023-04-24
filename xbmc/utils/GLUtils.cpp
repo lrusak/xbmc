@@ -308,7 +308,7 @@ uint8_t KODI::UTILS::GL::GetChannelFromARGB(const KODI::UTILS::GL::ColorChannel 
   };
 }
 
-#if defined(HAS_GLES)
+#if defined(HAS_GLES) && defined(HAS_EGL)
 #if defined(GL_OES_vertex_array_object)
 #if !defined(glBindVertexArray)
 static PFNGLBINDVERTEXARRAYOESPROC s_glBindVertexArray;
@@ -328,7 +328,13 @@ static PFNGLGENVERTEXARRAYSOESPROC s_glGenVertexArrays;
 static auto s_glGenVertexArrays = glGenVertexArrays;
 #endif
 #endif // GL_OES_vertex_array_object
-#endif // HAS_GLES
+#endif // HAS_GLES && HAS_EGL
+
+#if defined(TARGET_DARWIN_EMBEDDED)
+static auto s_glBindVertexArray = glBindVertexArrayOES;
+static auto s_glDeleteVertexArrays = glDeleteVertexArraysOES;
+static auto s_glGenVertexArrays = glGenVertexArraysOES;
+#endif // TARGET_DARWIN_EMBEDDED
 
 #if defined(HAS_GL)
 #if !defined(glBindVertexArray)
@@ -374,12 +380,6 @@ void KODI::UTILS::GL::TestVAOSupport()
   }
 #endif // GL_OES_vertex_array_object
 #endif // HAS_GLES && HAS_EGL
-
-#if defined(TARGET_DARWIN_EMBEDDED)
-  s_glBindVertexArray = glBindVertexArrayOES;
-  s_glDeleteVertexArrays = glDeleteVertexArraysOES;
-  s_glGenVertexArrays = glGenVertexArraysOES;
-#endif // TARGET_DARWIN_EMBEDDED
 
 #if defined(HAS_GL)
   unsigned int major;
