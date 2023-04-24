@@ -39,11 +39,7 @@ find_path(OPENGLES3_INCLUDE_DIR GLES3/gl3.h
 include(CheckSymbolExists)
 set(CMAKE_REQUIRED_LIBRARIES ${OPENGLES_gl_LIBRARY})
 set(CMAKE_REQUIRED_INCLUDES ${OPENGLES_INCLUDE_DIR})
-if(NOT CORE_SYSTEM_NAME STREQUAL darwin_embedded)
-  check_symbol_exists(glGenVertexArraysOES GLES2/gl2ext.h OPENGLES_HAS_VAO_OES)
-else()
-  check_symbol_exists(glGenVertexArraysOES ES2/glext.h OPENGLES_HAS_VAO_OES)
-endif()
+check_symbol_exists(glGenVertexArraysOES ES2/glext.h OPENGLES_HAS_VAO_OES)
 
 if(OPENGLES_FOUND)
   set(OPENGLES_LIBRARIES ${OPENGLES_gl_LIBRARY})
