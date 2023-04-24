@@ -16,6 +16,10 @@
 #include "settings/SettingsComponent.h"
 #include "utils/StringUtils.h"
 
+#if defined(HAS_EGL)
+#include "utils/EGLUtils.h"
+#endif
+
 #include <map>
 #include <stdexcept>
 #include <utility>
@@ -304,27 +308,99 @@ uint8_t KODI::UTILS::GL::GetChannelFromARGB(const KODI::UTILS::GL::ColorChannel 
   };
 }
 
-[[maybe_unused]] static bool supportsVAOs = false;
+#if defined(HAS_GLES)
+#if defined(GL_OES_vertex_array_object)
+#if !defined(glBindVertexArray)
+static PFNGLBINDVERTEXARRAYOESPROC s_glBindVertexArray;
+#else
+static auto s_glBindVertexArray = glBindVertexArray;
+#endif
 
-void KODI::UTILS::GL::SetVAOsSupported(bool supported)
+#if !defined(glDeleteVertexArrays)
+static PFNGLDELETEVERTEXARRAYSOESPROC s_glDeleteVertexArrays;
+#else
+static auto s_glDeleteVertexArrays = glDeleteVertexArrays;
+#endif
+
+#if !defined(glGenVertexArrays)
+static PFNGLGENVERTEXARRAYSOESPROC s_glGenVertexArrays;
+#else
+static auto s_glGenVertexArrays = glGenVertexArrays;
+#endif
+#endif // GL_OES_vertex_array_object
+#endif // HAS_GLES
+
+#if defined(HAS_GL)
+#if !defined(glBindVertexArray)
+static PFNGLBINDVERTEXARRAYPROC s_glBindVertexArray = [](GLuint array) {};
+#else
+static auto s_glBindVertexArray = glBindVertexArray;
+#endif
+
+#if !defined(glDeleteVertexArrays)
+static PFNGLDELETEVERTEXARRAYSPROC s_glDeleteVertexArrays = [](GLsizei size, const GLuint* array) {
+};
+#else
+static auto s_glDeleteVertexArrays = glDeleteVertexArrays;
+#endif
+
+#if !defined(glGenVertexArrays)
+static PFNGLGENVERTEXARRAYSPROC s_glGenVertexArrays = [](GLsizei size, GLuint* array) {};
+#else
+static auto s_glGenVertexArrays = glGenVertexArrays;
+#endif
+#endif // HAS_GL
+
+void KODI::UTILS::GL::TestVAOSupport()
 {
-  supportsVAOs = supported;
+#if defined(HAS_GLES) && defined(HAS_EGL)
+#if defined(GL_OES_vertex_array_object)
+  if (CServiceBroker::GetRenderSystem()->IsExtSupported("GL_OES_vertex_array_object"))
+  {
+#if !defined(glBindVertexArray)
+    s_glBindVertexArray =
+        CEGLUtils::GetRequiredProcAddress<PFNGLBINDVERTEXARRAYOESPROC>("glBindVertexArrayOES");
+#endif
+
+#if !defined(glDeleteVertexArrays)
+    s_glDeleteVertexArrays = CEGLUtils::GetRequiredProcAddress<PFNGLDELETEVERTEXARRAYSOESPROC>(
+        "glDeleteVertexArraysOES");
+#endif
+
+#if !defined(glGenVertexArrays)
+    s_glGenVertexArrays =
+        CEGLUtils::GetRequiredProcAddress<PFNGLGENVERTEXARRAYSOESPROC>("glGenVertexArraysOES");
+#endif
+  }
+#endif // GL_OES_vertex_array_object
+#endif // HAS_GLES && HAS_EGL
+
+#if defined(HAS_GL)
+  unsigned int major;
+  unsigned int minor;
+
+  CServiceBroker::GetRenderSystem()->GetRenderVersion(major, minor);
+
+  if (major < 3 || (major == 3 && minor < 2))
+  {
+    s_glBindVertexArray = [](GLuint array) {};
+    s_glDeleteVertexArrays = [](GLsizei size, const GLuint* array) {};
+    s_glGenVertexArrays = [](GLsizei size, GLuint* array) {};
+  }
+#endif // HAS_GL
 }
 
 void KODI::UTILS::GL::GLGenVertexArrays(GLsizei size, GLuint* array)
 {
-  if (supportsVAOs)
-    glGenVertexArrays(size, array);
+  s_glGenVertexArrays(size, array);
 }
 
 void KODI::UTILS::GL::GLBindVertexArray(GLuint array)
 {
-  if (supportsVAOs)
-    glBindVertexArray(array);
+  s_glBindVertexArray(array);
 }
 
 void KODI::UTILS::GL::GLDeleteVertexArrays(GLsizei size, GLuint* array)
 {
-  if (supportsVAOs)
-    glDeleteVertexArrays(size, array);
+  s_glDeleteVertexArrays(size, array);
 }

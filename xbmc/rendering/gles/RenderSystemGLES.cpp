@@ -53,8 +53,6 @@ bool CRenderSystemGLES::InitRenderSystem()
     m_RenderVersion = ver;
   }
 
-  KODI::UTILS::GL::SetVAOsSupported(true);
-
   // Get our driver vendor and renderer
   const char *tmpVendor = (const char*) glGetString(GL_VENDOR);
   m_RenderVendor.clear();
@@ -75,6 +73,8 @@ bool CRenderSystemGLES::InitRenderSystem()
   }
 
   m_RenderExtensions += " ";
+
+  KODI::UTILS::GL::TestVAOSupport();
 
 #if defined(GL_KHR_debug) && defined(TARGET_LINUX)
   if (CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_openGlDebugging)

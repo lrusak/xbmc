@@ -67,8 +67,6 @@ bool CRenderSystemGL::InitRenderSystem()
         m_RenderExtensions += " ";
       }
     }
-
-    KODI::UTILS::GL::SetVAOsSupported(true);
   }
   else
   {
@@ -77,8 +75,6 @@ bool CRenderSystemGL::InitRenderSystem()
     {
       m_RenderExtensions += extensions;
     }
-
-    KODI::UTILS::GL::SetVAOsSupported(false);
   }
   m_RenderExtensions += " ";
 
@@ -92,6 +88,8 @@ bool CRenderSystemGL::InitRenderSystem()
     m_glslMajor = 1;
     m_glslMinor = 0;
   }
+
+  KODI::UTILS::GL::TestVAOSupport();
 
 #if defined(GL_KHR_debug) && defined(TARGET_LINUX)
   if (CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_openGlDebugging)

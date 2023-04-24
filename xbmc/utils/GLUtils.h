@@ -41,7 +41,7 @@ enum class ColorChannel
 
 uint8_t GetChannelFromARGB(const ColorChannel colorChannel, const uint32_t argb);
 
-void SetVAOsSupported(bool supported);
+void TestVAOSupport();
 
 void GLGenVertexArrays(GLsizei size, GLuint* array);
 void GLBindVertexArray(GLuint array);
