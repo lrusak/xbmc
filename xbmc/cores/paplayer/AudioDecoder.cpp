@@ -24,7 +24,6 @@
 
 CAudioDecoder::CAudioDecoder()
 {
-  m_codec = NULL;
   m_rawBuffer = nullptr;
 
   m_eof = false;
@@ -52,10 +51,6 @@ void CAudioDecoder::Destroy()
 
   m_pcmBuffer.Destroy();
 
-  if ( m_codec )
-    delete m_codec;
-  m_codec = NULL;
-
   m_canPlay = false;
 }
 
@@ -79,7 +74,7 @@ bool CAudioDecoder::Create(const CFileItem &file, int64_t seekOffset)
     filecache = settings->GetInt(CSettings::SETTING_CACHEAUDIO_LAN);
 
   // create our codec
-  m_codec=CodecFactory::CreateCodecDemux(file, filecache * 1024);
+  m_codec.reset(CodecFactory::CreateCodecDemux(file, filecache * 1024));
 
   if (!m_codec || !m_codec->Init(file, filecache * 1024))
   {

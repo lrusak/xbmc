@@ -11,6 +11,8 @@
 #include "threads/CriticalSection.h"
 #include "utils/RingBuffer.h"
 
+#include <memory>
+
 struct AEAudioFormat;
 class CFileItem;
 class ICodec;
@@ -62,7 +64,7 @@ public:
   unsigned int GetDataSize(bool checkPktSize);
   void *GetData(unsigned int samples);
   uint8_t* GetRawData(int &size);
-  ICodec *GetCodec() const { return m_codec; }
+  ICodec* GetCodec() const { return m_codec.get(); }
   float GetReplayGain(float &peakVal);
 
 private:
@@ -85,7 +87,7 @@ private:
   bool m_canPlay;
 
   // the codec we're using
-  ICodec* m_codec;
+  std::unique_ptr<ICodec> m_codec;
 
   CCriticalSection m_critSection;
 };
