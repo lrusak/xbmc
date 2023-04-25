@@ -10,15 +10,16 @@
 
 #include "LibraryLoader.h"
 
+#include <memory>
 #include <vector>
 
 namespace DllLoaderContainer
 {
-LibraryLoader* GetModule(const char* sName);
-LibraryLoader* GetModule(const HMODULE hModule);
-LibraryLoader* LoadModule(const char* sName, const char* sCurrentDir = NULL);
-void ReleaseModule(LibraryLoader*& pDll);
+std::shared_ptr<LibraryLoader> GetModule(const char* sName);
+std::shared_ptr<LibraryLoader> GetModule(const HMODULE hModule);
+std::shared_ptr<LibraryLoader> LoadModule(const char* sName, const char* sCurrentDir = NULL);
+void ReleaseModule(std::shared_ptr<LibraryLoader> pDll);
 
-void RegisterDll(LibraryLoader* pDll);
-void UnRegisterDll(LibraryLoader* pDll);
+void RegisterDll(std::shared_ptr<LibraryLoader> pDll);
+void UnRegisterDll(std::shared_ptr<LibraryLoader> pDll);
 };

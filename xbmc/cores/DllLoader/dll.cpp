@@ -41,7 +41,6 @@ extern "C" HMODULE __stdcall dllLoadLibraryExtended(const char* lib_file, const 
 {
   char libname[MAX_PATH + 1] = {};
   char libpath[MAX_PATH + 1] = {};
-  LibraryLoader* dll = NULL;
 
   /* extract name */
   const char* p = strrchr(lib_file, PATH_SEPARATOR_CHAR);
@@ -83,7 +82,7 @@ extern "C" HMODULE __stdcall dllLoadLibraryExtended(const char* lib_file, const 
   else if( libname[strlen(libname)-1] == '.' )
     libname[strlen(libname)-1] = '\0';
 
-  dll = DllLoaderContainer::LoadModule(libname, libpath);
+  std::shared_ptr<LibraryLoader> dll = DllLoaderContainer::LoadModule(libname, libpath);
 
   if (dll)
     return (HMODULE)dll->GetHModule();
@@ -124,7 +123,7 @@ extern "C" HMODULE __stdcall dllLoadLibraryExA(const char* lpLibFileName, HANDLE
 
 extern "C" int __stdcall dllFreeLibrary(HINSTANCE hLibModule)
 {
-  LibraryLoader* dllhandle = DllLoaderContainer::GetModule(hLibModule);
+  std::shared_ptr<LibraryLoader> dllhandle = DllLoaderContainer::GetModule(hLibModule);
 
   if( !dllhandle )
   {
@@ -160,7 +159,7 @@ extern "C" HMODULE WINAPI dllGetModuleHandleA(const char* lpModuleName)
 
   //CLog::Log(LOGDEBUG, "GetModuleHandleA({}) .. looking up", lpModuleName);
 
-  LibraryLoader *p = DllLoaderContainer::GetModule(strModuleName);
+  std::shared_ptr<LibraryLoader> p = DllLoaderContainer::GetModule(strModuleName);
   delete []strModuleName;
 
   if (p)

@@ -42,31 +42,31 @@ CSectionLoader::~CSectionLoader(void)
   UnloadAll();
 }
 
-LibraryLoader* CSectionLoader::LoadDLL(const std::string& dllname, bool bDelayUnload /*=true*/)
+std::shared_ptr<LibraryLoader> CSectionLoader::LoadDLL(const std::string& dllname,
+                                                       bool bDelayUnload /*=true*/)
 {
   std::unique_lock<CCriticalSection> lock(m_critSection);
 
-  if (dllname.empty()) return NULL;
+  if (dllname.empty())
+    return NULL;
   // check if it's already loaded, and increase the reference count if so
   for (int i = 0; i < (int)m_vecLoadedDLLs.size(); ++i)
   {
     CDll& dll = m_vecLoadedDLLs[i];
     if (StringUtils::EqualsNoCase(dll.m_strDllName, dllname))
     {
-      dll.m_lReferenceCount++;
       return dll.m_pDll;
     }
   }
 
   // ok, now load the dll
   CLog::Log(LOGDEBUG, "SECTION:LoadDLL({})", dllname);
-  LibraryLoader* pDll = DllLoaderContainer::LoadModule(dllname.c_str(), NULL);
+  std::shared_ptr<LibraryLoader> pDll(DllLoaderContainer::LoadModule(dllname.c_str(), NULL));
   if (!pDll)
     return NULL;
 
   CDll newDLL;
   newDLL.m_strDllName = dllname;
-  newDLL.m_lReferenceCount = 1;
   newDLL.m_bDelayUnload=bDelayUnload;
   newDLL.m_pDll=pDll;
   m_vecLoadedDLLs.push_back(newDLL);
@@ -85,8 +85,7 @@ void CSectionLoader::UnloadDLL(const std::string &dllname)
     CDll& dll = m_vecLoadedDLLs[i];
     if (StringUtils::EqualsNoCase(dll.m_strDllName, dllname))
     {
-      dll.m_lReferenceCount--;
-      if (0 == dll.m_lReferenceCount)
+      if (dll.m_pDll.use_count() == 0)
       {
         if (dll.m_bDelayUnload)
           dll.m_unloadDelayStartTick = std::chrono::steady_clock::now();
@@ -115,7 +114,7 @@ void CSectionLoader::UnloadDelayed()
     auto now = std::chrono::steady_clock::now();
     auto duration =
         std::chrono::duration_cast<std::chrono::milliseconds>(now - dll.m_unloadDelayStartTick);
-    if (dll.m_lReferenceCount == 0 && duration > UNLOAD_DELAY)
+    if (dll.m_pDll.use_count() == 0 && duration > UNLOAD_DELAY)
     {
       CLog::Log(LOGDEBUG, "SECTION:UnloadDelayed(DLL: {})", dll.m_strDllName);
 

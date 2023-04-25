@@ -52,14 +52,14 @@
 
 using namespace XFILE;
 
-static std::vector<LibraryLoader*> m_dlls;
+static std::vector<std::shared_ptr<LibraryLoader>> m_dlls;
 
 namespace
 {
 
 bool IsSystemDll(const char* sName)
 {
-  for (auto* dll : m_dlls)
+  for (auto& dll : m_dlls)
   {
     if (dll->IsSystemDll() && StringUtils::CompareNoCase(dll->GetName(), sName) == 0)
       return true;
@@ -68,16 +68,16 @@ bool IsSystemDll(const char* sName)
   return false;
 }
 
-LibraryLoader* LoadDll(const char* sName)
+std::shared_ptr<LibraryLoader> LoadDll(const char* sName)
 {
 
 #ifdef LOGALL
   CLog::Log(LOGDEBUG, "Loading dll {}", sName);
 #endif
 
-  LibraryLoader* pLoader;
+  std::shared_ptr<LibraryLoader> pLoader;
 #ifdef TARGET_POSIX
-  pLoader = new SoLoader(sName);
+  pLoader = std::make_shared<SoLoader>(sName);
 #elif defined(TARGET_WINDOWS)
   pLoader = new Win32DllLoader(sName, false);
 #endif
@@ -90,14 +90,13 @@ LibraryLoader* LoadDll(const char* sName)
 
   if (!pLoader->Load())
   {
-    delete pLoader;
-    return NULL;
+    return {};
   }
 
   return pLoader;
 }
 
-LibraryLoader* FindModule(const char* sName, const char* sCurrentDir)
+std::shared_ptr<LibraryLoader> FindModule(const char* sName, const char* sCurrentDir)
 {
   if (URIUtils::IsInArchive(sName))
   {
@@ -136,7 +135,7 @@ LibraryLoader* FindModule(const char* sName, const char* sCurrentDir)
 #else
   vecEnv = StringUtils::Split(ENV_PATH, ';');
 #endif
-  LibraryLoader* pDll = NULL;
+  std::shared_ptr<LibraryLoader> pDll;
 
   for (std::vector<std::string>::const_iterator i = vecEnv.begin(); i != vecEnv.end(); ++i)
   {
@@ -167,9 +166,9 @@ LibraryLoader* FindModule(const char* sName, const char* sCurrentDir)
 
 } // namespace
 
-LibraryLoader* DllLoaderContainer::GetModule(const char* sName)
+std::shared_ptr<LibraryLoader> DllLoaderContainer::GetModule(const char* sName)
 {
-  for (auto* dll : m_dlls)
+  for (auto& dll : m_dlls)
   {
     if (StringUtils::CompareNoCase(dll->GetName(), sName) == 0)
       return dll;
@@ -178,23 +177,24 @@ LibraryLoader* DllLoaderContainer::GetModule(const char* sName)
       return dll;
   }
 
-  return NULL;
+  return {};
 }
 
-LibraryLoader* DllLoaderContainer::GetModule(const HMODULE hModule)
+std::shared_ptr<LibraryLoader> DllLoaderContainer::GetModule(const HMODULE hModule)
 {
-  for (auto* dll : m_dlls)
+  for (auto& dll : m_dlls)
   {
     if (dll->GetHModule() == hModule)
       return dll;
   }
 
-  return NULL;
+  return {};
 }
 
-LibraryLoader* DllLoaderContainer::LoadModule(const char* sName, const char* sCurrentDir /*=NULL*/)
+std::shared_ptr<LibraryLoader> DllLoaderContainer::LoadModule(const char* sName,
+                                                              const char* sCurrentDir /*=NULL*/)
 {
-  LibraryLoader* pDll = NULL;
+  std::shared_ptr<LibraryLoader> pDll;
 
   if (IsSystemDll(sName))
   {
@@ -218,8 +218,6 @@ LibraryLoader* DllLoaderContainer::LoadModule(const char* sName, const char* sCu
   }
   else if (!pDll->IsSystemDll())
   {
-    pDll->IncrRef();
-
 #ifdef LOGALL
     CLog::Log(LOGDEBUG, "Already loaded Dll {} at 0x{:x}", pDll->GetFileName(), pDll);
 #endif
@@ -228,7 +226,7 @@ LibraryLoader* DllLoaderContainer::LoadModule(const char* sName, const char* sCu
   return pDll;
 }
 
-void DllLoaderContainer::ReleaseModule(LibraryLoader*& pDll)
+void DllLoaderContainer::ReleaseModule(std::shared_ptr<LibraryLoader> pDll)
 {
   if (!pDll)
     return;
@@ -238,38 +236,24 @@ void DllLoaderContainer::ReleaseModule(LibraryLoader*& pDll)
     return;
   }
 
-  int iRefCount=pDll->DecrRef();
-  if (iRefCount==0)
-  {
-
 #ifdef LOGALL
     CLog::Log(LOGDEBUG, "Releasing Dll {}", pDll->GetFileName());
 #endif
 
     if (!pDll->HasSymbols())
     {
-      pDll->Unload();
-      delete pDll;
-      pDll=NULL;
-    }
-    else
-      CLog::Log(LOGINFO, "{} has symbols loaded and can never be unloaded", pDll->GetName());
+    pDll->Unload();
   }
-#ifdef LOGALL
   else
-  {
-    CLog::Log(LOGDEBUG, "Dll {} is still referenced with a count of {}", pDll->GetFileName(),
-              iRefCount);
-  }
-#endif
+    CLog::Log(LOGINFO, "{} has symbols loaded and can never be unloaded", pDll->GetName());
 }
 
-void DllLoaderContainer::RegisterDll(LibraryLoader* pDll)
+void DllLoaderContainer::RegisterDll(std::shared_ptr<LibraryLoader> pDll)
 {
   m_dlls.emplace_back(pDll);
 }
 
-void DllLoaderContainer::UnRegisterDll(LibraryLoader* pDll)
+void DllLoaderContainer::UnRegisterDll(std::shared_ptr<LibraryLoader> pDll)
 {
   if (pDll)
   {

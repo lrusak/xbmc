@@ -11,6 +11,7 @@
 #include "threads/CriticalSection.h"
 
 #include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,8 +25,7 @@ public:
   {
   public:
     std::string m_strDllName;
-    long m_lReferenceCount;
-    LibraryLoader *m_pDll;
+    std::shared_ptr<LibraryLoader> m_pDll;
     std::chrono::time_point<std::chrono::steady_clock> m_unloadDelayStartTick;
     bool m_bDelayUnload;
   };
@@ -35,12 +35,12 @@ public:
   CSectionLoader(void);
   virtual ~CSectionLoader(void);
 
-  LibraryLoader* LoadDLL(const std::string& strSection, bool bDelayUnload = true);
+  std::shared_ptr<LibraryLoader> LoadDLL(const std::string& strSection, bool bDelayUnload = true);
   void UnloadDLL(const std::string& strSection);
   void UnloadDelayed();
   void UnloadAll();
 
 private:
-  std::vector<CSectionLoader::CDll> m_vecLoadedDLLs;
+  std::vector<CDll> m_vecLoadedDLLs;
   CCriticalSection m_critSection;
 };

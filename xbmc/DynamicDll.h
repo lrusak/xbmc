@@ -11,6 +11,7 @@
 #include "DllPaths.h"
 #include "cores/DllLoader/LibraryLoader.h"
 
+#include <memory>
 #include <string>
 
 ///////////////////////////////////////////////////////////
@@ -515,6 +516,6 @@ public:
 protected:
   virtual bool ResolveExports() = 0;
   bool  m_DelayUnload;
-  LibraryLoader* m_dll;
+  std::shared_ptr<LibraryLoader> m_dll;
   std::string m_strDllName;
 };
