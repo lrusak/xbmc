@@ -15,8 +15,15 @@
 
 #include <mutex>
 
+using namespace std::chrono_literals;
+
+namespace
+{
+
 //  delay for unloading dll's
-#define UNLOAD_DELAY 30*1000 // 30 sec.
+constexpr auto UNLOAD_DELAY = 30s;
+
+} // namespace
 
 //Define this to get logging on all calls to load/unload sections/dlls
 //#define LOGALL
@@ -108,7 +115,7 @@ void CSectionLoader::UnloadDelayed()
     auto now = std::chrono::steady_clock::now();
     auto duration =
         std::chrono::duration_cast<std::chrono::milliseconds>(now - dll.m_unloadDelayStartTick);
-    if (dll.m_lReferenceCount == 0 && duration.count() > UNLOAD_DELAY)
+    if (dll.m_lReferenceCount == 0 && duration > UNLOAD_DELAY)
     {
       CLog::Log(LOGDEBUG, "SECTION:UnloadDelayed(DLL: {})", dll.m_strDllName);
 
