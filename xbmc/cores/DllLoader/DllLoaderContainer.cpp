@@ -55,8 +55,8 @@
 
 using namespace XFILE;
 
-LibraryLoader* DllLoaderContainer::m_dlls[64] = {};
-int        DllLoaderContainer::m_iNrOfDlls = 0;
+std::vector<LibraryLoader*> DllLoaderContainer::m_dlls;
+
 bool       DllLoaderContainer::m_bTrack = true;
 
 HMODULE DllLoaderContainer::GetModuleAddress(const char* sName)
@@ -66,13 +66,13 @@ HMODULE DllLoaderContainer::GetModuleAddress(const char* sName)
 
 LibraryLoader* DllLoaderContainer::GetModule(const char* sName)
 {
-  for (int i = 0; i < m_iNrOfDlls && m_dlls[i] != NULL; i++)
+  for (auto* dll : m_dlls)
   {
-    if (StringUtils::CompareNoCase(m_dlls[i]->GetName(), sName) == 0)
-      return m_dlls[i];
-    if (!m_dlls[i]->IsSystemDll() &&
-        StringUtils::CompareNoCase(m_dlls[i]->GetFileName(), sName) == 0)
-      return m_dlls[i];
+    if (StringUtils::CompareNoCase(dll->GetName(), sName) == 0)
+      return dll;
+
+    if (!dll->IsSystemDll() && StringUtils::CompareNoCase(dll->GetFileName(), sName) == 0)
+      return dll;
   }
 
   return NULL;
@@ -80,10 +80,12 @@ LibraryLoader* DllLoaderContainer::GetModule(const char* sName)
 
 LibraryLoader* DllLoaderContainer::GetModule(const HMODULE hModule)
 {
-  for (int i = 0; i < m_iNrOfDlls && m_dlls[i] != NULL; i++)
+  for (auto* dll : m_dlls)
   {
-    if (m_dlls[i]->GetHModule() == hModule) return m_dlls[i];
+    if (dll->GetHModule() == hModule)
+      return dll;
   }
+
   return NULL;
 }
 
@@ -261,9 +263,9 @@ LibraryLoader* DllLoaderContainer::LoadDll(const char* sName, bool bLoadSymbols)
 
 bool DllLoaderContainer::IsSystemDll(const char* sName)
 {
-  for (int i = 0; i < m_iNrOfDlls && m_dlls[i] != NULL; i++)
+  for (auto* dll : m_dlls)
   {
-    if (m_dlls[i]->IsSystemDll() && StringUtils::CompareNoCase(m_dlls[i]->GetName(), sName) == 0)
+    if (dll->IsSystemDll() && StringUtils::CompareNoCase(dll->GetName(), sName) == 0)
       return true;
   }
 
@@ -277,15 +279,7 @@ int DllLoaderContainer::GetNrOfModules()
 
 void DllLoaderContainer::RegisterDll(LibraryLoader* pDll)
 {
-  for (LibraryLoader*& dll : m_dlls)
-  {
-    if (dll == NULL)
-    {
-      dll = pDll;
-      m_iNrOfDlls++;
-      break;
-    }
-  }
+  m_dlls.emplace_back(pDll);
 }
 
 void DllLoaderContainer::UnRegisterDll(LibraryLoader* pDll)
@@ -298,21 +292,7 @@ void DllLoaderContainer::UnRegisterDll(LibraryLoader* pDll)
     }
     else
     {
-      // remove from the list
-      bool bRemoved = false;
-      for (int i = 0; i < m_iNrOfDlls && m_dlls[i]; i++)
-      {
-        if (m_dlls[i] == pDll) bRemoved = true;
-        if (bRemoved && i + 1 < m_iNrOfDlls)
-        {
-          m_dlls[i] = m_dlls[i + 1];
-        }
-      }
-      if (bRemoved)
-      {
-        m_iNrOfDlls--;
-        m_dlls[m_iNrOfDlls] = NULL;
-      }
+      m_dlls.erase(std::remove(m_dlls.begin(), m_dlls.end(), pDll), m_dlls.end());
     }
   }
 }

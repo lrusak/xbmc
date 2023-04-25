@@ -10,6 +10,8 @@
 
 #include "LibraryLoader.h"
 
+#include <vector>
+
 class DllLoaderContainer
 {
 public:
@@ -28,7 +30,6 @@ private:
   static LibraryLoader* LoadDll(const char* sName, bool bLoadSymbols);
   static bool       IsSystemDll(const char* sName);
 
-  static LibraryLoader* m_dlls[64];
-  static int m_iNrOfDlls;
+  static std::vector<LibraryLoader*> m_dlls;
   static bool m_bTrack;
 };
