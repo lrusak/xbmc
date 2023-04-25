@@ -29,19 +29,18 @@ public:
     std::chrono::time_point<std::chrono::steady_clock> m_unloadDelayStartTick;
     bool m_bDelayUnload;
   };
+
+  static CSectionLoader& GetInstance();
+
   CSectionLoader(void);
   virtual ~CSectionLoader(void);
 
-  static LibraryLoader* LoadDLL(const std::string& strSection, bool bDelayUnload = true);
-  static void UnloadDLL(const std::string& strSection);
-  static void UnloadDelayed();
+  LibraryLoader* LoadDLL(const std::string& strSection, bool bDelayUnload = true);
+  void UnloadDLL(const std::string& strSection);
+  void UnloadDelayed();
   void UnloadAll();
 
-protected:
-  std::vector<CDll> m_vecLoadedDLLs;
+private:
+  std::vector<CSectionLoader::CDll> m_vecLoadedDLLs;
   CCriticalSection m_critSection;
-
 };
-
-extern  CSectionLoader g_sectionLoader;
-

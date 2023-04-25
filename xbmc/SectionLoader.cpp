@@ -15,13 +15,18 @@
 
 #include <mutex>
 
-#define g_sectionLoader XBMC_GLOBAL_USE(CSectionLoader)
-
 //  delay for unloading dll's
 #define UNLOAD_DELAY 30*1000 // 30 sec.
 
 //Define this to get logging on all calls to load/unload sections/dlls
 //#define LOGALL
+
+CSectionLoader& CSectionLoader::GetInstance()
+{
+  static CSectionLoader s_instance;
+
+  return s_instance;
+}
 
 CSectionLoader::CSectionLoader(void) = default;
 
@@ -32,13 +37,13 @@ CSectionLoader::~CSectionLoader(void)
 
 LibraryLoader* CSectionLoader::LoadDLL(const std::string& dllname, bool bDelayUnload /*=true*/)
 {
-  std::unique_lock<CCriticalSection> lock(g_sectionLoader.m_critSection);
+  std::unique_lock<CCriticalSection> lock(m_critSection);
 
   if (dllname.empty()) return NULL;
   // check if it's already loaded, and increase the reference count if so
-  for (int i = 0; i < (int)g_sectionLoader.m_vecLoadedDLLs.size(); ++i)
+  for (int i = 0; i < (int)m_vecLoadedDLLs.size(); ++i)
   {
-    CDll& dll = g_sectionLoader.m_vecLoadedDLLs[i];
+    CDll& dll = m_vecLoadedDLLs[i];
     if (StringUtils::EqualsNoCase(dll.m_strDllName, dllname))
     {
       dll.m_lReferenceCount++;
@@ -57,20 +62,20 @@ LibraryLoader* CSectionLoader::LoadDLL(const std::string& dllname, bool bDelayUn
   newDLL.m_lReferenceCount = 1;
   newDLL.m_bDelayUnload=bDelayUnload;
   newDLL.m_pDll=pDll;
-  g_sectionLoader.m_vecLoadedDLLs.push_back(newDLL);
+  m_vecLoadedDLLs.push_back(newDLL);
 
   return newDLL.m_pDll;
 }
 
 void CSectionLoader::UnloadDLL(const std::string &dllname)
 {
-  std::unique_lock<CCriticalSection> lock(g_sectionLoader.m_critSection);
+  std::unique_lock<CCriticalSection> lock(m_critSection);
 
   if (dllname.empty()) return;
   // check if it's already loaded, and decrease the reference count if so
-  for (int i = 0; i < (int)g_sectionLoader.m_vecLoadedDLLs.size(); ++i)
+  for (int i = 0; i < (int)m_vecLoadedDLLs.size(); ++i)
   {
-    CDll& dll = g_sectionLoader.m_vecLoadedDLLs[i];
+    CDll& dll = m_vecLoadedDLLs[i];
     if (StringUtils::EqualsNoCase(dll.m_strDllName, dllname))
     {
       dll.m_lReferenceCount--;
@@ -83,7 +88,7 @@ void CSectionLoader::UnloadDLL(const std::string &dllname)
           CLog::Log(LOGDEBUG, "SECTION:UnloadDll({})", dllname);
           if (dll.m_pDll)
             DllLoaderContainer::ReleaseModule(dll.m_pDll);
-          g_sectionLoader.m_vecLoadedDLLs.erase(g_sectionLoader.m_vecLoadedDLLs.begin() + i);
+          m_vecLoadedDLLs.erase(m_vecLoadedDLLs.begin() + i);
         }
 
         return;
@@ -94,12 +99,12 @@ void CSectionLoader::UnloadDLL(const std::string &dllname)
 
 void CSectionLoader::UnloadDelayed()
 {
-  std::unique_lock<CCriticalSection> lock(g_sectionLoader.m_critSection);
+  std::unique_lock<CCriticalSection> lock(m_critSection);
 
   // check if we can unload any unreferenced dlls
-  for (int i = 0; i < (int)g_sectionLoader.m_vecLoadedDLLs.size(); ++i)
+  for (int i = 0; i < (int)m_vecLoadedDLLs.size(); ++i)
   {
-    CDll& dll = g_sectionLoader.m_vecLoadedDLLs[i];
+    CDll& dll = m_vecLoadedDLLs[i];
     auto now = std::chrono::steady_clock::now();
     auto duration =
         std::chrono::duration_cast<std::chrono::milliseconds>(now - dll.m_unloadDelayStartTick);
@@ -109,7 +114,7 @@ void CSectionLoader::UnloadDelayed()
 
       if (dll.m_pDll)
         DllLoaderContainer::ReleaseModule(dll.m_pDll);
-      g_sectionLoader.m_vecLoadedDLLs.erase(g_sectionLoader.m_vecLoadedDLLs.begin() + i);
+      m_vecLoadedDLLs.erase(m_vecLoadedDLLs.begin() + i);
       return;
     }
   }
@@ -118,13 +123,13 @@ void CSectionLoader::UnloadDelayed()
 void CSectionLoader::UnloadAll()
 {
   // delete the dll's
-  std::unique_lock<CCriticalSection> lock(g_sectionLoader.m_critSection);
-  std::vector<CDll>::iterator it = g_sectionLoader.m_vecLoadedDLLs.begin();
-  while (it != g_sectionLoader.m_vecLoadedDLLs.end())
+  std::unique_lock<CCriticalSection> lock(m_critSection);
+  std::vector<CDll>::iterator it = m_vecLoadedDLLs.begin();
+  while (it != m_vecLoadedDLLs.end())
   {
     CDll& dll = *it;
     if (dll.m_pDll)
       DllLoaderContainer::ReleaseModule(dll.m_pDll);
-    it = g_sectionLoader.m_vecLoadedDLLs.erase(it);
+    it = m_vecLoadedDLLs.erase(it);
   }
 }

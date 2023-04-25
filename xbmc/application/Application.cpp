@@ -3201,7 +3201,7 @@ void CApplication::ProcessSlow()
   //  check if we can unload any unreferenced dlls or sections
   const auto appPlayer = GetComponent<CApplicationPlayer>();
   if (!appPlayer->IsPlayingVideo())
-    CSectionLoader::UnloadDelayed();
+    CSectionLoader::GetInstance().UnloadDelayed();
 
 #ifdef TARGET_ANDROID
   // Pass the slow loop to droid
