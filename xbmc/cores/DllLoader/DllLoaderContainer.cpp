@@ -13,7 +13,6 @@
 #ifdef TARGET_WINDOWS
 #include "Win32DllLoader.h"
 #endif
-#include "dll_tracker.h" // for python unload hack
 #include "filesystem/File.h"
 #include "utils/URIUtils.h"
 #include "utils/StringUtils.h"
