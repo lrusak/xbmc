@@ -12,14 +12,13 @@
 
 #include <vector>
 
-class DllLoaderContainer
+namespace DllLoaderContainer
 {
-public:
-  static LibraryLoader* GetModule(const char* sName);
-  static LibraryLoader* GetModule(const HMODULE hModule);
-  static LibraryLoader* LoadModule(const char* sName, const char* sCurrentDir = NULL);
-  static void       ReleaseModule(LibraryLoader*& pDll);
+LibraryLoader* GetModule(const char* sName);
+LibraryLoader* GetModule(const HMODULE hModule);
+LibraryLoader* LoadModule(const char* sName, const char* sCurrentDir = NULL);
+void ReleaseModule(LibraryLoader*& pDll);
 
-  static void RegisterDll(LibraryLoader* pDll);
-  static void UnRegisterDll(LibraryLoader* pDll);
+void RegisterDll(LibraryLoader* pDll);
+void UnRegisterDll(LibraryLoader* pDll);
 };
