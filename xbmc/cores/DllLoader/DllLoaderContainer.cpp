@@ -59,10 +59,6 @@ LibraryLoader* DllLoaderContainer::m_dlls[64] = {};
 int        DllLoaderContainer::m_iNrOfDlls = 0;
 bool       DllLoaderContainer::m_bTrack = true;
 
-void DllLoaderContainer::Clear()
-{
-}
-
 HMODULE DllLoaderContainer::GetModuleAddress(const char* sName)
 {
   return (HMODULE)GetModule(sName);

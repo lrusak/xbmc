@@ -73,7 +73,6 @@
 #include "SeekHandler.h"
 #include "ServiceBroker.h"
 #include "TextureCache.h"
-#include "cores/DllLoader/DllLoaderContainer.h"
 #include "filesystem/Directory.h"
 #include "filesystem/DirectoryCache.h"
 #include "filesystem/DllLibCurl.h"
@@ -1997,7 +1996,6 @@ bool CApplication::Cleanup()
     g_directoryCache.Clear();
     //CServiceBroker::GetInputManager().ClearKeymaps(); //! @todo
     CEventServer::RemoveInstance();
-    DllLoaderContainer::Clear();
     CServiceBroker::GetPlaylistPlayer().Clear();
 
     if (m_ServiceManager)
