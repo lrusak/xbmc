@@ -93,11 +93,6 @@ DllLoader::DllLoader(const char *sDll, bool bTrack, bool bSystemDll, bool bLoadS
 
 DllLoader::~DllLoader()
 {
-  for (auto& exp : m_exports)
-  {
-    free(exp.name);
-  }
-
   for (auto* dll : m_dlls)
   {
     LibraryLoader* lib = dll;
@@ -435,7 +430,7 @@ Export* DllLoader::GetExportByOrdinal(unsigned long ordinal)
   if( m_pStaticExports )
   {
     Export* exp = m_pStaticExports;
-    while(exp->function || exp->track_function || exp->name)
+    while (exp->function || exp->track_function || !exp->name.empty())
     {
       if (ordinal == exp->ordinal)
         return exp;
@@ -450,7 +445,7 @@ Export* DllLoader::GetExportByFunctionName(const char* sFunctionName)
 {
   for (auto& exp : m_exports)
   {
-    if (exp.name && exp.name == sFunctionName)
+    if (exp.name == sFunctionName)
     {
       return &exp;
     }
@@ -459,9 +454,9 @@ Export* DllLoader::GetExportByFunctionName(const char* sFunctionName)
   if( m_pStaticExports )
   {
     Export* exp = m_pStaticExports;
-    while(exp->function || exp->track_function || exp->name)
+    while (exp->function || exp->track_function || !exp->name.empty())
     {
-      if (exp->name && strcmp(sFunctionName, exp->name) == 0)
+      if (exp->name == sFunctionName)
         return exp;
       exp++;
     }
@@ -517,7 +512,7 @@ void DllLoader::AddExport(unsigned long ordinal, void* function, void* track_fun
   exp.function = function;
   exp.ordinal = ordinal;
   exp.track_function = track_function;
-  exp.name = NULL;
+  exp.name.clear();
 
   m_exports.emplace_back(exp);
 }
@@ -528,7 +523,7 @@ void DllLoader::AddExport(char* sFunctionName, unsigned long ordinal, void* func
   exp.function = function;
   exp.ordinal = ordinal;
   exp.track_function = track_function;
-  exp.name = strdup(sFunctionName);
+  exp.name = sFunctionName;
 
   m_exports.emplace_back(exp);
 }
@@ -540,7 +535,7 @@ void DllLoader::AddExport(char* sFunctionName, void* function, void* track_funct
   exp.function = function;
   exp.ordinal = -1;
   exp.track_function = track_function;
-  exp.name = strdup(sFunctionName);
+  exp.name = sFunctionName;
 
   m_exports.emplace_back(exp);
 }

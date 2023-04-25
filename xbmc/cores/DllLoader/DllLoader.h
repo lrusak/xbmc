@@ -42,7 +42,7 @@ class DllLoader;
 
 typedef struct Export
 {
-  char* name;
+  std::string name;
   unsigned long ordinal;
   void*         function;
   void*         track_function;
