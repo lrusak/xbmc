@@ -42,17 +42,11 @@ class DllLoader;
 
 typedef struct Export
 {
-  const char*   name;
+  char* name;
   unsigned long ordinal;
   void*         function;
   void*         track_function;
 } Export;
-
-typedef struct ExportEntry
-{
-  Export exp;
-  ExportEntry* next;
-} ExportEntry;
 
 class DllLoader : public CoffLoader, public LibraryLoader
 {
@@ -88,7 +82,7 @@ protected:
   bool m_bSystemDll; // true if this dll should not be removed
   bool m_bLoadSymbols; // when true this dll should not be removed
   bool m_bUnloadSymbols;
-  ExportEntry* m_pExportHead;
+  std::vector<Export> m_exports;
   Export* m_pStaticExports;
   std::vector<DllLoader*> m_dlls;
 

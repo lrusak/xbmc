@@ -65,15 +65,14 @@ static void __attribute__((noinline)) extend_stack_for_dll_alloca(void)
 
 DllLoader::DllLoader(const char *sDll, bool bTrack, bool bSystemDll, bool bLoadSymbols, Export* exps) : LibraryLoader(sDll)
 {
-  ImportDirTable = 0;
-  m_pExportHead = NULL;
-  m_pStaticExports = exps;
-  m_bTrack = bTrack;
-  m_bSystemDll = bSystemDll;
+    ImportDirTable = 0;
+    m_pStaticExports = exps;
+    m_bTrack = bTrack;
+    m_bSystemDll = bSystemDll;
 
-  if(!bSystemDll)
-  {
-    // Initialize FS segment, important for quicktime dll's
+    if (!bSystemDll)
+    {
+      // Initialize FS segment, important for quicktime dll's
 #if defined(USE_LDT_KEEPER)
     m_ldt_fs = Setup_LDT_Keeper();
 #endif
@@ -94,12 +93,9 @@ DllLoader::DllLoader(const char *sDll, bool bTrack, bool bSystemDll, bool bLoadS
 
 DllLoader::~DllLoader()
 {
-  while (m_pExportHead)
+  for (auto& exp : m_exports)
   {
-    ExportEntry* entry = m_pExportHead;
-    m_pExportHead = entry->next;
-
-    free(entry);
+    free(exp.name);
   }
 
   for (auto* dll : m_dlls)
@@ -430,15 +426,10 @@ int DllLoader::ResolveOrdinal(unsigned long ordinal, void **pAddr)
 
 Export* DllLoader::GetExportByOrdinal(unsigned long ordinal)
 {
-  ExportEntry* entry = m_pExportHead;
-
-  while (entry)
+  for (auto& exp : m_exports)
   {
-    if (ordinal == entry->exp.ordinal)
-    {
-      return &entry->exp;
-    }
-    entry = entry->next;
+    if (ordinal == exp.ordinal)
+      return &exp;
   }
 
   if( m_pStaticExports )
@@ -457,15 +448,12 @@ Export* DllLoader::GetExportByOrdinal(unsigned long ordinal)
 
 Export* DllLoader::GetExportByFunctionName(const char* sFunctionName)
 {
-  ExportEntry* entry = m_pExportHead;
-
-  while (entry)
+  for (auto& exp : m_exports)
   {
-    if (entry->exp.name && strcmp(sFunctionName, entry->exp.name) == 0)
+    if (exp.name && exp.name == sFunctionName)
     {
-      return &entry->exp;
+      return &exp;
     }
-    entry = entry->next;
   }
 
   if( m_pStaticExports )
@@ -525,50 +513,36 @@ int DllLoader::ResolveName(const char *sName, char* sFunction, void **fixup)
 
 void DllLoader::AddExport(unsigned long ordinal, void* function, void* track_function)
 {
-  ExportEntry* entry = (ExportEntry*)malloc(sizeof(ExportEntry));
-  if (!entry)
-    return;
-  entry->exp.function = function;
-  entry->exp.ordinal = ordinal;
-  entry->exp.track_function = track_function;
-  entry->exp.name = NULL;
+  Export exp;
+  exp.function = function;
+  exp.ordinal = ordinal;
+  exp.track_function = track_function;
+  exp.name = NULL;
 
-  entry->next = m_pExportHead;
-  m_pExportHead = entry;
+  m_exports.emplace_back(exp);
 }
 
 void DllLoader::AddExport(char* sFunctionName, unsigned long ordinal, void* function, void* track_function)
 {
-  int len = sizeof(ExportEntry);
+  Export exp;
+  exp.function = function;
+  exp.ordinal = ordinal;
+  exp.track_function = track_function;
+  exp.name = strdup(sFunctionName);
 
-  ExportEntry* entry = (ExportEntry*)malloc(len + strlen(sFunctionName) + 1);
-  if (!entry)
-    return;
-  entry->exp.function = function;
-  entry->exp.ordinal = ordinal;
-  entry->exp.track_function = track_function;
-  entry->exp.name = ((char*)(entry)) + len;
-  strcpy(const_cast<char*>(entry->exp.name), sFunctionName);
-
-  entry->next = m_pExportHead;
-  m_pExportHead = entry;
+  m_exports.emplace_back(exp);
 }
 
 void DllLoader::AddExport(char* sFunctionName, void* function, void* track_function)
 {
-  int len = sizeof(ExportEntry);
+  Export exp;
 
-  ExportEntry* entry = (ExportEntry*)malloc(len + strlen(sFunctionName) + 1);
-  if (!entry)
-    return;
-  entry->exp.function = (void*)function;
-  entry->exp.ordinal = -1;
-  entry->exp.track_function = track_function;
-  entry->exp.name = ((char*)(entry)) + len;
-  strcpy(const_cast<char*>(entry->exp.name), sFunctionName);
+  exp.function = function;
+  exp.ordinal = -1;
+  exp.track_function = track_function;
+  exp.name = strdup(sFunctionName);
 
-  entry->next = m_pExportHead;
-  m_pExportHead = entry;
+  m_exports.emplace_back(exp);
 }
 
 bool DllLoader::Load()
@@ -626,7 +600,7 @@ bool DllLoader::Load()
     // init function may have fixed up the export table
     // this is what I expect should happens on PECompact2
     // dll's if export table is compressed.
-    if(!m_pExportHead)
+    if (m_exports.empty())
       LoadExports();
   }
 
