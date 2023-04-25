@@ -47,17 +47,7 @@ public: \
 //
 #define DECLARE_DLL_WRAPPER_TEMPLATE(classname) \
 public: \
-  classname () {} \
-
-
-///////////////////////////////////////////////////////////
-//
-//  LOAD_SYMBOLS
-//
-//  Tells the dllloader to load Debug symbols when possible
-#define LOAD_SYMBOLS() \
-  protected: \
-    virtual bool LoadSymbols() { return true; }
+  classname () {}
 
 ///////////////////////////////////////////////////////////
 //
@@ -412,7 +402,6 @@ public: \
   if (!m_dll->ResolveExport( #dllmethod , & method##_ptr )) \
     return false;
 
-
 ////////////////////////////////////////////////////////////////////
 //
 //  Example declaration of a dll wrapper class
@@ -461,8 +450,6 @@ public: \
 //  {
 //  public:
 //    DllExample() : DllDynamic( "special://xbmcbin/system/Example.dll" ) {}
-//  protected:
-//    virtual bool LoadSymbols() { return true; }
 //  protected:
 //    typedef void (* foo_METHOD) ( int p1, char* p2 );
 //    foo_METHOD m_foo;
@@ -526,8 +513,7 @@ public:
   const std::string &GetFile() const { return m_strDllName; }
 
 protected:
-  virtual bool ResolveExports()=0;
-  virtual bool LoadSymbols() { return false; }
+  virtual bool ResolveExports() = 0;
   bool  m_DelayUnload;
   LibraryLoader* m_dll;
   std::string m_strDllName;
