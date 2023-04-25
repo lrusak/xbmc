@@ -59,11 +59,6 @@ std::vector<LibraryLoader*> DllLoaderContainer::m_dlls;
 
 bool       DllLoaderContainer::m_bTrack = true;
 
-HMODULE DllLoaderContainer::GetModuleAddress(const char* sName)
-{
-  return (HMODULE)GetModule(sName);
-}
-
 LibraryLoader* DllLoaderContainer::GetModule(const char* sName)
 {
   for (auto* dll : m_dlls)
