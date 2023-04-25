@@ -29,5 +29,4 @@ private:
   static bool       IsSystemDll(const char* sName);
 
   static std::vector<LibraryLoader*> m_dlls;
-  static bool m_bTrack;
 };
