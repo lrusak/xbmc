@@ -50,74 +50,54 @@
 //Define this to get logging on all calls to load/unload of dlls
 //#define LOGALL
 
-
 using namespace XFILE;
 
-std::vector<LibraryLoader*> DllLoaderContainer::m_dlls;
+static std::vector<LibraryLoader*> m_dlls;
 
-LibraryLoader* DllLoaderContainer::GetModule(const char* sName)
+namespace
+{
+
+bool IsSystemDll(const char* sName)
 {
   for (auto* dll : m_dlls)
   {
-    if (StringUtils::CompareNoCase(dll->GetName(), sName) == 0)
-      return dll;
-
-    if (!dll->IsSystemDll() && StringUtils::CompareNoCase(dll->GetFileName(), sName) == 0)
-      return dll;
+    if (dll->IsSystemDll() && StringUtils::CompareNoCase(dll->GetName(), sName) == 0)
+      return true;
   }
 
-  return NULL;
+  return false;
 }
 
-LibraryLoader* DllLoaderContainer::GetModule(const HMODULE hModule)
+LibraryLoader* LoadDll(const char* sName)
 {
-  for (auto* dll : m_dlls)
-  {
-    if (dll->GetHModule() == hModule)
-      return dll;
-  }
-
-  return NULL;
-}
-
-LibraryLoader* DllLoaderContainer::LoadModule(const char* sName, const char* sCurrentDir /*=NULL*/)
-{
-  LibraryLoader* pDll=NULL;
-
-  if (IsSystemDll(sName))
-  {
-    pDll = GetModule(sName);
-  }
-  else if (sCurrentDir)
-  {
-    std::string strPath=sCurrentDir;
-    strPath+=sName;
-    pDll = GetModule(strPath.c_str());
-  }
-
-  if (!pDll)
-  {
-    pDll = GetModule(sName);
-  }
-
-  if (!pDll)
-  {
-    pDll = FindModule(sName, sCurrentDir);
-  }
-  else if (!pDll->IsSystemDll())
-  {
-    pDll->IncrRef();
 
 #ifdef LOGALL
-    CLog::Log(LOGDEBUG, "Already loaded Dll {} at 0x{:x}", pDll->GetFileName(), pDll);
+  CLog::Log(LOGDEBUG, "Loading dll {}", sName);
 #endif
 
+  LibraryLoader* pLoader;
+#ifdef TARGET_POSIX
+  pLoader = new SoLoader(sName);
+#elif defined(TARGET_WINDOWS)
+  pLoader = new Win32DllLoader(sName, false);
+#endif
+
+  if (!pLoader)
+  {
+    CLog::Log(LOGERROR, "Unable to create dll {}", sName);
+    return NULL;
   }
 
-  return pDll;
+  if (!pLoader->Load())
+  {
+    delete pLoader;
+    return NULL;
+  }
+
+  return pLoader;
 }
 
-LibraryLoader* DllLoaderContainer::FindModule(const char* sName, const char* sCurrentDir)
+LibraryLoader* FindModule(const char* sName, const char* sCurrentDir)
 {
   if (URIUtils::IsInArchive(sName))
   {
@@ -170,7 +150,7 @@ LibraryLoader* DllLoaderContainer::FindModule(const char* sName, const char* sCu
     strPath+=sName;
 
     // Have we already loaded this dll
-    if ((pDll = GetModule(strPath.c_str())) != NULL)
+    if ((pDll = DllLoaderContainer::GetModule(strPath.c_str())) != NULL)
       return pDll;
 
     if (CFile::Exists(strPath))
@@ -183,6 +163,69 @@ LibraryLoader* DllLoaderContainer::FindModule(const char* sName, const char* sCu
 
   CLog::Log(LOGDEBUG, "Dll {} was not found in path", sName);
   return NULL;
+}
+
+} // namespace
+
+LibraryLoader* DllLoaderContainer::GetModule(const char* sName)
+{
+  for (auto* dll : m_dlls)
+  {
+    if (StringUtils::CompareNoCase(dll->GetName(), sName) == 0)
+      return dll;
+
+    if (!dll->IsSystemDll() && StringUtils::CompareNoCase(dll->GetFileName(), sName) == 0)
+      return dll;
+  }
+
+  return NULL;
+}
+
+LibraryLoader* DllLoaderContainer::GetModule(const HMODULE hModule)
+{
+  for (auto* dll : m_dlls)
+  {
+    if (dll->GetHModule() == hModule)
+      return dll;
+  }
+
+  return NULL;
+}
+
+LibraryLoader* DllLoaderContainer::LoadModule(const char* sName, const char* sCurrentDir /*=NULL*/)
+{
+  LibraryLoader* pDll = NULL;
+
+  if (IsSystemDll(sName))
+  {
+    pDll = GetModule(sName);
+  }
+  else if (sCurrentDir)
+  {
+    std::string strPath = sCurrentDir;
+    strPath += sName;
+    pDll = GetModule(strPath.c_str());
+  }
+
+  if (!pDll)
+  {
+    pDll = GetModule(sName);
+  }
+
+  if (!pDll)
+  {
+    pDll = FindModule(sName, sCurrentDir);
+  }
+  else if (!pDll->IsSystemDll())
+  {
+    pDll->IncrRef();
+
+#ifdef LOGALL
+    CLog::Log(LOGDEBUG, "Already loaded Dll {} at 0x{:x}", pDll->GetFileName(), pDll);
+#endif
+  }
+
+  return pDll;
 }
 
 void DllLoaderContainer::ReleaseModule(LibraryLoader*& pDll)
@@ -219,46 +262,6 @@ void DllLoaderContainer::ReleaseModule(LibraryLoader*& pDll)
               iRefCount);
   }
 #endif
-}
-
-LibraryLoader* DllLoaderContainer::LoadDll(const char* sName)
-{
-
-#ifdef LOGALL
-  CLog::Log(LOGDEBUG, "Loading dll {}", sName);
-#endif
-
-  LibraryLoader* pLoader;
-#ifdef TARGET_POSIX
-  pLoader = new SoLoader(sName);
-#elif defined(TARGET_WINDOWS)
-  pLoader = new Win32DllLoader(sName, false);
-#endif
-
-  if (!pLoader)
-  {
-    CLog::Log(LOGERROR, "Unable to create dll {}", sName);
-    return NULL;
-  }
-
-  if (!pLoader->Load())
-  {
-    delete pLoader;
-    return NULL;
-  }
-
-  return pLoader;
-}
-
-bool DllLoaderContainer::IsSystemDll(const char* sName)
-{
-  for (auto* dll : m_dlls)
-  {
-    if (dll->IsSystemDll() && StringUtils::CompareNoCase(dll->GetName(), sName) == 0)
-      return true;
-  }
-
-  return false;
 }
 
 void DllLoaderContainer::RegisterDll(LibraryLoader* pDll)

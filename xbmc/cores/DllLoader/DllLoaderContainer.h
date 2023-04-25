@@ -22,11 +22,4 @@ public:
 
   static void RegisterDll(LibraryLoader* pDll);
   static void UnRegisterDll(LibraryLoader* pDll);
-
-private:
-  static LibraryLoader* FindModule(const char* sName, const char* sCurrentDir);
-  static LibraryLoader* LoadDll(const char* sName);
-  static bool       IsSystemDll(const char* sName);
-
-  static std::vector<LibraryLoader*> m_dlls;
 };
