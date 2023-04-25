@@ -18,7 +18,7 @@
 class SoLoader : public LibraryLoader
 {
 public:
-  SoLoader(const std::string &so, bool bGlobal = false);
+  SoLoader(const std::string& so);
   ~SoLoader() override;
 
   bool Load() override;
@@ -31,6 +31,5 @@ public:
 
 private:
   void* m_soHandle;
-  bool m_bGlobal;
   bool m_bLoaded;
 };

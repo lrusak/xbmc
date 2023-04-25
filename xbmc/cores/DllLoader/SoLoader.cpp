@@ -13,10 +13,9 @@
 
 #include <dlfcn.h>
 
-SoLoader::SoLoader(const std::string &so, bool bGlobal) : LibraryLoader(so)
+SoLoader::SoLoader(const std::string& so) : LibraryLoader(so)
 {
   m_soHandle = NULL;
-  m_bGlobal = bGlobal;
   m_bLoaded = false;
 }
 

@@ -30,7 +30,7 @@ CSectionLoader::~CSectionLoader(void)
   UnloadAll();
 }
 
-LibraryLoader *CSectionLoader::LoadDLL(const std::string &dllname, bool bDelayUnload /*=true*/, bool bLoadSymbols /*=false*/)
+LibraryLoader* CSectionLoader::LoadDLL(const std::string& dllname, bool bDelayUnload /*=true*/)
 {
   std::unique_lock<CCriticalSection> lock(g_sectionLoader.m_critSection);
 
@@ -48,7 +48,7 @@ LibraryLoader *CSectionLoader::LoadDLL(const std::string &dllname, bool bDelayUn
 
   // ok, now load the dll
   CLog::Log(LOGDEBUG, "SECTION:LoadDLL({})", dllname);
-  LibraryLoader* pDll = DllLoaderContainer::LoadModule(dllname.c_str(), NULL, bLoadSymbols);
+  LibraryLoader* pDll = DllLoaderContainer::LoadModule(dllname.c_str(), NULL);
   if (!pDll)
     return NULL;
 

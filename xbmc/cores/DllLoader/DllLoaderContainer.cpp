@@ -80,7 +80,7 @@ LibraryLoader* DllLoaderContainer::GetModule(const HMODULE hModule)
   return NULL;
 }
 
-LibraryLoader* DllLoaderContainer::LoadModule(const char* sName, const char* sCurrentDir/*=NULL*/, bool bLoadSymbols/*=false*/)
+LibraryLoader* DllLoaderContainer::LoadModule(const char* sName, const char* sCurrentDir /*=NULL*/)
 {
   LibraryLoader* pDll=NULL;
 
@@ -102,7 +102,7 @@ LibraryLoader* DllLoaderContainer::LoadModule(const char* sName, const char* sCu
 
   if (!pDll)
   {
-    pDll = FindModule(sName, sCurrentDir, bLoadSymbols);
+    pDll = FindModule(sName, sCurrentDir);
   }
   else if (!pDll->IsSystemDll())
   {
@@ -117,7 +117,7 @@ LibraryLoader* DllLoaderContainer::LoadModule(const char* sName, const char* sCu
   return pDll;
 }
 
-LibraryLoader* DllLoaderContainer::FindModule(const char* sName, const char* sCurrentDir, bool bLoadSymbols)
+LibraryLoader* DllLoaderContainer::FindModule(const char* sName, const char* sCurrentDir)
 {
   if (URIUtils::IsInArchive(sName))
   {
@@ -125,16 +125,16 @@ LibraryLoader* DllLoaderContainer::FindModule(const char* sName, const char* sCu
     std::string newName = "special://temp/";
     newName += url.GetFileName();
     CFile::Copy(sName, newName);
-    return FindModule(newName.c_str(), sCurrentDir, bLoadSymbols);
+    return FindModule(newName.c_str(), sCurrentDir);
   }
 
   if (CURL::IsFullPath(sName))
   { //  Has a path, just try to load
-    return LoadDll(sName, bLoadSymbols);
+    return LoadDll(sName);
   }
 #ifdef TARGET_POSIX
   else if (strcmp(sName, "xbmc.so") == 0)
-    return LoadDll(sName, bLoadSymbols);
+    return LoadDll(sName);
 #endif
   else if (sCurrentDir)
   { // in the path of the parent dll?
@@ -142,7 +142,7 @@ LibraryLoader* DllLoaderContainer::FindModule(const char* sName, const char* sCu
     strPath+=sName;
 
     if (CFile::Exists(strPath))
-      return LoadDll(strPath.c_str(), bLoadSymbols);
+      return LoadDll(strPath.c_str());
   }
 
   //  in environment variable?
@@ -174,11 +174,11 @@ LibraryLoader* DllLoaderContainer::FindModule(const char* sName, const char* sCu
       return pDll;
 
     if (CFile::Exists(strPath))
-      return LoadDll(strPath.c_str(), bLoadSymbols);
+      return LoadDll(strPath.c_str());
   }
 
   // can't find it in any of our paths - could be a system dll
-  if ((pDll = LoadDll(sName, bLoadSymbols)) != NULL)
+  if ((pDll = LoadDll(sName)) != NULL)
     return pDll;
 
   CLog::Log(LOGDEBUG, "Dll {} was not found in path", sName);
@@ -221,7 +221,7 @@ void DllLoaderContainer::ReleaseModule(LibraryLoader*& pDll)
 #endif
 }
 
-LibraryLoader* DllLoaderContainer::LoadDll(const char* sName, bool bLoadSymbols)
+LibraryLoader* DllLoaderContainer::LoadDll(const char* sName)
 {
 
 #ifdef LOGALL
@@ -230,7 +230,7 @@ LibraryLoader* DllLoaderContainer::LoadDll(const char* sName, bool bLoadSymbols)
 
   LibraryLoader* pLoader;
 #ifdef TARGET_POSIX
-  pLoader = new SoLoader(sName, bLoadSymbols);
+  pLoader = new SoLoader(sName);
 #elif defined(TARGET_WINDOWS)
   pLoader = new Win32DllLoader(sName, false);
 #endif
