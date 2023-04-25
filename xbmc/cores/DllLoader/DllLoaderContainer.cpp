@@ -272,11 +272,6 @@ bool DllLoaderContainer::IsSystemDll(const char* sName)
   return false;
 }
 
-int DllLoaderContainer::GetNrOfModules()
-{
-  return m_dlls.size();
-}
-
 void DllLoaderContainer::RegisterDll(LibraryLoader* pDll)
 {
   m_dlls.emplace_back(pDll);
