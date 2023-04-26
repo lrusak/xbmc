@@ -12,7 +12,7 @@
 
 #include <vector>
 
-class Win32DllLoader : public LibraryLoader
+class Win32DllLoader : public std::enable_shared_from_this<Win32DllLoader>, public LibraryLoader
 {
 public:
   class Import

@@ -36,8 +36,8 @@ struct Export
 // clang-format off
 Export win32_exports[] =
 {
-  { "LoadLibraryA",                                 -1, (void*)dllLoadLibraryA,                              (void*)track_LoadLibraryA },
-  { "FreeLibrary",                                  -1, (void*)dllFreeLibrary,                               (void*)track_FreeLibrary },
+  { "LoadLibraryA",              -1, (void*)dllLoadLibraryA,    },
+  { "FreeLibrary",               -1, (void*)dllFreeLibrary,     },
 // msvcrt
   { "_close",                     -1, (void*)dll_close          },
   { "_lseek",                     -1, (void*)dll_lseek          },
@@ -113,14 +113,14 @@ Win32DllLoader::Win32DllLoader(const std::string& dll, bool isSystemDll)
   , bIsSystemDll(isSystemDll)
 {
   m_dllHandle = NULL;
-  DllLoaderContainer::RegisterDll(this);
+  DllLoaderContainer::RegisterDll(shared_from_this());
 }
 
 Win32DllLoader::~Win32DllLoader()
 {
   if (m_dllHandle)
     Unload();
-  DllLoaderContainer::UnRegisterDll(this);
+  DllLoaderContainer::UnRegisterDll(shared_from_this());
 }
 
 bool Win32DllLoader::Load()
@@ -323,7 +323,7 @@ bool Win32DllLoader::NeedsHooking(const char *dllName)
   && !StringUtils::EndsWithNoCase(dllName, "libdvdnav.dll"))
     return false;
 
-  LibraryLoader *loader = DllLoaderContainer::GetModule(dllName);
+  std::shared_ptr<LibraryLoader> loader = DllLoaderContainer::GetModule(dllName);
   if (loader)
   {
     // may have hooked this already (we can have repeats in the import table)
@@ -356,38 +356,36 @@ void Win32DllLoader::RestoreImports()
   }
 }
 
-bool FunctionNeedsWrapping(Export *exports, const char *functionName, void **fixup)
+bool FunctionNeedsWrapping(const char *functionName, void **fixup)
 {
-  Export *exp = exports;
-  while (exp->name)
+  for (auto& exp : win32_exports)
   {
-    if (strcmp(exp->name, functionName) == 0)
-    { //! @todo Should we be tracking stuff?
-      *fixup = exp->function;
+    if (exp.name == functionName)
+    {
+      *fixup = exp.function;
       return true;
     }
-    exp++;
   }
+
   return false;
 }
 
 bool Win32DllLoader::ResolveImport(const char *dllName, const char *functionName, void **fixup)
 {
-  return FunctionNeedsWrapping(win32_exports, functionName, fixup);
+  return FunctionNeedsWrapping(functionName, fixup);
 }
 
 bool Win32DllLoader::ResolveOrdinal(const char *dllName, unsigned long ordinal, void **fixup)
 {
-  Export *exp = win32_exports;
-  while (exp->name)
+  for (auto& exp : win32_exports)
   {
-    if (exp->ordinal == ordinal)
-    { //! @todo Should we be tracking stuff?
-      *fixup = exp->function;
+    if (exp.ordinal == ordinal)
+    {
+      *fixup = exp.function;
       return true;
     }
-    exp++;
   }
+
   return false;
 }
 
@@ -398,7 +396,7 @@ extern "C" FARPROC __stdcall dllWin32GetProcAddress(HMODULE hModule, LPCSTR func
   {
     // first check whether this function is one of the ones we need to wrap
     void *fixup = NULL;
-    if (FunctionNeedsWrapping(win32_exports, function, &fixup))
+    if (FunctionNeedsWrapping(function, &fixup))
       return (FARPROC)fixup;
   }
 
