@@ -79,14 +79,8 @@ std::shared_ptr<LibraryLoader> LoadDll(const char* sName)
 #ifdef TARGET_POSIX
   pLoader = std::make_shared<SoLoader>(sName);
 #elif defined(TARGET_WINDOWS)
-  pLoader = new Win32DllLoader(sName, false);
+  pLoader = std::make_shared<Win32DllLoader>(sName, false);
 #endif
-
-  if (!pLoader)
-  {
-    CLog::Log(LOGERROR, "Unable to create dll {}", sName);
-    return NULL;
-  }
 
   if (!pLoader->Load())
   {
