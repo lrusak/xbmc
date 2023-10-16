@@ -383,7 +383,8 @@ public:
     m_hostOnline = success;
   }
 
-  static bool Ping(const CWakeOnAccess::WakeUpEntry& server, unsigned timeOutMs = 2000)
+  static bool Ping(const CWakeOnAccess::WakeUpEntry& server,
+                   std::chrono::milliseconds timeout = std::chrono::milliseconds(2000))
   {
     if (server.upnpUuid.empty())
     {
@@ -391,11 +392,11 @@ public:
 
       if (server.ping_port == 0)
       {
-        return CServiceBroker::GetNetwork().IcmpPing(dst_ip, timeOutMs);
+        return CServiceBroker::GetNetwork().IcmpPing(dst_ip, timeout);
       }
       else
       {
-        return CServiceBroker::GetNetwork().PingHost(dst_ip, server.ping_port, timeOutMs,
+        return CServiceBroker::GetNetwork().PingHost(dst_ip, server.ping_port, timeout.count(),
                                                      server.ping_mode & 1);
       }
     }
@@ -405,7 +406,7 @@ public:
 
       if (host.empty())
       {
-        KODI::TIME::Sleep(std::chrono::milliseconds(timeOutMs));
+        KODI::TIME::Sleep(timeout);
 
         host = LookupUPnPHost(server.upnpUuid);
       }
@@ -523,7 +524,8 @@ bool CWakeOnAccess::WakeUpHost(const WakeUpEntry& server)
     }
   }
 
-  if (PingResponseWaiter::Ping(server, 500)) // quick ping with short timeout to not block too long
+  if (PingResponseWaiter::Ping(server,
+                               500ms)) // quick ping with short timeout to not block too long
   {
     CLog::Log(LOGINFO, "WakeOnAccess success exit, server already running");
     return true;

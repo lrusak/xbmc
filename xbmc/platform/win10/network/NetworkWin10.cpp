@@ -298,7 +298,7 @@ std::vector<std::string> CNetworkWin10::GetNameServers(void)
   return result;
 }
 
-bool CNetworkWin10::IcmpPing(unsigned long host, unsigned int timeout_ms /* = 2000 */)
+bool CNetworkWin10::IcmpPing(unsigned long host, const std::chrono::milliseconds timeout)
 {
   char SendData[] = "poke";
   HANDLE hIcmpFile = IcmpCreateFile();
@@ -306,9 +306,9 @@ bool CNetworkWin10::IcmpPing(unsigned long host, unsigned int timeout_ms /* = 20
 
   SetLastError(ERROR_SUCCESS);
 
-  DWORD dwRetVal = IcmpSendEcho2(hIcmpFile, nullptr, nullptr, nullptr,
-                                 host, SendData, sizeof(SendData), nullptr,
-                                 ReplyBuffer, sizeof(ReplyBuffer), timeout_ms);
+  DWORD dwRetVal =
+      IcmpSendEcho2(hIcmpFile, nullptr, nullptr, nullptr, host, SendData, sizeof(SendData), nullptr,
+                    ReplyBuffer, sizeof(ReplyBuffer), timeout.count());
 
   DWORD lastErr = GetLastError();
   if (lastErr != ERROR_SUCCESS && lastErr != IP_REQ_TIMED_OUT)

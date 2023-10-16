@@ -193,15 +193,15 @@ std::vector<std::string> CNetworkWin32::GetNameServers(void)
   return result;
 }
 
-bool CNetworkWin32::IcmpPing(unsigned long host, unsigned int timeout_ms /* = 2000 */)
+bool CNetworkWin32::IcmpPing(unsigned long host, const std::chrono::milliseconds timeout)
 {
   struct sockaddr sockHost;
   sockHost.sa_family = AF_INET;
   reinterpret_cast<struct sockaddr_in&>(sockHost).sin_addr.S_un.S_addr = host;
-  return IcmpPing(sockHost, timeout_ms);
+  return IcmpPing(sockHost, timeout);
 }
 
-bool CNetworkWin32::IcmpPing(const struct sockaddr& host, unsigned int timeout_ms /* = 2000 */)
+bool CNetworkWin32::IcmpPing(const struct sockaddr& host, const std::chrono::milliseconds timeout)
 {
   char SendData[]    = "poke";
   BYTE ReplyBuffer [sizeof(ICMP_ECHO_REPLY) + sizeof(SendData)];
@@ -215,14 +215,20 @@ bool CNetworkWin32::IcmpPing(const struct sockaddr& host, unsigned int timeout_m
   {
     case AF_INET:
       hIcmpFile = IcmpCreateFile();
-      dwRetVal = IcmpSendEcho2(hIcmpFile, nullptr, nullptr, nullptr, reinterpret_cast<const struct sockaddr_in&>(host).sin_addr.S_un.S_addr, SendData, sizeof(SendData), nullptr, ReplyBuffer, sizeof(ReplyBuffer), timeout_ms);
+      dwRetVal = IcmpSendEcho2(
+          hIcmpFile, nullptr, nullptr, nullptr,
+          reinterpret_cast<const struct sockaddr_in&>(host).sin_addr.S_un.S_addr, SendData,
+          sizeof(SendData), nullptr, ReplyBuffer, sizeof(ReplyBuffer), timeout.count());
       break;
 
     case AF_INET6:
     {
       hIcmpFile = Icmp6CreateFile();
       struct sockaddr_in6 source = { AF_INET6, 0, 0, in6addr_any };
-      dwRetVal = Icmp6SendEcho2(hIcmpFile, nullptr, nullptr, nullptr, &source, &const_cast<struct sockaddr_in6&>(reinterpret_cast<const struct sockaddr_in6&>(host)), SendData, sizeof(SendData), nullptr, ReplyBuffer, sizeof(ReplyBuffer), timeout_ms);
+      dwRetVal = Icmp6SendEcho2(
+          hIcmpFile, nullptr, nullptr, nullptr, &source,
+          &const_cast<struct sockaddr_in6&>(reinterpret_cast<const struct sockaddr_in6&>(host)),
+          SendData, sizeof(SendData), nullptr, ReplyBuffer, sizeof(ReplyBuffer), timeout.count());
       break;
     }
 

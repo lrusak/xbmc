@@ -12,6 +12,8 @@
 #include <arpa/inet.h>
 #include <gtest/gtest.h>
 
+using namespace std::chrono_literals;
+
 class TestNetwork : public testing::Test
 {
 public:
@@ -25,10 +27,10 @@ public:
     return network.IcmpPing(inet_addr(ip.c_str()), GetTimeout());
   }
 
-  unsigned int GetTimeout() const { return m_timeoutMs; }
+  std::chrono::milliseconds GetTimeout() const { return m_timeout; }
 
 private:
-  unsigned int m_timeoutMs{100};
+  std::chrono::milliseconds m_timeout{100ms};
 };
 
 TEST_F(TestNetwork, PingHost)

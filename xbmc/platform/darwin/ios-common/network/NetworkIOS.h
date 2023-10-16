@@ -51,7 +51,8 @@ public:
   CNetworkInterface* GetFirstConnectedInterface() override;
 
   // Ping remote host
-  bool IcmpPing(unsigned long host, unsigned int timeout_ms = 2000) override;
+  bool IcmpPing(unsigned long host,
+                const std::chrono::milliseconds timeout = std::chrono::milliseconds(2000)) override;
 
   // Get/set the nameserver(s)
   std::vector<std::string> GetNameServers() override;

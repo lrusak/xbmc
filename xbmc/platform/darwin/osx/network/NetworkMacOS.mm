@@ -278,7 +278,7 @@ std::vector<std::string> CNetworkMacOS::GetNameServers()
   return result;
 }
 
-bool CNetworkMacOS::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
+bool CNetworkMacOS::IcmpPing(unsigned long remote_ip, const std::chrono::milliseconds timeout)
 {
   char cmd_line[64];
 
@@ -286,7 +286,7 @@ bool CNetworkMacOS::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
   host_ip.s_addr = static_cast<in_addr_t>(remote_ip);
 
   snprintf(cmd_line, sizeof(cmd_line), "ping -c 1 -t %d %s",
-           timeout_ms / 1000 + (timeout_ms % 1000) != 0, inet_ntoa(host_ip));
+           std::chrono::ceil<std::chrono::seconds>(timeout).count(), inet_ntoa(host_ip));
 
   int status = -1;
   status = system(cmd_line);

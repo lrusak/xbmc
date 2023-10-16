@@ -401,7 +401,7 @@ std::vector<std::string> CNetworkIOS::GetNameServers()
   return nameServers;
 }
 
-bool CNetworkIOS::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
+bool CNetworkIOS::IcmpPing(unsigned long remote_ip, const std::chrono::milliseconds timeout)
 {
   /*! @todo ARP table is not accessible from iOS11 on. Was initially deprecated in iOS7
    *  WOL/WakeOnAccess can not work without MAC addresses, so was no need to implement

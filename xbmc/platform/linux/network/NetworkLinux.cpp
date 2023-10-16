@@ -243,7 +243,7 @@ std::vector<std::string> CNetworkLinux::GetNameServers()
   return result;
 }
 
-bool CNetworkLinux::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
+bool CNetworkLinux::IcmpPing(unsigned long remote_ip, const std::chrono::milliseconds timeout)
 {
   CFileHandle fd(socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_ICMP));
   if (!fd)
@@ -298,12 +298,12 @@ bool CNetworkLinux::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
   }
 
   event = {};
-  ret = epoll_wait(epfd, &event, 1, timeout_ms);
+  ret = epoll_wait(epfd, &event, 1, timeout.count());
   if (ret < 1)
   {
     if (ret == 0)
     {
-      CLog::Log(LOGERROR, "timed out while waiting to receive ({} ms)", timeout_ms);
+      CLog::Log(LOGERROR, "timed out while waiting to receive ({} ms)", timeout.count());
     }
     else
     {

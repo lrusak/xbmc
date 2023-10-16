@@ -14,6 +14,7 @@
 
 #include "platform/android/activity/XBMCApp.h"
 
+#include <chrono>
 #include <mutex>
 
 #include <androidjni/ConnectivityManager.h>
@@ -302,7 +303,9 @@ std::vector<std::string> CNetworkAndroid::GetNameServers()
   return std::vector<std::string>();
 }
 
-bool CNetworkAndroid::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
+bool CNetworkAndroid::IcmpPing(
+    unsigned long remote_ip,
+    const std::chrono::milliseconds timeout = std::chrono::milliseconds(2000))
 {
   char cmd_line [64];
 
@@ -310,7 +313,7 @@ bool CNetworkAndroid::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
   host_ip.s_addr = remote_ip;
 
   snprintf(cmd_line, sizeof(cmd_line), "ping -c 1 -w %d %s",
-           timeout_ms / 1000 + (timeout_ms % 1000) != 0, inet_ntoa(host_ip));
+           std::chrono::ceil<std::chrono::seconds>(timeout).count(), inet_ntoa(host_ip));
 
   int status = system (cmd_line);
 

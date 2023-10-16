@@ -221,7 +221,7 @@ std::vector<std::string> CNetworkFreebsd::GetNameServers()
   return result;
 }
 
-bool CNetworkFreebsd::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
+bool CNetworkFreebsd::IcmpPing(unsigned long remote_ip, const std::chrono::milliseconds timeout)
 {
   char cmd_line[64];
 
@@ -229,7 +229,7 @@ bool CNetworkFreebsd::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
   host_ip.s_addr = remote_ip;
 
   snprintf(cmd_line, sizeof(cmd_line), "ping -c 1 -t %d %s",
-           timeout_ms / 1000 + (timeout_ms % 1000) != 0, inet_ntoa(host_ip));
+           std::chrono::ceil<std::chrono::seconds>(timeout).count(), inet_ntoa(host_ip));
 
   int status = -1;
   status = system(cmd_line);
