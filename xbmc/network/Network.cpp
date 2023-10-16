@@ -362,9 +362,6 @@ static const char* ConnectHostPort(SOCKET soc, const struct sockaddr_in& addr, s
 
 bool CNetworkBase::PingHost(unsigned long ipaddr, unsigned short port, unsigned int timeOutMs, bool readability_check)
 {
-  if (port == 0) // use icmp ping
-    return PingHost (ipaddr, timeOutMs);
-
   struct sockaddr_in addr;
   addr.sin_family = AF_INET;
   addr.sin_port = htons(port);

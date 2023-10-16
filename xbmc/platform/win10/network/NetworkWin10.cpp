@@ -298,7 +298,7 @@ std::vector<std::string> CNetworkWin10::GetNameServers(void)
   return result;
 }
 
-bool CNetworkWin10::PingHost(unsigned long host, unsigned int timeout_ms /* = 2000 */)
+bool CNetworkWin10::IcmpPing(unsigned long host, unsigned int timeout_ms /* = 2000 */)
 {
   char SendData[] = "poke";
   HANDLE hIcmpFile = IcmpCreateFile();

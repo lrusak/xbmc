@@ -389,7 +389,15 @@ public:
     {
       unsigned long dst_ip = HostToIP(server.host);
 
-      return CServiceBroker::GetNetwork().PingHost(dst_ip, server.ping_port, timeOutMs, server.ping_mode & 1);
+      if (server.ping_port == 0)
+      {
+        return CServiceBroker::GetNetwork().IcmpPing(dst_ip, timeOutMs);
+      }
+      else
+      {
+        return CServiceBroker::GetNetwork().PingHost(dst_ip, server.ping_port, timeOutMs,
+                                                     server.ping_mode & 1);
+      }
     }
     else // upnp mode
     {

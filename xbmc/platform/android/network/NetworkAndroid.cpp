@@ -302,7 +302,7 @@ std::vector<std::string> CNetworkAndroid::GetNameServers()
   return std::vector<std::string>();
 }
 
-bool CNetworkAndroid::PingHost(unsigned long remote_ip, unsigned int timeout_ms)
+bool CNetworkAndroid::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
 {
   char cmd_line [64];
 

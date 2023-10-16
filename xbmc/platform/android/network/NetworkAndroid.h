@@ -62,7 +62,7 @@ public:
 
   // Ping remote host
   using CNetworkBase::PingHost;
-  bool PingHost(unsigned long remote_ip, unsigned int timeout_ms = 2000) override;
+  bool IcmpPing(unsigned long remote_ip, unsigned int timeout_ms = 2000) override;
 
 protected:
   void RetrieveInterfaces();

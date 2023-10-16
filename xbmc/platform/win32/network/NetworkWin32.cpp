@@ -193,15 +193,15 @@ std::vector<std::string> CNetworkWin32::GetNameServers(void)
   return result;
 }
 
-bool CNetworkWin32::PingHost(unsigned long host, unsigned int timeout_ms /* = 2000 */)
+bool CNetworkWin32::IcmpPing(unsigned long host, unsigned int timeout_ms /* = 2000 */)
 {
   struct sockaddr sockHost;
   sockHost.sa_family = AF_INET;
   reinterpret_cast<struct sockaddr_in&>(sockHost).sin_addr.S_un.S_addr = host;
-  return PingHost(sockHost, timeout_ms);
+  return IcmpPing(sockHost, timeout_ms);
 }
 
-bool CNetworkWin32::PingHost(const struct sockaddr& host, unsigned int timeout_ms /* = 2000 */)
+bool CNetworkWin32::IcmpPing(const struct sockaddr& host, unsigned int timeout_ms /* = 2000 */)
 {
   char SendData[]    = "poke";
   BYTE ReplyBuffer [sizeof(ICMP_ECHO_REPLY) + sizeof(SendData)];

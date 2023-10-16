@@ -243,7 +243,7 @@ std::vector<std::string> CNetworkLinux::GetNameServers()
   return result;
 }
 
-bool CNetworkLinux::PingHost(unsigned long remote_ip, unsigned int timeout_ms)
+bool CNetworkLinux::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
 {
   CFileHandle fd(socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_ICMP));
   if (!fd)

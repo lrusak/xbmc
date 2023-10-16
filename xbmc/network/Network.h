@@ -80,7 +80,7 @@ public:
                 unsigned short port,
                 unsigned int timeout_ms = 2000,
                 bool readability_check = false);
-  virtual bool PingHost(unsigned long host, unsigned int timeout_ms = 2000) = 0;
+  virtual bool IcmpPing(unsigned long host, unsigned int timeout_ms = 2000) = 0;
 
   // Get/set the nameserver(s)
   virtual std::vector<std::string> GetNameServers(void) = 0;
