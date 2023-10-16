@@ -54,8 +54,11 @@ public:
 
    // Ping remote host
    using CNetworkBase::PingHost;
-   bool IcmpPing(unsigned long host, unsigned int timeout_ms = 2000) override;
-   bool PingHost(const struct sockaddr& host, unsigned int timeout_ms = 2000);
+   bool IcmpPing(
+       unsigned long host,
+       const std::chrono::milliseconds timeout = std::chrono::milliseconds(2000)) override;
+   bool IcmpPing(const struct sockaddr& host,
+                 const std::chrono::milliseconds timeout = std::chrono::milliseconds(2000));
 
    // Get/set the nameserver(s)
    std::vector<std::string> GetNameServers(void) override;

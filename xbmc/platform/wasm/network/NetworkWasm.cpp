@@ -191,7 +191,7 @@ std::vector<CNetworkInterface*>& CNetworkWasm::GetInterfaceList()
   return m_interfaces;
 }
 
-bool CNetworkWasm::IcmpPing(unsigned long /*host*/, unsigned int /*timeout_ms*/)
+bool CNetworkWasm::IcmpPing(unsigned long /*host*/, std::chrono::milliseconds /*timeout*/)
 {
   return false;
 }

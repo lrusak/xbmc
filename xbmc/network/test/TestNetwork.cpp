@@ -21,6 +21,8 @@
 
 using namespace KODI;
 
+using namespace std::chrono_literals;
+
 class TestNetwork : public testing::Test
 {
 public:
@@ -34,10 +36,10 @@ public:
     return network.IcmpPing(inet_addr(ip.c_str()), GetTimeout());
   }
 
-  unsigned int GetTimeout() const { return m_timeoutMs; }
+  std::chrono::milliseconds GetTimeout() const { return m_timeout; }
 
 private:
-  unsigned int m_timeoutMs{100};
+  std::chrono::milliseconds m_timeout{100ms};
 };
 
 TEST_F(TestNetwork, PingHost)
@@ -103,7 +105,7 @@ public:
     return m_interfaces;
   }
   bool GetHostName(std::string&) override { return false; }
-  bool IcmpPing(unsigned long, unsigned int) override { return false; }
+  bool IcmpPing(unsigned long, std::chrono::milliseconds) override { return false; }
   std::vector<std::string> GetNameServers() override { return {}; }
 
 private:
@@ -173,7 +175,7 @@ public:
     hostname = "kodi-box";
     return true;
   }
-  bool IcmpPing(unsigned long, unsigned int) override { return false; }
+  bool IcmpPing(unsigned long, std::chrono::milliseconds) override { return false; }
   std::vector<std::string> GetNameServers() override { return {}; }
 
 private:

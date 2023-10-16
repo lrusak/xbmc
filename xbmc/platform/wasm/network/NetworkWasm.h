@@ -63,7 +63,8 @@ public:
 
   bool GetHostName(std::string& hostname) override;
   std::vector<CNetworkInterface*>& GetInterfaceList() override;
-  bool IcmpPing(unsigned long host, unsigned int timeout_ms = 2000) override;
+  bool IcmpPing(unsigned long host,
+                std::chrono::milliseconds timeout = std::chrono::milliseconds(2000)) override;
   std::vector<std::string> GetNameServers() override;
 
 private:
