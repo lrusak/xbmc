@@ -79,10 +79,10 @@ public:
   bool WakeOnLan(const char* mac);
 
   // Return true if host replies to ping
-  bool PingHost(unsigned long host,
-                unsigned short port,
-                unsigned int timeout_ms = 2000,
-                bool readability_check = false);
+  virtual bool PingHost(unsigned long host,
+                        unsigned short port,
+                        unsigned int timeout_ms = 2000,
+                        bool readability_check = false) = 0;
   virtual bool IcmpPing(
       unsigned long host,
       const std::chrono::milliseconds timeout = std::chrono::milliseconds(2000)) = 0;

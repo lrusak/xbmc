@@ -60,6 +60,11 @@ public:
    bool IcmpPing(const struct sockaddr& host,
                  const std::chrono::milliseconds timeout = std::chrono::milliseconds(2000));
 
+   bool PingHost(unsigned long host,
+                 unsigned short port,
+                 unsigned int timeout_ms = 2000,
+                 bool readability_check = false) override;
+
    // Get/set the nameserver(s)
    std::vector<std::string> GetNameServers(void) override;
 

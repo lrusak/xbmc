@@ -48,6 +48,11 @@ public:
   std::vector<CNetworkInterface*>& GetInterfaceList() override;
   CNetworkInterface* GetFirstConnectedInterface() override;
 
+  bool PingHost(unsigned long host,
+                unsigned short port,
+                unsigned int timeout_ms = 2000,
+                bool readability_check = false) override;
+
   int GetSocket() { return m_sock; }
 
 protected:

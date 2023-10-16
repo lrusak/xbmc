@@ -148,3 +148,111 @@ CNetworkInterface* CNetworkPosix::GetFirstConnectedInterface()
 
   return pNetIf;
 }
+
+static const char* ConnectHostPort(SOCKET soc,
+                                   const struct sockaddr_in& addr,
+                                   struct timeval& timeOut,
+                                   bool tryRead)
+{
+  // set non-blocking
+  int result = fcntl(soc, F_SETFL, fcntl(soc, F_GETFL) | O_NONBLOCK);
+
+  if (result != 0)
+    return "set non-blocking option failed";
+
+  result = connect(soc, (const struct sockaddr*)&addr,
+                   sizeof(addr)); // non-blocking connect, will fail ..
+
+  if (result < 0)
+  {
+    if (errno != EINPROGRESS)
+      return "unexpected connect fail";
+
+    { // wait for connect to complete
+      fd_set wset;
+      FD_ZERO(&wset);
+      FD_SET(soc, &wset);
+
+      result = select(FD_SETSIZE, 0, &wset, 0, &timeOut);
+    }
+
+    if (result < 0)
+      return "select fail";
+
+    if (result == 0) // timeout
+      return ""; // no error
+
+    { // verify socket connection state
+      int err_code = -1;
+      socklen_t code_len = sizeof(err_code);
+
+      result = getsockopt(soc, SOL_SOCKET, SO_ERROR, (char*)&err_code, &code_len);
+
+      if (result != 0)
+        return "getsockopt fail";
+
+      if (err_code != 0)
+        return ""; // no error, just not connected
+    }
+  }
+
+  if (tryRead)
+  {
+    fd_set rset;
+    FD_ZERO(&rset);
+    FD_SET(soc, &rset);
+
+    result = select(FD_SETSIZE, &rset, 0, 0, &timeOut);
+
+    if (result > 0)
+    {
+      char message[32];
+
+      result = recv(soc, message, sizeof(message), 0);
+    }
+
+    if (result == 0)
+      return ""; // no reply yet
+
+    if (result < 0)
+      return "recv fail";
+  }
+
+  return 0; // success
+}
+
+bool CNetworkPosix::PingHost(unsigned long ipaddr,
+                             unsigned short port,
+                             unsigned int timeOutMs,
+                             bool readability_check)
+{
+  struct sockaddr_in addr;
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(port);
+  addr.sin_addr.s_addr = ipaddr;
+
+  SOCKET soc = socket(AF_INET, SOCK_STREAM, 0);
+
+  const char* err_msg = "invalid socket";
+
+  if (soc != INVALID_SOCKET)
+  {
+    struct timeval tmout;
+    tmout.tv_sec = timeOutMs / 1000;
+    tmout.tv_usec = (timeOutMs % 1000) * 1000;
+
+    err_msg = ConnectHostPort(soc, addr, tmout, readability_check);
+
+    (void)closesocket(soc);
+  }
+
+  if (err_msg && *err_msg)
+  {
+    std::string sock_err = strerror(errno);
+
+    CLog::Log(LOGERROR, "{}({}:{}) - {} ({})", __FUNCTION__, inet_ntoa(addr.sin_addr), port,
+              err_msg, sock_err);
+  }
+
+  return err_msg == 0;
+}
