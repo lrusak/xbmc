@@ -278,7 +278,7 @@ std::vector<std::string> CNetworkMacOS::GetNameServers()
   return result;
 }
 
-bool CNetworkMacOS::PingHost(unsigned long remote_ip, unsigned int timeout_ms)
+bool CNetworkMacOS::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
 {
   char cmd_line[64];
 

@@ -221,7 +221,7 @@ std::vector<std::string> CNetworkFreebsd::GetNameServers()
   return result;
 }
 
-bool CNetworkFreebsd::PingHost(unsigned long remote_ip, unsigned int timeout_ms)
+bool CNetworkFreebsd::IcmpPing(unsigned long remote_ip, unsigned int timeout_ms)
 {
   char cmd_line[64];
 

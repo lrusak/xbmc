@@ -63,7 +63,7 @@ public:
 
   bool GetHostName(std::string& hostname) override;
   std::vector<CNetworkInterface*>& GetInterfaceList() override;
-  bool PingHost(unsigned long host, unsigned int timeout_ms = 2000) override;
+  bool IcmpPing(unsigned long host, unsigned int timeout_ms = 2000) override;
   std::vector<std::string> GetNameServers() override;
 
 private:

@@ -31,14 +31,12 @@ public:
   {
     static auto& network = CServiceBroker::GetNetwork();
 
-    return network.PingHost(inet_addr(ip.c_str()), GetPort(), GetTimeout());
+    return network.IcmpPing(inet_addr(ip.c_str()), GetTimeout());
   }
 
-  unsigned int GetPort() const { return m_port; }
   unsigned int GetTimeout() const { return m_timeoutMs; }
 
 private:
-  unsigned int m_port{0};
   unsigned int m_timeoutMs{100};
 };
 
@@ -105,7 +103,7 @@ public:
     return m_interfaces;
   }
   bool GetHostName(std::string&) override { return false; }
-  bool PingHost(unsigned long, unsigned int) override { return false; }
+  bool IcmpPing(unsigned long, unsigned int) override { return false; }
   std::vector<std::string> GetNameServers() override { return {}; }
 
 private:
@@ -175,7 +173,7 @@ public:
     hostname = "kodi-box";
     return true;
   }
-  bool PingHost(unsigned long, unsigned int) override { return false; }
+  bool IcmpPing(unsigned long, unsigned int) override { return false; }
   std::vector<std::string> GetNameServers() override { return {}; }
 
 private:
