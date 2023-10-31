@@ -6,6 +6,7 @@ set(SOURCES DNSNameCache.cpp
             Network.cpp
             NetworkFileItemClassify.cpp
             NetworkServices.cpp
+            NetworkUtils.cpp
             SocketOptions.cpp
             Socket.cpp
             TCPServer.cpp
@@ -22,6 +23,7 @@ set(HEADERS DNSNameCache.h
             Network.h
             NetworkFileItemClassify.h
             NetworkServices.h
+            NetworkUtils.h
             SocketOptions.h
             Socket.h
             TCPServer.h

@@ -20,6 +20,7 @@
 #include "jobs/JobManager.h"
 #include "messaging/ApplicationMessenger.h"
 #include "network/Network.h"
+#include "network/NetworkUtils.h"
 #include "resources/LocalizeStrings.h"
 #include "resources/ResourcesComponent.h"
 #include "settings/AdvancedSettings.h"
@@ -55,6 +56,7 @@
 #define DEFAULT_WAIT_FOR_ONLINE_SEC_2 (40)   // same for extended wait
 #define DEFAULT_WAIT_FOR_SERVICES_SEC (5)    // wait 5 seconds after host go online to launch file sharing daemons
 
+using namespace KODI;
 using namespace std::chrono_literals;
 using KODI::MEDIA::MediaSection;
 
@@ -525,7 +527,7 @@ bool CWakeOnAccess::WakeUpHost(const WakeUpEntry& server)
     return true;
   }
 
-  if (!CServiceBroker::GetNetwork().WakeOnLan(server.mac.c_str()))
+  if (!NETWORK::WakeOnLan(server.mac.c_str()))
   {
     CLog::Log(LOGERROR,"WakeOnAccess failed to send. (Is it blocked by firewall?)");
 

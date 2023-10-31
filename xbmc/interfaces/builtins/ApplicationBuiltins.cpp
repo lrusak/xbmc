@@ -16,7 +16,7 @@
 #include "input/actions/ActionIDs.h"
 #include "interfaces/AnnouncementManager.h"
 #include "messaging/ApplicationMessenger.h"
-#include "network/Network.h"
+#include "network/NetworkUtils.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
@@ -27,6 +27,8 @@
 #include "utils/log.h"
 
 #include <stdlib.h>
+
+using namespace KODI;
 
 /*! \brief Extract an archive.
  *  \param params The parameters
@@ -144,7 +146,7 @@ static int ToggleDPMS(const std::vector<std::string>& params)
  */
 static int WakeOnLAN(const std::vector<std::string>& params)
 {
-  CServiceBroker::GetNetwork().WakeOnLan(params[0].c_str());
+  NETWORK::WakeOnLan(params[0].c_str());
 
   return 0;
 }

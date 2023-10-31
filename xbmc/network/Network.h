@@ -77,9 +77,6 @@ public:
   // Return true if there's at least one interface which is connected
   bool IsConnected(void);
 
-  // Return true if the magic packet was send
-  bool WakeOnLan(const char* mac);
-
   // Return true if host replies to ping
   bool PingHost(unsigned long host,
                 unsigned short port,

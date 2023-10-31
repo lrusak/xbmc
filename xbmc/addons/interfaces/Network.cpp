@@ -14,9 +14,12 @@
 #include "addons/kodi-dev-kit/include/kodi/Network.h"
 #include "network/DNSNameCache.h"
 #include "network/Network.h"
+#include "network/NetworkUtils.h"
 #include "utils/SystemInfo.h"
 #include "utils/URIUtils.h"
 #include "utils/log.h"
+
+using namespace KODI;
 
 namespace ADDON
 {
@@ -54,7 +57,7 @@ bool Interface_Network::wake_on_lan(void* kodiBase, const char* mac)
     return false;
   }
 
-  return CServiceBroker::GetNetwork().WakeOnLan(mac);
+  return NETWORK::WakeOnLan(mac);
 }
 
 char* Interface_Network::get_ip_address(void* kodiBase)
