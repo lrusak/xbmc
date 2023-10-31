@@ -11,6 +11,8 @@
 #include "network/SocketOptions.h"
 #include "utils/log.h"
 
+#include <cstring>
+
 #include <arpa/inet.h>
 #include <netdb.h>
 
@@ -190,27 +192,34 @@ std::vector<SOCKET> NETWORK::CreateTCPServerSocket(const int port,
 
 std::string NETWORK::GetIpStr(const struct sockaddr* sa)
 {
-  std::string result;
   if (!sa)
-    return result;
+    return "";
 
-  char buffer[INET6_ADDRSTRLEN] = {};
+  std::string buffer;
   switch (sa->sa_family)
   {
     case AF_INET:
-      inet_ntop(AF_INET, &reinterpret_cast<const struct sockaddr_in*>(sa)->sin_addr, buffer,
-                INET_ADDRSTRLEN);
+    {
+      buffer.resize(INET_ADDRSTRLEN);
+      if (!inet_ntop(AF_INET, &reinterpret_cast<const struct sockaddr_in*>(sa)->sin_addr,
+                     buffer.data(), buffer.length()))
+        return "";
       break;
+    }
     case AF_INET6:
-      inet_ntop(AF_INET6, &reinterpret_cast<const struct sockaddr_in6*>(sa)->sin6_addr, buffer,
-                INET6_ADDRSTRLEN);
+    {
+      buffer.resize(INET6_ADDRSTRLEN);
+      if (!inet_ntop(AF_INET6, &reinterpret_cast<const struct sockaddr_in6*>(sa)->sin6_addr,
+                     buffer.data(), buffer.length()))
+        return "";
       break;
+    }
     default:
-      return result;
+      return "";
   }
 
-  result = buffer;
-  return result;
+  buffer.resize(std::strlen(buffer.c_str()));
+  return buffer;
 }
 
 std::string NETWORK::GetMaskByPrefixLength(uint8_t prefixLength)
