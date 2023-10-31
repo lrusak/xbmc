@@ -9,6 +9,7 @@
 #include "NetworkWin10.h"
 
 #include "filesystem/SpecialProtocol.h"
+#include "network/NetworkUtils.h"
 #include "settings/Settings.h"
 #include "utils/StringUtils.h"
 #include "utils/log.h"
@@ -64,6 +65,7 @@ constexpr int MAC_LENGTH = 6; // fixed MAC length used in CNetworkInterface
 }
 
 using namespace winrt::Windows::Networking::Connectivity;
+using namespace KODI;
 
 CNetworkInterfaceWin10::CNetworkInterfaceWin10(const PIP_ADAPTER_ADDRESSES address)
   : m_adapterAddr(address)
@@ -116,7 +118,7 @@ std::string CNetworkInterfaceWin10::GetCurrentIPAddress(void) const
   {
     if (address->Address.lpSockaddr->sa_family == AF_INET)
     {
-      result = CNetworkBase::GetIpStr(address->Address.lpSockaddr);
+      result = NETWORK::GetIpStr(address->Address.lpSockaddr);
       break;
     }
     address = address->Next;
@@ -134,7 +136,7 @@ std::string CNetworkInterfaceWin10::GetCurrentNetmask(void) const
   {
     if (address->Address.lpSockaddr->sa_family == AF_INET)
     {
-      result = CNetworkBase::GetMaskByPrefixLength(address->OnLinkPrefixLength);
+      result = NETWORK::GetMaskByPrefixLength(address->OnLinkPrefixLength);
       break;
     }
     address = address->Next;
@@ -152,7 +154,7 @@ std::string CNetworkInterfaceWin10::GetCurrentDefaultGateway(void) const
   {
     if (address->Address.lpSockaddr->sa_family == AF_INET)
     {
-      result = CNetworkBase::GetIpStr(address->Address.lpSockaddr);
+      result = NETWORK::GetIpStr(address->Address.lpSockaddr);
       break;
     }
     address = address->Next;

@@ -9,6 +9,7 @@
 #include "DNSNameCache.h"
 
 #include "network/Network.h"
+#include "network/NetworkUtils.h"
 #include "utils/log.h"
 
 #include <cstdint>
@@ -31,6 +32,8 @@
 #if defined(TARGET_FREEBSD)
 #include <sys/socket.h>
 #endif
+
+using namespace KODI;
 
 namespace
 {
@@ -82,7 +85,7 @@ std::string KODI::NETWORK::SelectDNSAddress(const addrinfo* results)
   std::string fallback;
   for (const addrinfo* info = results; info; info = info->ai_next)
   {
-    std::string address = CNetworkBase::GetIpStr(info->ai_addr);
+    std::string address = NETWORK::GetIpStr(info->ai_addr);
     if (address.empty())
       continue;
 

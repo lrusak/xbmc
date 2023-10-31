@@ -8,6 +8,7 @@
 
 #include "ServiceBroker.h"
 #include "network/Network.h"
+#include "network/NetworkUtils.h"
 
 #include <future>
 #include <mutex>
@@ -17,6 +18,8 @@
 #include <arpa/inet.h>
 #include <gtest/gtest.h>
 #include <netinet/in.h>
+
+using namespace KODI;
 
 class TestNetwork : public testing::Test
 {
@@ -126,26 +129,26 @@ TEST(TestNetworkUtils, GetIpStr)
   sockaddr_in ipv4{};
   ipv4.sin_family = AF_INET;
   ASSERT_EQ(inet_pton(AF_INET, "192.0.2.1", &ipv4.sin_addr), 1);
-  EXPECT_EQ(CNetworkBase::GetIpStr(reinterpret_cast<const sockaddr*>(&ipv4)), "192.0.2.1");
+  EXPECT_EQ(NETWORK::GetIpStr(reinterpret_cast<const sockaddr*>(&ipv4)), "192.0.2.1");
 
   sockaddr_in6 ipv6{};
   ipv6.sin6_family = AF_INET6;
   ASSERT_EQ(inet_pton(AF_INET6, "2001:db8::1", &ipv6.sin6_addr), 1);
-  EXPECT_EQ(CNetworkBase::GetIpStr(reinterpret_cast<const sockaddr*>(&ipv6)), "2001:db8::1");
+  EXPECT_EQ(NETWORK::GetIpStr(reinterpret_cast<const sockaddr*>(&ipv6)), "2001:db8::1");
 
   sockaddr unknown{};
   unknown.sa_family = AF_UNSPEC;
-  EXPECT_EQ(CNetworkBase::GetIpStr(&unknown), "");
-  EXPECT_EQ(CNetworkBase::GetIpStr(nullptr), "");
+  EXPECT_EQ(NETWORK::GetIpStr(&unknown), "");
+  EXPECT_EQ(NETWORK::GetIpStr(nullptr), "");
 }
 
 TEST(TestNetworkUtils, GetMaskByPrefixLength)
 {
-  EXPECT_EQ(CNetworkBase::GetMaskByPrefixLength(8), "255.0.0.0");
-  EXPECT_EQ(CNetworkBase::GetMaskByPrefixLength(23), "255.255.254.0");
-  EXPECT_EQ(CNetworkBase::GetMaskByPrefixLength(24), "255.255.255.0");
-  EXPECT_EQ(CNetworkBase::GetMaskByPrefixLength(32), "255.255.255.255");
-  EXPECT_EQ(CNetworkBase::GetMaskByPrefixLength(33), "");
+  EXPECT_EQ(NETWORK::GetMaskByPrefixLength(8), "255.0.0.0");
+  EXPECT_EQ(NETWORK::GetMaskByPrefixLength(23), "255.255.254.0");
+  EXPECT_EQ(NETWORK::GetMaskByPrefixLength(24), "255.255.255.0");
+  EXPECT_EQ(NETWORK::GetMaskByPrefixLength(32), "255.255.255.255");
+  EXPECT_EQ(NETWORK::GetMaskByPrefixLength(33), "");
 }
 
 namespace

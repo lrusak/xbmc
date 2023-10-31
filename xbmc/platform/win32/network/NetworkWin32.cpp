@@ -8,6 +8,7 @@
 
 #include "NetworkWin32.h"
 
+#include "network/NetworkUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/log.h"
 
@@ -29,6 +30,8 @@ namespace
 {
 constexpr auto MAC_LENGTH = 6; // fixed MAC length used in CNetworkInterface
 }
+
+using namespace KODI;
 
 CNetworkInterfaceWin32::CNetworkInterfaceWin32(const IP_ADAPTER_ADDRESSES& adapter)
   : m_adapter(adapter)
@@ -76,7 +79,7 @@ std::string CNetworkInterfaceWin32::GetCurrentIPAddress(void) const
   if (!m_adapter.FirstUnicastAddress)
     return "";
 
-  return CNetworkBase::GetIpStr(m_adapter.FirstUnicastAddress->Address.lpSockaddr);
+  return NETWORK::GetIpStr(m_adapter.FirstUnicastAddress->Address.lpSockaddr);
 }
 
 std::string CNetworkInterfaceWin32::GetCurrentNetmask(void) const
@@ -85,7 +88,7 @@ std::string CNetworkInterfaceWin32::GetCurrentNetmask(void) const
     return "";
 
   if (m_adapter.FirstUnicastAddress->Address.lpSockaddr->sa_family == AF_INET)
-    return CNetworkBase::GetMaskByPrefixLength(m_adapter.FirstUnicastAddress->OnLinkPrefixLength);
+    return NETWORK::GetMaskByPrefixLength(m_adapter.FirstUnicastAddress->OnLinkPrefixLength);
 
   return std::to_string(m_adapter.FirstUnicastAddress->OnLinkPrefixLength);
 }
@@ -95,7 +98,7 @@ std::string CNetworkInterfaceWin32::GetCurrentDefaultGateway(void) const
   if (!m_adapter.FirstGatewayAddress)
     return "";
 
-  return CNetworkBase::GetIpStr(m_adapter.FirstGatewayAddress->Address.lpSockaddr);
+  return NETWORK::GetIpStr(m_adapter.FirstGatewayAddress->Address.lpSockaddr);
 }
 
 std::unique_ptr<CNetworkBase> CNetworkBase::GetNetwork()
@@ -183,7 +186,7 @@ std::vector<std::string> CNetworkWin32::GetNameServers(void)
         continue;
       for (PIP_ADAPTER_DNS_SERVER_ADDRESS dnsAddress = adapter->FirstDnsServerAddress; dnsAddress; dnsAddress = dnsAddress->Next)
       {
-        std::string strIp = CNetworkBase::GetIpStr(dnsAddress->Address.lpSockaddr);
+        std::string strIp = NETWORK::GetIpStr(dnsAddress->Address.lpSockaddr);
         if (!strIp.empty())
           result.push_back(strIp);
       }
