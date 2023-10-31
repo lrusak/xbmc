@@ -132,6 +132,25 @@ struct IcmpPacket
   }
 };
 
+int ParseHex(char* str, unsigned char* addr)
+{
+  int len = 0;
+
+  while (*str)
+  {
+    int tmp;
+    if (str[1] == 0)
+      return -1;
+    if (sscanf(str, "%02x", (unsigned int*)&tmp) != 1)
+      return -1;
+    addr[len] = tmp;
+    len++;
+    str += 2;
+  }
+
+  return len;
+}
+
 } // namespace
 
 CNetworkInterfaceLinux::CNetworkInterfaceLinux(CNetworkPosix* network,
@@ -175,7 +194,7 @@ std::string CNetworkInterfaceLinux::GetCurrentDefaultGateway() const
         strcmp(gateway, "00000000") != 0)
     {
       unsigned char gatewayAddr[4];
-      int len = CNetworkBase::ParseHex(gateway, gatewayAddr);
+      int len = ParseHex(gateway, gatewayAddr);
       if (len == 4)
       {
         struct in_addr in;

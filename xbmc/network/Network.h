@@ -89,8 +89,6 @@ public:
   // callback from application controlled thread to handle any setup
   void NetworkMessage(EMESSAGE message, int param);
 
-  static int ParseHex(char* str, unsigned char* addr);
-
   // Return true if given name or ip address corresponds to localhost
   bool IsLocalHost(const std::string& hostname);
 

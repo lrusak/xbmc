@@ -38,25 +38,6 @@ CNetworkBase::~CNetworkBase()
   CServiceBroker::GetAppMessenger()->PostMsg(TMSG_NETWORKMESSAGE, SERVICES_DOWN, 0);
 }
 
-int CNetworkBase::ParseHex(char *str, unsigned char *addr)
-{
-   int len = 0;
-
-   while (*str)
-   {
-      int tmp;
-      if (str[1] == 0)
-         return -1;
-      if (sscanf(str, "%02x", (unsigned int *)&tmp) != 1)
-         return -1;
-      addr[len] = tmp;
-      len++;
-      str += 2;
-   }
-
-   return len;
-}
-
 bool CNetworkBase::GetHostName(std::string& hostname)
 {
   char hostName[128];
