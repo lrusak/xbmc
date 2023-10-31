@@ -9,7 +9,6 @@
 #include "Network.h"
 
 #include "ServiceBroker.h"
-#include "SocketOptions.h"
 #include "messaging/ApplicationMessenger.h"
 #include "network/NetworkServices.h"
 #include "network/NetworkUtils.h"
@@ -291,57 +290,6 @@ bool CNetworkBase::PingHost(unsigned long ipaddr, unsigned short port, unsigned 
   }
 
   return err_msg == 0;
-}
-
-//creates, binds and listens tcp sockets on the desired port. Set bindLocal to
-//true to bind to localhost only.
-std::vector<SOCKET> CreateTCPServerSocket(const int port, const bool bindLocal, const int backlog, const char *callerName)
-{
-  std::vector<SOCKET> sockets;
-  struct addrinfo* results = nullptr;
-
-  std::string sPort = std::to_string(port);
-  struct addrinfo hints = {};
-  hints.ai_family = PF_UNSPEC;
-  hints.ai_socktype = SOCK_STREAM;
-  hints.ai_flags = AI_PASSIVE;
-  hints.ai_protocol = 0;
-
-  int error = getaddrinfo(bindLocal ? "localhost" : nullptr, sPort.c_str(), &hints, &results);
-  if (error != 0)
-    return sockets;
-
-  for (struct addrinfo* result = results; result != nullptr; result = result->ai_next)
-  {
-    SOCKET sock = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-    if (sock == INVALID_SOCKET)
-      continue;
-
-    KODI::NETWORK::SetReusePort(sock);
-    KODI::NETWORK::SetIPv6Only(sock, 1);
-
-    if (bind(sock, result->ai_addr, result->ai_addrlen) != 0)
-    {
-      closesocket(sock);
-      CLog::Log(LOGDEBUG, "{} Server: Failed to bind {} serversocket", callerName,
-                result->ai_family == AF_INET6 ? "IPv6" : "IPv4");
-      continue;
-    }
-
-    if (listen(sock, backlog) == 0)
-      sockets.push_back(sock);
-    else
-    {
-      closesocket(sock);
-      CLog::Log(LOGERROR, "{} Server: Failed to set listen", callerName);
-    }
-  }
-  freeaddrinfo(results);
-
-  if (sockets.empty())
-    CLog::Log(LOGERROR, "{} Server: Failed to create serversocket(s)", callerName);
-
-  return sockets;
 }
 
 void CNetworkBase::WaitForNet()

@@ -25,6 +25,7 @@
 #include "interfaces/AnnouncementManager.h"
 #include "messaging/ApplicationMessenger.h"
 #include "network/Network.h"
+#include "network/NetworkUtils.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
 #include "utils/Digest.h"
@@ -436,7 +437,7 @@ bool CAirPlayServer::Initialize()
 {
   Deinitialize();
 
-  m_ServerSockets = CreateTCPServerSocket(m_port, !m_nonlocal, 10, "AIRPLAY");
+  m_ServerSockets = NETWORK::CreateTCPServerSocket(m_port, !m_nonlocal, 10, "AIRPLAY");
   if (m_ServerSockets.empty())
     return false;
 

@@ -8,6 +8,10 @@
 
 #pragma once
 
+#include <vector>
+
+#include "PlatformDefs.h"
+
 namespace KODI::NETWORK
 {
 /**
@@ -16,4 +20,18 @@ namespace KODI::NETWORK
  * @param MAC address
  */
 bool WakeOnLan(const char* mac);
+
+/**
+ * @brief Creates, binds and listens tcp sockets on the desired port
+ *
+ * @param port
+ * @param bindLocal True to bind to localhost only
+ * @param backlog
+ * @param callerName
+ * @return std::vector<SOCKET> list of sockets
+ */
+std::vector<SOCKET> CreateTCPServerSocket(const int port,
+                                          const bool bindLocal,
+                                          const int backlog,
+                                          const char* callerName);
 } // namespace KODI::NETWORK

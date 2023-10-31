@@ -12,7 +12,7 @@
 #include "interfaces/AnnouncementManager.h"
 #include "interfaces/AnnouncementV14.h"
 #include "interfaces/json-rpc/JSONRPC.h"
-#include "network/Network.h"
+#include "network/NetworkUtils.h"
 #include "settings/AdvancedSettings.h"
 #include "settings/SettingsComponent.h"
 #include "utils/Variant.h"
@@ -38,6 +38,7 @@
 #include <fcntl.h>
 #endif
 
+using namespace KODI;
 using namespace std::chrono_literals;
 
 #if defined(TARGET_WINDOWS) || defined(HAVE_LIBBLUETOOTH)
@@ -602,7 +603,7 @@ bool CTCPServer::InitializeTCP()
 {
   Deinitialize();
 
-  std::vector<SOCKET> sockets = CreateTCPServerSocket(m_port, !m_nonlocal, 10, "JSONRPC");
+  std::vector<SOCKET> sockets = NETWORK::CreateTCPServerSocket(m_port, !m_nonlocal, 10, "JSONRPC");
   if (sockets.empty())
     return false;
 
