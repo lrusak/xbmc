@@ -25,6 +25,8 @@ public:
                            const CJNINetworkInterface& intf);
   std::vector<std::string> GetNameServers();
 
+  bool operator==(const CJNINetwork& rhs);
+
   // CNetworkInterface interface
 public:
   bool IsEnabled() const override;
@@ -68,8 +70,6 @@ protected:
   void RetrieveInterfaces();
   std::vector<CNetworkInterface*> m_interfaces;
   CCriticalSection m_refreshMutex;
-
-  std::unique_ptr<CNetworkInterface> m_defaultInterface;
 
 public:
   void onAvailable(const CJNINetwork network) override;

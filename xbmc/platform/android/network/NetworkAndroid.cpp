@@ -34,6 +34,11 @@ CNetworkInterfaceAndroid::CNetworkInterfaceAndroid(const CJNINetwork& network,
   m_name = m_intf.getName();
 }
 
+bool CNetworkInterfaceAndroid::operator==(const CJNINetwork& rhs)
+{
+  return this->m_network.equals(rhs);
+}
+
 std::vector<std::string> CNetworkInterfaceAndroid::GetNameServers()
 {
   std::vector<std::string> ret;
@@ -277,15 +282,10 @@ CNetworkInterface* CNetworkAndroid::GetFirstConnectedInterface()
 {
   std::unique_lock<CCriticalSection> lock(m_refreshMutex);
 
-  if (m_defaultInterface)
-    return m_defaultInterface.get();
-  else
+  for (CNetworkInterface* intf : m_interfaces)
   {
-    for (CNetworkInterface* intf : m_interfaces)
-    {
-      if (intf->IsEnabled() && intf->IsConnected() && !intf->GetCurrentDefaultGateway().empty())
-        return intf;
-    }
+    if (intf->IsEnabled() && intf->IsConnected() && !intf->GetCurrentDefaultGateway().empty())
+      return intf;
   }
 
   return nullptr;
@@ -371,7 +371,12 @@ void CNetworkAndroid::onAvailable(const CJNINetwork n)
   {
     CJNINetworkInterface intf = CJNINetworkInterface::getByName(lp.getInterfaceName());
     if (intf)
-      m_defaultInterface = std::make_unique<CNetworkInterfaceAndroid>(n, lp, intf);
+    {
+      std::unique_lock<CCriticalSection> lock(m_refreshMutex);
+
+      auto interface = new CNetworkInterfaceAndroid(n, lp, intf);
+      m_interfaces.insert(m_interfaces.begin(), interface);
+    }
   }
 }
 
@@ -379,5 +384,12 @@ void CNetworkAndroid::onLost(const CJNINetwork n)
 {
   CLog::Log(LOGDEBUG, "CNetworkAndroid::onLost No default network (the last was: {})",
             n.toString());
-  m_defaultInterface = nullptr;
+
+  std::unique_lock<CCriticalSection> lock(m_refreshMutex);
+
+  m_interfaces.erase(
+      std::remove_if(m_interfaces.begin(), m_interfaces.end(),
+                     [&n](auto& interface)
+                     { return *static_cast<CNetworkInterfaceAndroid*>(interface) == n; }),
+      m_interfaces.end());
 }
