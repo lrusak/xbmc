@@ -48,7 +48,6 @@ public:
 
   // Return the list of interfaces
   std::vector<CNetworkInterface*>& GetInterfaceList() override;
-  CNetworkInterface* GetFirstConnectedInterface() override;
 
   // Ping remote host
   bool PingHost(unsigned long host, unsigned int timeout_ms = 2000) override;

@@ -13,7 +13,9 @@
 
 #import "platform/darwin/ios-common/network/route.h"
 
+#include <algorithm>
 #import <array>
+#include <string_view>
 #include <utility>
 
 #import <arpa/inet.h>
@@ -294,59 +296,6 @@ std::vector<CNetworkInterface*>& CNetworkIOS::GetInterfaceList()
   return reinterpret_cast<std::vector<CNetworkInterface*>&>(m_interfaces);
 }
 
-CNetworkInterface* CNetworkIOS::GetFirstConnectedInterface()
-{
-  // Renew m_interfaces to be able to handle hard interface changes (adapters removed/added)
-  // This allows interfaces to be discovered if none are available at start eg. (Airplane mode on)
-  queryInterfaceList();
-  std::vector<CNetworkInterfaceIOS*>& ifaces = m_interfaces;
-
-  CNetworkInterface* ifVPN = nullptr;
-  CNetworkInterface* ifWired = nullptr;
-  CNetworkInterface* ifWifi = nullptr;
-  CNetworkInterface* ifCell = nullptr;
-
-#if defined(TARGET_DARWIN_IOS)
-  std::string ifWifiName = "en0";
-  // Unsure interface number for lightning to ethernet adapter, need to confirm
-  std::string ifWiredName = "en1";
-#else // defined(TARGET_DARWIN_TVOS)
-  std::string ifWifiName = "en1";
-  std::string ifWiredName = "en0";
-#endif
-
-  for (auto iteriface : ifaces)
-  {
-    if (iteriface && iteriface->IsConnected())
-    {
-      // VPN interface
-      if (StringUtils::StartsWith(iteriface->GetInterfaceName(), "utun"))
-        ifVPN = static_cast<CNetworkInterface*>(iteriface);
-      // Wired interface
-      else if (StringUtils::StartsWith(iteriface->GetInterfaceName(), ifWiredName))
-        ifWired = static_cast<CNetworkInterface*>(iteriface);
-      // Wifi interface
-      else if (StringUtils::StartsWith(iteriface->GetInterfaceName(), ifWifiName))
-        ifWifi = static_cast<CNetworkInterface*>(iteriface);
-      // Cellular interface
-      else if (StringUtils::StartsWith(iteriface->GetInterfaceName(), "pdp_ip"))
-        ifCell = static_cast<CNetworkInterface*>(iteriface);
-    }
-  }
-
-  // Priority = VPN -> Wired -> Wifi -> Cell
-  if (ifVPN != nullptr)
-    return ifVPN;
-  else if (ifWired != nullptr)
-    return ifWired;
-  else if (ifWifi != nullptr)
-    return ifWifi;
-  else if (ifCell != nullptr)
-    return ifCell;
-  else
-    return nullptr;
-}
-
 void CNetworkIOS::queryInterfaceList()
 {
   m_interfaces.clear();
@@ -362,6 +311,45 @@ void CNetworkIOS::queryInterfaceList()
 
     m_interfaces.push_back(new CNetworkInterfaceIOS(this, cur->ifa_name));
   }
+
+  std::sort(
+      m_interfaces.begin(), m_interfaces.end(),
+      [](const auto& lhs, const auto& rhs)
+      {
+        static constexpr std::array<std::string_view, 4> priorities = {
+#if defined(TARGET_DARWIN_IOS)
+          "utun",
+          "en1",
+          "en0",
+          "pdp_ip"
+#else
+          "utun",
+          "en0",
+          "en1",
+          "pdp_ip"
+#endif
+        };
+
+        const auto it = std::find_if(priorities.cbegin(), priorities.cend(),
+                                     [&lhs](const auto& priority)
+                                     { return priority == lhs->GetInterfaceName(); });
+
+        if (it == priorities.cend())
+          return false;
+
+        const auto d1 = std::distance(priorities.cbegin(), it);
+
+        const auto it2 = std::find_if(priorities.cbegin(), priorities.cend(),
+                                      [&rhs](const auto& priority)
+                                      { return priority == rhs->GetInterfaceName(); });
+
+        if (it2 == priorities.cend())
+          return true;
+
+        const auto d2 = std::distance(priorities.cbegin(), it2);
+
+        return d1 < d2;
+      });
 
   freeifaddrs(list);
 }
