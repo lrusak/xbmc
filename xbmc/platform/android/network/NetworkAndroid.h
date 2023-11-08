@@ -67,7 +67,6 @@ public:
 protected:
   void RetrieveInterfaces();
   std::vector<CNetworkInterface*> m_interfaces;
-  std::vector<CNetworkInterface*> m_oldInterfaces;
   CCriticalSection m_refreshMutex;
 
   std::unique_ptr<CNetworkInterface> m_defaultInterface;

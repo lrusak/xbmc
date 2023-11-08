@@ -248,8 +248,6 @@ CNetworkAndroid::~CNetworkAndroid()
 {
   for (auto intf : m_interfaces)
     delete intf;
-  for (auto intf : m_oldInterfaces)
-    delete intf;
 
   if (CJNIBase::GetSDKVersion() >= 24)
   {
@@ -331,10 +329,6 @@ void CNetworkAndroid::RetrieveInterfaces()
 {
   std::unique_lock<CCriticalSection> lock(m_refreshMutex);
 
-  // Cannot delete interfaces here, as there still might have references to it
-  for (auto intf : m_oldInterfaces)
-    delete intf;
-  m_oldInterfaces = m_interfaces;
   m_interfaces.clear();
 
   CJNIConnectivityManager connman(CXBMCApp::getSystemService(CJNIContext::CONNECTIVITY_SERVICE));
