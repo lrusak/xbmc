@@ -13,7 +13,9 @@
 
 #import "platform/darwin/ios-common/network/route.h"
 
+#include <algorithm>
 #import <array>
+#include <string_view>
 #include <utility>
 
 #import <arpa/inet.h>
@@ -264,6 +266,24 @@ std::string CNetworkInterfaceIOS::GetCurrentDefaultGateway() const
   return gateway;
 }
 
+namespace
+{
+// Lower is preferred: VPN, wired, Wi-Fi, then cellular.
+std::size_t InterfacePriority(std::string_view name)
+{
+#if defined(TARGET_DARWIN_IOS)
+  // Unsure interface number for lightning to ethernet adapter, need to confirm
+  constexpr std::array<std::string_view, 4> prefixes{"utun", "en1", "en0", "pdp_ip"};
+#else // defined(TARGET_DARWIN_TVOS)
+  constexpr std::array<std::string_view, 4> prefixes{"utun", "en0", "en1", "pdp_ip"};
+#endif
+
+  const auto it = std::ranges::find_if(prefixes, [name](std::string_view prefix)
+                                       { return name.starts_with(prefix); });
+  return static_cast<std::size_t>(std::distance(prefixes.begin(), it));
+}
+} // namespace
+
 std::unique_ptr<CNetworkBase> CNetworkBase::GetNetwork()
 {
   return std::make_unique<CNetworkIOS>();
@@ -301,56 +321,14 @@ std::unique_lock<std::mutex> CNetworkIOS::LockInterfaceList()
 
 CNetworkInterface* CNetworkIOS::GetFirstConnectedInterface()
 {
-  [[maybe_unused]] auto interfaceListLock = LockInterfaceList();
-  // Renew m_interfaces to be able to handle hard interface changes (adapters removed/added)
-  // This allows interfaces to be discovered if none are available at start eg. (Airplane mode on)
-  queryInterfaceList();
-  std::vector<CNetworkInterfaceIOS*>& ifaces = m_interfaces;
-
-  CNetworkInterface* ifVPN = nullptr;
-  CNetworkInterface* ifWired = nullptr;
-  CNetworkInterface* ifWifi = nullptr;
-  CNetworkInterface* ifCell = nullptr;
-
-#if defined(TARGET_DARWIN_IOS)
-  std::string ifWifiName = "en0";
-  // Unsure interface number for lightning to ethernet adapter, need to confirm
-  std::string ifWiredName = "en1";
-#else // defined(TARGET_DARWIN_TVOS)
-  std::string ifWifiName = "en1";
-  std::string ifWiredName = "en0";
-#endif
-
-  for (auto iteriface : ifaces)
   {
-    if (iteriface && iteriface->IsConnected())
-    {
-      // VPN interface
-      if (StringUtils::StartsWith(iteriface->GetInterfaceName(), "utun"))
-        ifVPN = static_cast<CNetworkInterface*>(iteriface);
-      // Wired interface
-      else if (StringUtils::StartsWith(iteriface->GetInterfaceName(), ifWiredName))
-        ifWired = static_cast<CNetworkInterface*>(iteriface);
-      // Wifi interface
-      else if (StringUtils::StartsWith(iteriface->GetInterfaceName(), ifWifiName))
-        ifWifi = static_cast<CNetworkInterface*>(iteriface);
-      // Cellular interface
-      else if (StringUtils::StartsWith(iteriface->GetInterfaceName(), "pdp_ip"))
-        ifCell = static_cast<CNetworkInterface*>(iteriface);
-    }
+    [[maybe_unused]] auto interfaceListLock = LockInterfaceList();
+    // Renew m_interfaces to be able to handle hard interface changes (adapters removed/added)
+    // This allows interfaces to be discovered if none are available at start eg. (Airplane mode on)
+    queryInterfaceList();
   }
 
-  // Priority = VPN -> Wired -> Wifi -> Cell
-  if (ifVPN != nullptr)
-    return ifVPN;
-  else if (ifWired != nullptr)
-    return ifWired;
-  else if (ifWifi != nullptr)
-    return ifWifi;
-  else if (ifCell != nullptr)
-    return ifCell;
-  else
-    return nullptr;
+  return CNetworkBase::GetFirstConnectedInterface();
 }
 
 void CNetworkIOS::queryInterfaceList()
@@ -368,6 +346,9 @@ void CNetworkIOS::queryInterfaceList()
 
     m_interfaces.push_back(new CNetworkInterfaceIOS(this, cur->ifa_name));
   }
+
+  std::ranges::stable_sort(m_interfaces, {}, [](const CNetworkInterfaceIOS* iface)
+                           { return InterfacePriority(iface->GetInterfaceName()); });
 
   freeifaddrs(list);
 }
