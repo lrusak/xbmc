@@ -5,7 +5,7 @@ epoch=${EPOCH:-"2"}
 gitrev=${GITREV:-"$(git log -1 --pretty=format:"%h")"}
 tag=${TAG:-${gitrev}}
 tagrev=${tagrev:-"0"}
-dists=${DISTS:-"mantic lunar kinetic jammy focal"}
+dists=${DISTS:-"mantic lunar jammy focal"}
 gpgkey=${GPG_KEY:-"jenkins (jenkins build bot) <jenkins@kodi.tv>"}
 ppa=${PPA:-"nightly"}
 debianrepo="${DEBIAN:-"https://github.com/xbmc/xbmc-packaging"}"
