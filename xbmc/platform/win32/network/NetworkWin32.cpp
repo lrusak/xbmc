@@ -342,8 +342,8 @@ bool CNetworkWin32::PingHost(unsigned long ipaddr,
   if (soc != INVALID_SOCKET)
   {
     struct timeval tmout;
-    tmout.tv_sec = timeOutMs / 1000;
-    tmout.tv_usec = (timeOutMs % 1000) * 1000;
+    tmout.tv_sec = timeout.count() / 1000;
+    tmout.tv_usec = (timeout.coun() % 1000) * 1000;
 
     err_msg = ConnectHostPort(soc, addr, tmout, readability_check);
 

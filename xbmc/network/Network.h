@@ -81,7 +81,7 @@ public:
   // Return true if host replies to ping
   virtual bool PingHost(unsigned long host,
                         unsigned short port,
-                        unsigned int timeout_ms = 2000,
+                        const std::chrono::milliseconds,
                         bool readability_check = false) = 0;
   virtual bool IcmpPing(
       unsigned long host,

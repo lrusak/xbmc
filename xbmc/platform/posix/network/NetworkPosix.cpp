@@ -155,7 +155,7 @@ CNetworkInterface* CNetworkPosix::GetFirstConnectedInterface()
 
 bool CNetworkPosix::PingHost(unsigned long ipaddr,
                              unsigned short port,
-                             unsigned int timeOutMs,
+                             const std::chrono::milliseconds timeout,
                              bool readability_check)
 {
   CFileHandle fd(socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0));
@@ -181,7 +181,7 @@ bool CNetworkPosix::PingHost(unsigned long ipaddr,
   fds.fd = fd;
   fds.events = POLLOUT;
 
-  ret = poll(&fds, 1, timeOutMs);
+  ret = poll(&fds, 1, timeout.count());
   if (ret < 0)
   {
     CLog::Log(LOGERROR, "poll failed: {} ({})", strerror(errno), errno);
@@ -190,7 +190,7 @@ bool CNetworkPosix::PingHost(unsigned long ipaddr,
 
   if (ret == 0)
   {
-    CLog::Log(LOGWARNING, "poll timed out after {} ms", timeOutMs);
+    CLog::Log(LOGWARNING, "poll timed out after {} ms", timeout.count());
     return false;
   }
 
@@ -199,7 +199,7 @@ bool CNetworkPosix::PingHost(unsigned long ipaddr,
     fds.revents = 0;
     fds.events = POLLIN;
 
-    ret = poll(&fds, 1, timeOutMs);
+    ret = poll(&fds, 1, timeout.count());
     if (ret < 0)
     {
       CLog::Log(LOGERROR, "poll failed: {} ({})", strerror(errno), errno);
@@ -208,7 +208,7 @@ bool CNetworkPosix::PingHost(unsigned long ipaddr,
 
     if (ret == 0)
     {
-      CLog::Log(LOGWARNING, "poll timed out after {} ms", timeOutMs);
+      CLog::Log(LOGWARNING, "poll timed out after {} ms", timeout.count());
       return false;
     }
 

@@ -62,7 +62,7 @@ public:
 
    bool PingHost(unsigned long host,
                  unsigned short port,
-                 unsigned int timeout_ms = 2000,
+                 const std::chrono::milliseconds timeout,
                  bool readability_check = false) override;
 
    // Get/set the nameserver(s)

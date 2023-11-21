@@ -396,7 +396,7 @@ public:
       }
       else
       {
-        return CServiceBroker::GetNetwork().PingHost(dst_ip, server.ping_port, timeout.count(),
+        return CServiceBroker::GetNetwork().PingHost(dst_ip, server.ping_port, timeout,
                                                      server.ping_mode & 1);
       }
     }
