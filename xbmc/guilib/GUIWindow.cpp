@@ -407,7 +407,7 @@ void CGUIWindow::Close_Internal(bool forceClose /*= false*/, int nextWindowID /*
 
 void CGUIWindow::Close(bool forceClose /*= false*/, int nextWindowID /*= 0*/, bool enableSound /*= true*/, bool bWait /* = true */)
 {
-  if (!CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (!CServiceBroker::GetAppMessenger()->IsGUIThread())
   {
     // make sure graphics lock is not held
     CSingleExit leaveIt(CServiceBroker::GetWinSystem()->GetGfxContext());
@@ -857,11 +857,11 @@ bool CGUIWindow::Initialize()
     return false;
   if (!NeedLoad())
     return true;
-  if (CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (CServiceBroker::GetAppMessenger()->IsGUIThread())
     AllocResources(false);
   else
   {
-    // if not app thread, send gui msg via app messenger
+    // if not GUI thread, send gui msg via app messenger
     // and wait for results, so windowLoaded flag would be updated
     CGUIMessage msg(GUI_MSG_WINDOW_LOAD, 0, 0);
     CServiceBroker::GetAppMessenger()->SendGUIMessage(msg, GetID(), true);

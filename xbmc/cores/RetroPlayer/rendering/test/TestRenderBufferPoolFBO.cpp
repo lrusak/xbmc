@@ -261,7 +261,7 @@ protected:
     }
     ASSERT_TRUE(eglMakeCurrent(m_display, m_guiSurface, m_guiSurface, m_sharedContext));
     auto messenger = std::make_shared<KODI::MESSAGING::CApplicationMessenger>();
-    messenger->SetProcessThread(std::this_thread::get_id());
+    messenger->SetGUIThread(std::this_thread::get_id());
     CServiceBroker::RegisterAppMessenger(messenger);
 
     m_sync = std::make_shared<CRenderBufferFBO::Sync>();

@@ -79,9 +79,9 @@ void CGUIDialogProgress::Open(const std::string &param /* = "" */)
 
   CGUIDialog::Open(false, param);
 
-  // Only wait for animation on main thread - background threads cannot drive
+  // Only wait for animation on the GUI thread - other threads cannot drive
   // the render loop, so spinning here would be a busy-wait at 100% CPU
-  if (!CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (!CServiceBroker::GetAppMessenger()->IsGUIThread())
     return;
 
   while (m_active && IsAnimating(ANIM_TYPE_WINDOW_OPEN))

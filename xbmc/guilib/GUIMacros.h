@@ -65,7 +65,7 @@
   { \
     CGUIMessage _msg(GUI_MSG_LABEL_SET, GetID(), controlID); \
     _msg.SetLabel(label); \
-    if (CServiceBroker::GetAppMessenger()->IsProcessThread()) \
+    if (CServiceBroker::GetAppMessenger()->IsGUIThread()) \
       OnMessage(_msg); \
     else \
       CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(_msg, GetID()); \

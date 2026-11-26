@@ -288,7 +288,7 @@ void CGUIWindowSlideShow::Reset()
   }
 
   // The pictures can own GL resources, so only the GUI thread destroys them
-  if (!m_Image[0] || CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (!m_Image[0] || CServiceBroker::GetAppMessenger()->IsGUIThread())
     ReplacePictures();
   else
     m_replacePictures = true;

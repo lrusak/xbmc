@@ -416,7 +416,7 @@ protected:
       return;
 
     auto messenger = std::make_shared<KODI::MESSAGING::CApplicationMessenger>();
-    messenger->SetProcessThread(std::this_thread::get_id());
+    messenger->SetGUIThread(std::this_thread::get_id());
     CServiceBroker::RegisterAppMessenger(messenger);
 
     m_environment = std::make_unique<CPlaybackTestEnvironment>();

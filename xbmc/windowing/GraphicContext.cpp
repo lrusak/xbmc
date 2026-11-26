@@ -480,10 +480,10 @@ bool CGraphicContext::IsValidResolution(RESOLUTION res)
   return false;
 }
 
-// call SetVideoResolutionInternal and ensure its done from mainthread
+// call SetVideoResolutionInternal and ensure its done from the GUI thread
 void CGraphicContext::SetVideoResolution(RESOLUTION res, bool forceUpdate, CEvent* abortEvent)
 {
-  if (CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (CServiceBroker::GetAppMessenger()->IsGUIThread())
   {
     SetVideoResolutionInternal(res, forceUpdate);
   }

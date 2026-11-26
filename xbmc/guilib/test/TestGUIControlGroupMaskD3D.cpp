@@ -351,7 +351,7 @@ protected:
     settings->m_guiVisualizeDirtyRegions = false;
     m_previousMessenger = CServiceBroker::GetAppMessenger();
     auto messenger = std::make_shared<KODI::MESSAGING::CApplicationMessenger>();
-    messenger->SetProcessThread(std::this_thread::get_id());
+    messenger->SetGUIThread(std::this_thread::get_id());
     CServiceBroker::RegisterAppMessenger(messenger);
     TestGUIControlGroupMaskD3D::SetUp();
     if (!HasFatalFailure() && !IsSkipped())

@@ -198,7 +198,7 @@ void CRenderBufferPoolFBO::RenderedBuffers::Flush(std::optional<uint64_t> expect
 void CRenderBufferPoolFBO::FlushRendered()
 {
   const auto messenger = CServiceBroker::GetAppMessenger();
-  if (messenger->IsProcessThread())
+  if (messenger->IsGUIThread())
     m_rendered->Flush();
   else
   {

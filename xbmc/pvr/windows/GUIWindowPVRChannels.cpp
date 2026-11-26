@@ -456,7 +456,7 @@ void CGUIWindowPVRChannelsBase::OnInputDone()
 
   CGUIMessage msg(GUI_MSG_PVR_SELECT_CHANNEL_NUMBER, GetID(), 0, channelNumber.GetChannelNumber(),
                   channelNumber.GetSubChannelNumber());
-  if (CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (CServiceBroker::GetAppMessenger()->IsGUIThread())
     OnMessage(msg);
   else
     CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg, GetID());

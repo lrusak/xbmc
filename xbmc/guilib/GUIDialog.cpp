@@ -191,7 +191,7 @@ void CGUIDialog::Open(const std::string &param /* = "" */)
 
 void CGUIDialog::Open(bool bProcessRenderLoop, const std::string& param /* = "" */)
 {
-  if (!CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (!CServiceBroker::GetAppMessenger()->IsGUIThread())
   {
     // make sure graphics lock is not held
     CSingleExit leaveIt(CServiceBroker::GetWinSystem()->GetGfxContext());

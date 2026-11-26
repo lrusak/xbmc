@@ -179,7 +179,7 @@ void GroupLivePhotos(CFileItemList& items)
 
   // Reading the pictures can take a while on a network share
   CLivePhotoCheck check(std::move(paths));
-  if (CServiceBroker::GetGUI() && CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (CServiceBroker::GetGUI() && CServiceBroker::GetAppMessenger()->IsGUIThread())
     CGUIDialogBusy::Wait(&check, 100, true);
   else
     check.Run();

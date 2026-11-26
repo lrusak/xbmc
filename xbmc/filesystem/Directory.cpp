@@ -198,8 +198,7 @@ bool CDirectory::GetDirectory(const CURL& url,
         {
           // @TODO ProcessRequirements() can bring up the keyboard input dialog
           // filesystem must not depend on GUI
-          if (CServiceBroker::GetAppMessenger()->IsProcessThread() &&
-              pDirectory->ProcessRequirements())
+          if (CServiceBroker::GetAppMessenger()->IsGUIThread() && pDirectory->ProcessRequirements())
           {
             authUrl.SetDomain("");
             authUrl.SetUserName("");

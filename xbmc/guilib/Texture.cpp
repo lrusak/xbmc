@@ -412,7 +412,7 @@ bool CTexture::UploadFromMemory(unsigned int width,
     return false;
   }
 
-  if (CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (CServiceBroker::GetAppMessenger()->IsGUIThread())
   {
     if (m_pixels)
     {

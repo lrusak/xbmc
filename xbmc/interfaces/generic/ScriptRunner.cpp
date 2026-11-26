@@ -141,10 +141,10 @@ bool CScriptRunner::WaitOnScriptResult(int scriptId,
 {
   bool cancelled = false;
 
-  // Add-on scripts can be called from the main and other threads. If called
-  // form the main thread, we need to bring up the BusyDialog in order to
+  // Add-on scripts can be called from the GUI and other threads. If called
+  // from the GUI thread, we need to bring up the BusyDialog in order to
   // keep the render loop alive
-  if (CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (CServiceBroker::GetAppMessenger()->IsGUIThread())
   {
     if (!m_scriptDone.Wait(20ms))
     {

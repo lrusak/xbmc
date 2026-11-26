@@ -135,13 +135,13 @@ protected:
   static void SetUpTestSuite()
   {
     CServiceBroker::RegisterJobManager(std::make_shared<CJobManager>());
-    // The player is closed on the application thread in Kodi; without that, CRenderManager
-    // waits for a message nothing in the tests processes.
-    CServiceBroker::GetAppMessenger()->SetProcessThread(std::this_thread::get_id());
+    // CRenderManager is uninitialized on the GUI thread in Kodi; without that, it waits for a
+    // message nothing in the tests processes.
+    CServiceBroker::GetAppMessenger()->SetGUIThread(std::this_thread::get_id());
   }
   static void TearDownTestSuite()
   {
-    CServiceBroker::GetAppMessenger()->SetProcessThread({});
+    CServiceBroker::GetAppMessenger()->SetGUIThread({});
     CServiceBroker::UnregisterJobManager();
   }
 };

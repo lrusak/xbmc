@@ -415,7 +415,7 @@ void CRenderManager::PreInit()
       return;
   }
 
-  if (!CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (!CServiceBroker::GetAppMessenger()->IsGUIThread())
   {
     m_initEvent.Reset();
     CServiceBroker::GetAppMessenger()->PostMsg(TMSG_RENDERER_PREINIT);
@@ -444,7 +444,7 @@ void CRenderManager::PreInit()
 
 void CRenderManager::UnInit()
 {
-  if (!CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (!CServiceBroker::GetAppMessenger()->IsGUIThread())
   {
     m_initEvent.Reset();
     CServiceBroker::GetAppMessenger()->PostMsg(TMSG_RENDERER_UNINIT);
@@ -474,7 +474,7 @@ bool CRenderManager::Flush(bool wait, bool saveBuffers)
   if (!m_pRenderer)
     return true;
 
-  if (CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (CServiceBroker::GetAppMessenger()->IsGUIThread())
   {
     CLog::Log(LOGDEBUG, "{} - flushing renderer", __FUNCTION__);
 

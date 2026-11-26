@@ -242,7 +242,7 @@ public:
 class NestDetect
 {
 public:
-  NestDetect() : m_gui_thread(CServiceBroker::GetAppMessenger()->IsProcessThread())
+  NestDetect() : m_gui_thread(CServiceBroker::GetAppMessenger()->IsGUIThread())
   {
     if (m_gui_thread)
       ++m_nest;
@@ -274,7 +274,7 @@ class ProgressDialogHelper
 public:
   explicit ProgressDialogHelper(const std::string& heading)
   {
-    if (CServiceBroker::GetAppMessenger()->IsProcessThread())
+    if (CServiceBroker::GetAppMessenger()->IsGUIThread())
     {
       CGUIComponent *gui = CServiceBroker::GetGUI();
       if (gui)
@@ -531,7 +531,7 @@ bool CWakeOnAccess::WakeUpHost(const WakeUpEntry& server)
 
     const auto& components = CServiceBroker::GetAppComponents();
     const auto appPlayer = components.GetComponent<CApplicationPlayer>();
-    if (CServiceBroker::GetAppMessenger()->IsProcessThread() || !appPlayer->IsPlaying())
+    if (CServiceBroker::GetAppMessenger()->IsGUIThread() || !appPlayer->IsPlaying())
       CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Error, heading, LOCALIZED(13029));
     return false;
   }

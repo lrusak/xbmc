@@ -866,7 +866,7 @@ void CGUIWindowManager::ForceActivateWindow(int iWindowID, const std::string& st
 
 void CGUIWindowManager::ActivateWindow(int iWindowID, const std::vector<std::string>& params, bool swappingWindows /* = false */, bool force /* = false */)
 {
-  if (!CServiceBroker::GetAppMessenger()->IsProcessThread())
+  if (!CServiceBroker::GetAppMessenger()->IsGUIThread())
   {
     // make sure graphics lock is not held
     CSingleExit leaveIt(CServiceBroker::GetWinSystem()->GetGfxContext());
@@ -1290,7 +1290,7 @@ bool RenderOrderSortFunction(const std::shared_ptr<CGUIWindow>& first,
 
 void CGUIWindowManager::Process(unsigned int currentTime)
 {
-  assert(CServiceBroker::GetAppMessenger()->IsProcessThread());
+  assert(CServiceBroker::GetAppMessenger()->IsGUIThread());
   std::unique_lock lock(CServiceBroker::GetWinSystem()->GetGfxContext());
 
   m_dirtyregions.clear();
@@ -1438,7 +1438,7 @@ void CGUIWindowManager::RenderEx() const
 
 bool CGUIWindowManager::Render()
 {
-  assert(CServiceBroker::GetAppMessenger()->IsProcessThread());
+  assert(CServiceBroker::GetAppMessenger()->IsGUIThread());
   CSingleExit lock(CServiceBroker::GetWinSystem()->GetGfxContext());
 
   int bufferAge = CServiceBroker::GetWinSystem()->GetBufferAge();
@@ -1562,7 +1562,7 @@ void CGUIWindowManager::AfterRender()
 
 void CGUIWindowManager::FrameMove()
 {
-  assert(CServiceBroker::GetAppMessenger()->IsProcessThread());
+  assert(CServiceBroker::GetAppMessenger()->IsGUIThread());
   std::unique_lock lock(CServiceBroker::GetWinSystem()->GetGfxContext());
 
   if(m_iNested == 0)
@@ -1615,7 +1615,7 @@ bool CGUIWindowManager::ProcessRenderLoop(bool renderOnly)
 {
   bool renderGui = true;
 
-  if (CServiceBroker::GetAppMessenger()->IsProcessThread() && m_pCallback)
+  if (CServiceBroker::GetAppMessenger()->IsGUIThread() && m_pCallback)
   {
     renderGui = m_pCallback->GetRenderGUI();
     m_iNested++;
