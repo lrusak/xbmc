@@ -11,9 +11,12 @@
 
 #include <future>
 #include <mutex>
+#include <string>
+#include <vector>
 
 #include <arpa/inet.h>
 #include <gtest/gtest.h>
+#include <netinet/in.h>
 
 class TestNetwork : public testing::Test
 {
@@ -116,4 +119,78 @@ TEST_F(TestNetwork, InterfaceListRemainsLockedDuringReads)
   EXPECT_TRUE(network.IsLocalHost("192.0.2.1"));
   EXPECT_TRUE(network.HasInterfaceForIP(0xc0000202));
   EXPECT_NE(network.GetFirstConnectedInterface(), nullptr);
+}
+
+TEST(TestNetworkUtils, GetIpStr)
+{
+  sockaddr_in ipv4{};
+  ipv4.sin_family = AF_INET;
+  ASSERT_EQ(inet_pton(AF_INET, "192.0.2.1", &ipv4.sin_addr), 1);
+  EXPECT_EQ(CNetworkBase::GetIpStr(reinterpret_cast<const sockaddr*>(&ipv4)), "192.0.2.1");
+
+  sockaddr_in6 ipv6{};
+  ipv6.sin6_family = AF_INET6;
+  ASSERT_EQ(inet_pton(AF_INET6, "2001:db8::1", &ipv6.sin6_addr), 1);
+  EXPECT_EQ(CNetworkBase::GetIpStr(reinterpret_cast<const sockaddr*>(&ipv6)), "2001:db8::1");
+
+  sockaddr unknown{};
+  unknown.sa_family = AF_UNSPEC;
+  EXPECT_EQ(CNetworkBase::GetIpStr(&unknown), "");
+  EXPECT_EQ(CNetworkBase::GetIpStr(nullptr), "");
+}
+
+TEST(TestNetworkUtils, GetMaskByPrefixLength)
+{
+  EXPECT_EQ(CNetworkBase::GetMaskByPrefixLength(8), "255.0.0.0");
+  EXPECT_EQ(CNetworkBase::GetMaskByPrefixLength(23), "255.255.254.0");
+  EXPECT_EQ(CNetworkBase::GetMaskByPrefixLength(24), "255.255.255.0");
+  EXPECT_EQ(CNetworkBase::GetMaskByPrefixLength(32), "255.255.255.255");
+  EXPECT_EQ(CNetworkBase::GetMaskByPrefixLength(33), "");
+}
+
+namespace
+{
+class CLocalInterface : public CNetworkInterface
+{
+public:
+  bool IsEnabled() const override { return true; }
+  bool IsConnected() const override { return true; }
+  std::string GetMacAddress() const override { return {}; }
+  void GetMacAddressRaw(char[6]) const override {}
+  bool GetHostMacAddress(unsigned long, std::string&) const override { return false; }
+  std::string GetCurrentIPAddress() const override { return "192.0.2.1"; }
+  std::string GetCurrentNetmask() const override { return "255.255.255.0"; }
+  std::string GetCurrentDefaultGateway() const override { return "192.0.2.254"; }
+};
+
+class CLocalNetwork : public CNetworkBase
+{
+public:
+  std::vector<CNetworkInterface*>& GetInterfaceList() override { return m_interfaces; }
+  bool GetHostName(std::string& hostname) override
+  {
+    hostname = "kodi-box";
+    return true;
+  }
+  bool PingHost(unsigned long, unsigned int) override { return false; }
+  std::vector<std::string> GetNameServers() override { return {}; }
+
+private:
+  CLocalInterface m_interface;
+  std::vector<CNetworkInterface*> m_interfaces{&m_interface};
+};
+} // namespace
+
+TEST(TestNetworkBase, IsLocalHost)
+{
+  CLocalNetwork network;
+  EXPECT_FALSE(network.IsLocalHost(""));
+  EXPECT_TRUE(network.IsLocalHost("127.0.0.1"));
+  EXPECT_TRUE(network.IsLocalHost("127.1.2.3"));
+  EXPECT_TRUE(network.IsLocalHost("::1"));
+  EXPECT_TRUE(network.IsLocalHost("LocalHost"));
+  EXPECT_TRUE(network.IsLocalHost("Kodi-Box"));
+  EXPECT_TRUE(network.IsLocalHost("192.0.2.1"));
+  EXPECT_FALSE(network.IsLocalHost("192.0.2.2"));
+  EXPECT_FALSE(network.IsLocalHost("example.com"));
 }
