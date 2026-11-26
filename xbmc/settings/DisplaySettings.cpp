@@ -379,7 +379,7 @@ bool CDisplaySettings::OnSettingChanging(const std::shared_ptr<const CSetting>& 
   {
     // re-select the rendering GPU, then re-apply the fullscreen mode as exclusive fullscreen is
     // not possible when rendering on a GPU that doesn't own the display.
-    // Posted as it recreates the device, which must happen on the application thread.
+    // Posted as it recreates the device, which must happen on the GUI thread.
     static ThreadMessageCallback callback{
         [](void*)
         {
@@ -388,7 +388,7 @@ bool CDisplaySettings::OnSettingChanging(const std::shared_ptr<const CSetting>& 
           gfxContext.SetVideoResolution(gfxContext.GetVideoResolution(), true);
         },
         nullptr};
-    CServiceBroker::GetAppMessenger()->PostMsg(TMSG_CALLBACK, -1, -1, &callback);
+    CServiceBroker::GetAppMessenger()->PostMsg(TMSG_GUI_CALLBACK, -1, -1, &callback);
   }
 #endif
 #if defined(HAVE_X11) || defined(TARGET_WINDOWS_DESKTOP) || defined(TARGET_DARWIN_OSX)

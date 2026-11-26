@@ -155,7 +155,7 @@ CApplicationMessageHandling::CApplicationMessageHandling(CApplication& app)
         [this]
         {
           if (const auto messenger = CServiceBroker::GetAppMessenger())
-            messenger->PostMsg(TMSG_CALLBACK, -1, -1, m_reloadSkinCallback.get());
+            messenger->PostMsg(TMSG_GUI_CALLBACK, -1, -1, m_reloadSkinCallback.get());
         })
 {
 }

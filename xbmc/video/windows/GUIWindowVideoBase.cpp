@@ -245,7 +245,7 @@ bool CGUIWindowVideoBase::OnMessage(CGUIMessage& message)
       // players do not switch, the loader restarts once they stop.
       const auto appPlayer{CServiceBroker::GetAppComponents().GetComponent<CApplicationPlayer>()};
       if (m_restartThumbLoader && !appPlayer->IsExternalPlaying())
-        CServiceBroker::GetAppMessenger()->PostMsg(TMSG_CALLBACK, -1, -1,
+        CServiceBroker::GetAppMessenger()->PostMsg(TMSG_GUI_CALLBACK, -1, -1,
                                                    &m_restartThumbLoaderCallback);
       break;
     }

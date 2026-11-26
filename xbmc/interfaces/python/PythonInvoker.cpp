@@ -521,10 +521,11 @@ bool CPythonInvoker::stop(bool abort)
       // We can't empty-spin in the main thread and expect scripts to be able to
       // dismantle themselves. Python dialogs aren't normal XBMC dialogs, they rely
       // on TMSG_GUI_PYTHON_DIALOG messages, so pump the message loop.
-      if (CServiceBroker::GetAppMessenger()->IsProcessThread())
-      {
-        CServiceBroker::GetAppMessenger()->ProcessMessages();
-      }
+      const auto messenger = CServiceBroker::GetAppMessenger();
+      if (messenger->IsGUIThread())
+        messenger->ProcessWindowMessages();
+      if (messenger->IsProcessThread())
+        messenger->ProcessMessages();
     }
 
     lock.lock();

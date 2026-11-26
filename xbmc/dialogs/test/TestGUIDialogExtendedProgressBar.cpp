@@ -118,7 +118,7 @@ TEST(TestGUIDialogExtendedProgressBar, GetHandleDoesNotWaitForTheGUIThread)
   EXPECT_NE(nullptr, handle);
 
   // the open reaches the window manager once the GUI thread gets to its queue
-  messenger.Get().ProcessMessages();
+  messenger.Get().ProcessWindowMessages();
   ASSERT_EQ(1u, target.m_messages.size());
   EXPECT_EQ(static_cast<uint32_t>(TMSG_GUI_DIALOG_OPEN), target.m_messages.front().dwMessage);
   EXPECT_EQ(WINDOW_DIALOG_EXT_PROGRESS, target.m_messages.front().param1);

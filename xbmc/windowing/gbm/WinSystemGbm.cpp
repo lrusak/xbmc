@@ -364,7 +364,7 @@ void CWinSystemGbm::OnSettingChanged(const std::shared_ptr<const CSetting>& sett
     // post rather than call: this can run off the main thread (e.g. JSON-RPC), and it runs with
     // the settings lock held, which applying the mode needs on the main thread to write back
     // videoscreen.screenmode
-    CServiceBroker::GetAppMessenger()->PostMsg(TMSG_CALLBACK, -1, -1, &m_limitGuiSizeCallback);
+    CServiceBroker::GetAppMessenger()->PostMsg(TMSG_GUI_CALLBACK, -1, -1, &m_limitGuiSizeCallback);
   }
   else if (setting->GetId() == SETTING_VIDEOSCREEN_COLORRANGE)
   {
@@ -373,7 +373,7 @@ void CWinSystemGbm::OnSettingChanged(const std::shared_ptr<const CSetting>& sett
     if (m_migratingColorRange)
       return;
 
-    CServiceBroker::GetAppMessenger()->PostMsg(TMSG_CALLBACK, -1, -1, &m_colorRangeCallback);
+    CServiceBroker::GetAppMessenger()->PostMsg(TMSG_GUI_CALLBACK, -1, -1, &m_colorRangeCallback);
   }
 }
 

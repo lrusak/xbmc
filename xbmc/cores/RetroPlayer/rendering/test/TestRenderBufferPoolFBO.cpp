@@ -362,7 +362,7 @@ protected:
     else
     {
       m_pool->FlushRendered();
-      CServiceBroker::GetAppMessenger()->ProcessMessages();
+      CServiceBroker::GetAppMessenger()->ProcessWindowMessages();
     }
     clientThread.join();
     EXPECT_EQ(started, std::future_status::ready);
@@ -620,7 +620,7 @@ TEST_P(TestRenderBufferPoolFBOWithContext, ClientThreadTeardownWaitsForGUISubmis
                                {
                                  EXPECT_EQ(m_flushes, 0u);
                                  EXPECT_EQ(glIsTexture(texture), GL_TRUE);
-                                 CServiceBroker::GetAppMessenger()->ProcessMessages();
+                                 CServiceBroker::GetAppMessenger()->ProcessWindowMessages();
                                  EXPECT_EQ(m_flushes, 1u);
                                  EXPECT_EQ(m_flushContext.load(), m_sharedContext);
                                  EXPECT_EQ(glIsTexture(texture), GL_TRUE);
@@ -651,7 +651,7 @@ TEST_P(TestRenderBufferPoolFBOWithContext, GUIDrainWakesClientAndStaleCallbackCa
   ASSERT_TRUE(BindGUI());
   Sample(next);
   next->Release();
-  CServiceBroker::GetAppMessenger()->ProcessMessages();
+  CServiceBroker::GetAppMessenger()->ProcessWindowMessages();
   EXPECT_EQ(m_flushes, 1u);
   m_pool->FlushRendered();
   EXPECT_EQ(m_flushes, 2u);
@@ -670,7 +670,7 @@ TEST_P(TestRenderBufferPoolFBOWithContext, GUIDrainWakesClientAndStaleCallbackCa
                                  EXPECT_EQ(m_flushes, 3u);
                                });
   m_pool.reset();
-  CServiceBroker::GetAppMessenger()->ProcessMessages();
+  CServiceBroker::GetAppMessenger()->ProcessWindowMessages();
   EXPECT_EQ(m_flushes, 3u);
 }
 

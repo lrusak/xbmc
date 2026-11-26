@@ -28,6 +28,49 @@ namespace KODI
 namespace MESSAGING
 {
 
+namespace
+{
+//! Whether a message has to be handled on the GUI thread, as it uses windows, the window system or
+//! rendering.
+bool IsGUIThreadMessage(uint32_t messageId)
+{
+  switch (messageId & TMSG_MASK_MESSAGE)
+  {
+    case TMSG_MASK_WINDOWMANAGER:
+    case TMSG_MASK_GUIINFOMANAGER:
+      return true;
+    default:
+      break;
+  }
+
+  switch (messageId)
+  {
+    case TMSG_GUI_CALLBACK:
+    case TMSG_ACTIVATESCREENSAVER:
+    case TMSG_VOLUME_SHOW:
+    case TMSG_DISPLAY_SETUP:
+    case TMSG_DISPLAY_DESTROY:
+    case TMSG_SETVIDEORESOLUTION:
+    case TMSG_SWITCHTOFULLSCREEN:
+    case TMSG_MINIMIZE:
+    case TMSG_TOGGLEFULLSCREEN:
+    case TMSG_SETLANGUAGE:
+    case TMSG_RENDERER_FLUSH:
+    case TMSG_EXECUTE_BUILT_IN:
+    case TMSG_PICTURE_SHOW:
+    case TMSG_PICTURE_SLIDESHOW:
+    case TMSG_LOADPROFILE:
+    case TMSG_VIDEORESIZE:
+    case TMSG_EVENT:
+    case TMSG_MOVETOSCREEN:
+    case TMSG_RESUMEAPP:
+      return true;
+    default:
+      return false;
+  }
+}
+} // namespace
+
 class CDelayedMessage : public CThread
 {
   public:
@@ -97,9 +140,9 @@ int CApplicationMessenger::SendMsg(ThreadMessage&& message, bool wait)
   {
     //Initialize result here as it's not needed for posted messages
     message.result = std::make_shared<int>(-1);
-    // check that we're not being called from our application thread, else we'll be waiting
-    // forever!
-    if (m_guiThreadId != CThread::GetCurrentThreadId())
+    // check that we're not being called from the thread handling the message, else we'll be
+    // waiting forever!
+    if (!IsHandlingThread(message.dwMessage))
     {
       message.waitEvent = std::make_shared<CEvent>(true);
       waitEvent = message.waitEvent;
@@ -146,7 +189,7 @@ int CApplicationMessenger::SendMsg(ThreadMessage&& message, bool wait)
 void CApplicationMessenger::Enqueue(ThreadMessage* msg)
 {
   std::unique_lock lock(m_critSection);
-  if (msg->dwMessage == TMSG_GUI_MESSAGE)
+  if (IsGUIThreadMessage(msg->dwMessage))
     m_vecWindowMessages.push(msg);
   else
     m_vecMessages.push(msg);
@@ -165,7 +208,7 @@ int CApplicationMessenger::SendMsg(uint32_t messageId, int param1, int param2, v
 bool CApplicationMessenger::SendMsgAbortable(
     uint32_t messageId, int param1, int param2, void* payload, CEvent& abortEvent)
 {
-  if (m_guiThreadId == CThread::GetCurrentThreadId())
+  if (IsHandlingThread(messageId))
   {
     SendMsg(messageId, param1, param2, payload);
     return true;
@@ -272,7 +315,7 @@ void CApplicationMessenger::ProcessMessage(ThreadMessage *pMsg)
     return;
 
   //special case for this that we handle ourselves
-  if (pMsg->dwMessage == TMSG_CALLBACK)
+  if (pMsg->dwMessage == TMSG_CALLBACK || pMsg->dwMessage == TMSG_GUI_CALLBACK)
   {
     ThreadMessageCallback *callback = static_cast<ThreadMessageCallback*>(pMsg->lpVoid);
     callback->callback(callback->userptr);
@@ -333,6 +376,16 @@ void CApplicationMessenger::RegisterReceiver(IMessageTarget* target)
 bool CApplicationMessenger::IsProcessThread() const
 {
   return m_processThreadId == CThread::GetCurrentThreadId();
+}
+
+bool CApplicationMessenger::IsGUIThread() const
+{
+  return m_guiThreadId == CThread::GetCurrentThreadId();
+}
+
+bool CApplicationMessenger::IsHandlingThread(uint32_t messageId) const
+{
+  return IsGUIThreadMessage(messageId) ? IsGUIThread() : IsProcessThread();
 }
 }
 }

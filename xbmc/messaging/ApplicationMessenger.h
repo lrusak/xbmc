@@ -145,6 +145,8 @@
 
 
 #define TMSG_CALLBACK                     800
+//! Like TMSG_CALLBACK, but runs the callback on the GUI thread
+#define TMSG_GUI_CALLBACK                 801
 // clang-format on
 
 class CGUIMessage;
@@ -397,14 +399,13 @@ public:
   void PostMsg(uint32_t messageId, int param1, int param2, void* payload, std::string strParam, std::vector<std::string> params);
 
   /*!
-   * \brief Called from any thread to dispatch messages
+   * \brief Called from the process thread to dispatch messages
    */
   void ProcessMessages();
 
   /*!
-   * \brief Called from the UI thread to dispatch UI messages
-   * This is only of value to implementers of the message pump, do not rely on a specific thread
-   * being used other than that it's appropriate for UI messages
+   * \brief Called from the GUI thread to dispatch the messages that use windows, the window system
+   * or rendering
    */
   void ProcessWindowMessages();
 
@@ -445,12 +446,17 @@ public:
   //! \brief Returns true if this is the process / app loop thread.
   bool IsProcessThread() const;
 
+  //! \brief Returns true if this is the GUI thread, which owns windows and rendering.
+  bool IsGUIThread() const;
+
 private:
   CApplicationMessenger(const CApplicationMessenger&) = delete;
   CApplicationMessenger const& operator=(CApplicationMessenger const&) = delete;
 
   int SendMsg(ThreadMessage&& msg, bool wait);
   void Enqueue(ThreadMessage* msg);
+  //! \brief Whether the calling thread is the one that handles the message.
+  bool IsHandlingThread(uint32_t messageId) const;
   void ProcessMessage(ThreadMessage *pMsg);
 
   std::queue<ThreadMessage*> m_vecMessages; /*!< queue for regular messages */

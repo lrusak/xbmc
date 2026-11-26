@@ -219,7 +219,7 @@ void CRenderBufferPoolFBO::FlushRendered()
         std::unique_ptr<Callback> callback(static_cast<Callback*>(data));
         callback->rendered->Flush(callback->generation);
       };
-      messenger->PostMsg(TMSG_CALLBACK, -1, -1, &callback->message);
+      messenger->PostMsg(TMSG_GUI_CALLBACK, -1, -1, &callback->message);
 
       // CloseFile() can submit this batch before joining the client thread.
       // The queued callback owns only the batch state, not the pool or player.
