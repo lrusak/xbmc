@@ -15,6 +15,8 @@
 
 #include <algorithm>
 #import <array>
+#include <iterator>
+#include <memory>
 #include <string_view>
 #include <utility>
 
@@ -299,58 +301,39 @@ CNetworkIOS::~CNetworkIOS()
 {
   if (m_sock != -1)
     close(CNetworkIOS::m_sock);
-
-  for (std::vector<CNetworkInterfaceIOS*>::iterator it = m_interfaces.begin();
-       it != m_interfaces.end();)
-  {
-    CNetworkInterfaceIOS* nInt = *it;
-    delete nInt;
-    it = m_interfaces.erase(it);
-  }
 }
 
-std::vector<CNetworkInterface*>& CNetworkIOS::GetInterfaceList()
+void CNetworkIOS::UpdateInterfaces()
 {
-  return reinterpret_cast<std::vector<CNetworkInterface*>&>(m_interfaces);
-}
-
-std::unique_lock<std::mutex> CNetworkIOS::LockInterfaceList()
-{
-  return std::unique_lock(m_interfaceMutex);
-}
-
-CNetworkInterface* CNetworkIOS::GetFirstConnectedInterface()
-{
-  {
-    [[maybe_unused]] auto interfaceListLock = LockInterfaceList();
-    // Renew m_interfaces to be able to handle hard interface changes (adapters removed/added)
-    // This allows interfaces to be discovered if none are available at start eg. (Airplane mode on)
-    queryInterfaceList();
-  }
-
-  return CNetworkBase::GetFirstConnectedInterface();
+  // Renew the interfaces to be able to handle hard interface changes (adapters removed/added)
+  // This allows interfaces to be discovered if none are available at start eg. (Airplane mode on)
+  queryInterfaceList();
 }
 
 void CNetworkIOS::queryInterfaceList()
 {
-  m_interfaces.clear();
-
   struct ifaddrs* list;
   if (getifaddrs(&list) < 0)
     return;
 
+  std::vector<std::unique_ptr<CNetworkInterfaceIOS>> found;
   for (struct ifaddrs* cur = list; cur != nullptr; cur = cur->ifa_next)
   {
     if (cur->ifa_addr->sa_family != AF_INET || (cur->ifa_flags & IFF_LOOPBACK) == IFF_LOOPBACK)
       continue;
 
-    m_interfaces.push_back(new CNetworkInterfaceIOS(this, cur->ifa_name));
+    found.push_back(std::make_unique<CNetworkInterfaceIOS>(this, cur->ifa_name));
   }
 
-  std::ranges::stable_sort(m_interfaces, {}, [](const CNetworkInterfaceIOS* iface)
+  freeifaddrs(list);
+
+  std::ranges::stable_sort(found, {}, [](const auto& iface)
                            { return InterfacePriority(iface->GetInterfaceName()); });
 
-  freeifaddrs(list);
+  CNetworkInterfaces::InterfaceList interfaces;
+  interfaces.reserve(found.size());
+  std::ranges::move(found, std::back_inserter(interfaces));
+  GetInterfaces().SetInterfaces(std::move(interfaces));
 }
 
 std::vector<std::string> CNetworkIOS::GetNameServers()

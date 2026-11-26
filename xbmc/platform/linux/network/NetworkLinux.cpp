@@ -274,7 +274,7 @@ void CNetworkLinux::GetMacAddress(const std::string& interfaceName, char rawMac[
 void CNetworkLinux::queryInterfaceList()
 {
   char macAddrRaw[6];
-  m_interfaces.clear();
+  CNetworkInterfaces::InterfaceList interfaces;
 
   FILE* fp = fopen("/proc/net/dev", "r");
   if (!fp)
@@ -310,10 +310,13 @@ void CNetworkLinux::queryInterfaceList()
     // only add interfaces with non-zero mac addresses
     if (macAddrRaw[0] || macAddrRaw[1] || macAddrRaw[2] || macAddrRaw[3] || macAddrRaw[4] ||
         macAddrRaw[5])
-      m_interfaces.push_back(new CNetworkInterfaceLinux(this, interfaceName, macAddrRaw));
+      interfaces.push_back(
+          std::make_unique<CNetworkInterfaceLinux>(this, interfaceName, macAddrRaw));
   }
   free(line);
   fclose(fp);
+
+  GetInterfaces().SetInterfaces(std::move(interfaces));
 }
 
 std::vector<std::string> CNetworkLinux::GetNameServers()

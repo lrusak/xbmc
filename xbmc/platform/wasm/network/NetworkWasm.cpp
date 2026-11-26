@@ -164,7 +164,12 @@ std::string CNetworkInterfaceWasm::GetTVName() const
 
 CNetworkWasm::CNetworkWasm()
 {
-  m_interfaces.push_back(&m_iface);
+  auto iface = std::make_unique<CNetworkInterfaceWasm>();
+  m_iface = iface.get();
+
+  CNetworkInterfaces::InterfaceList interfaces;
+  interfaces.push_back(std::move(iface));
+  GetInterfaces().SetInterfaces(std::move(interfaces));
 }
 
 CNetworkWasm::~CNetworkWasm() = default;
@@ -176,7 +181,7 @@ std::unique_ptr<CNetworkBase> CNetworkBase::GetNetwork()
 
 bool CNetworkWasm::GetHostName(std::string& hostname)
 {
-  const std::string tvName = m_iface.GetTVName();
+  const std::string tvName = m_iface->GetTVName();
   if (!tvName.empty())
   {
     hostname = tvName;
@@ -186,11 +191,6 @@ bool CNetworkWasm::GetHostName(std::string& hostname)
   return CNetworkBase::GetHostName(hostname);
 }
 
-std::vector<CNetworkInterface*>& CNetworkWasm::GetInterfaceList()
-{
-  return m_interfaces;
-}
-
 bool CNetworkWasm::IcmpPing(unsigned long /*host*/, std::chrono::milliseconds /*timeout*/)
 {
   return false;
@@ -198,5 +198,5 @@ bool CNetworkWasm::IcmpPing(unsigned long /*host*/, std::chrono::milliseconds /*
 
 std::vector<std::string> CNetworkWasm::GetNameServers()
 {
-  return m_iface.GetNameServers();
+  return m_iface->GetNameServers();
 }

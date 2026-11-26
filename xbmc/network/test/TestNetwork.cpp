@@ -10,9 +10,12 @@
 #include "network/Network.h"
 #include "network/NetworkUtils.h"
 
+#include <atomic>
 #include <future>
-#include <mutex>
+#include <initializer_list>
+#include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include <arpa/inet.h>
@@ -20,7 +23,6 @@
 #include <netinet/in.h>
 
 using namespace KODI;
-
 using namespace std::chrono_literals;
 
 class TestNetwork : public testing::Test
@@ -50,78 +52,162 @@ TEST_F(TestNetwork, PingHost)
 
 namespace
 {
-void ExpectInterfaceListLocked(std::mutex& mutex)
-{
-  EXPECT_FALSE(std::async(std::launch::async,
-                          [&mutex]
-                          {
-                            std::unique_lock lock(mutex, std::try_to_lock);
-                            return lock.owns_lock();
-                          })
-                   .get());
-}
-
-class CLockCheckingInterface : public CNetworkInterface
+class CFakeInterface : public CNetworkInterface
 {
 public:
-  explicit CLockCheckingInterface(std::mutex& mutex) : m_mutex(mutex) {}
+  CFakeInterface(bool connected, std::string ip, std::string gateway)
+    : m_connected(connected),
+      m_ip(std::move(ip)),
+      m_gateway(std::move(gateway))
+  {
+  }
 
   bool IsEnabled() const override { return true; }
-  bool IsConnected() const override
-  {
-    ExpectInterfaceListLocked(m_mutex);
-    return true;
-  }
-  std::string GetMacAddress() const override { return {}; }
+  bool IsConnected() const override { return m_connected; }
+  std::string GetMacAddress() const override { return "mac-" + m_ip; }
   void GetMacAddressRaw(char[6]) const override {}
   bool GetHostMacAddress(unsigned long, std::string&) const override { return false; }
-  std::string GetCurrentIPAddress() const override
-  {
-    ExpectInterfaceListLocked(m_mutex);
-    return "192.0.2.1";
-  }
-  std::string GetCurrentNetmask() const override
-  {
-    ExpectInterfaceListLocked(m_mutex);
-    return "255.255.255.0";
-  }
-  std::string GetCurrentDefaultGateway() const override
-  {
-    ExpectInterfaceListLocked(m_mutex);
-    return {};
-  }
+  std::string GetCurrentIPAddress() const override { return m_ip; }
+  std::string GetCurrentNetmask() const override { return "255.255.255.0"; }
+  std::string GetCurrentDefaultGateway() const override { return m_gateway; }
 
 private:
-  std::mutex& m_mutex;
+  bool m_connected;
+  std::string m_ip;
+  std::string m_gateway;
 };
 
-class CLockCheckingNetwork : public CNetworkBase
+class CBlockingInterface : public CFakeInterface
 {
 public:
-  std::unique_lock<std::mutex> LockInterfaceList() override { return std::unique_lock(m_mutex); }
-  std::vector<CNetworkInterface*>& GetInterfaceList() override
+  CBlockingInterface(std::promise<void>& entered,
+                     std::shared_future<void> release,
+                     std::atomic<bool>& destroyed)
+    : CFakeInterface(true, "192.0.2.1", "192.0.2.254"),
+      m_entered(entered),
+      m_release(std::move(release)),
+      m_destroyed(destroyed)
   {
-    ExpectInterfaceListLocked(m_mutex);
-    return m_interfaces;
   }
-  bool GetHostName(std::string&) override { return false; }
-  bool IcmpPing(unsigned long, std::chrono::milliseconds) override { return false; }
-  std::vector<std::string> GetNameServers() override { return {}; }
+  ~CBlockingInterface() override { m_destroyed = true; }
+
+  std::string GetHostName() const override
+  {
+    m_entered.set_value();
+    m_release.wait();
+    return "blocked-host";
+  }
 
 private:
-  std::mutex m_mutex;
-  CLockCheckingInterface m_interface{m_mutex};
-  std::vector<CNetworkInterface*> m_interfaces{&m_interface};
+  std::promise<void>& m_entered;
+  std::shared_future<void> m_release;
+  std::atomic<bool>& m_destroyed;
 };
+
+CNetworkInterfaces::InterfaceList MakeInterfaces(
+    std::initializer_list<std::tuple<bool, std::string, std::string>> specs)
+{
+  CNetworkInterfaces::InterfaceList list;
+  for (const auto& [connected, ip, gateway] : specs)
+    list.push_back(std::make_unique<CFakeInterface>(connected, ip, gateway));
+  return list;
+}
 } // namespace
 
-TEST_F(TestNetwork, InterfaceListRemainsLockedDuringReads)
+TEST(TestNetworkInterfaces, PrefersConnectedInterfaceWithGateway)
 {
-  CLockCheckingNetwork network;
-  EXPECT_TRUE(network.IsAvailable());
-  EXPECT_TRUE(network.IsLocalHost("192.0.2.1"));
-  EXPECT_TRUE(network.HasInterfaceForIP(0xc0000202));
-  EXPECT_NE(network.GetFirstConnectedInterface(), nullptr);
+  CNetworkInterfaces interfaces;
+  interfaces.SetInterfaces(MakeInterfaces({{false, "192.0.2.1", "192.0.2.254"},
+                                           {true, "198.51.100.1", ""},
+                                           {true, "203.0.113.1", "203.0.113.254"}}));
+
+  EXPECT_TRUE(interfaces.IsConnected());
+  EXPECT_EQ(interfaces.GetCurrentIPAddress(), "203.0.113.1");
+  EXPECT_EQ(interfaces.GetDefaultGateway(), "203.0.113.254");
+  EXPECT_EQ(interfaces.GetMacAddress(), "mac-203.0.113.1");
+}
+
+TEST(TestNetworkInterfaces, FallsBackToConnectedInterfaceWithoutGateway)
+{
+  CNetworkInterfaces interfaces;
+  interfaces.SetInterfaces(
+      MakeInterfaces({{false, "192.0.2.1", "192.0.2.254"}, {true, "198.51.100.1", ""}}));
+
+  EXPECT_TRUE(interfaces.IsConnected());
+  EXPECT_EQ(interfaces.GetCurrentIPAddress(), "198.51.100.1");
+}
+
+TEST(TestNetworkInterfaces, NothingConnected)
+{
+  CNetworkInterfaces interfaces;
+  EXPECT_FALSE(interfaces.IsAvailable());
+
+  interfaces.SetInterfaces(MakeInterfaces({{false, "192.0.2.1", "192.0.2.254"}}));
+
+  EXPECT_TRUE(interfaces.IsAvailable());
+  EXPECT_FALSE(interfaces.IsConnected());
+  EXPECT_EQ(interfaces.GetCurrentIPAddress(), "");
+  char mac[6]{};
+  EXPECT_FALSE(interfaces.GetMacAddressRaw(mac));
+}
+
+TEST(TestNetworkInterfaces, MatchesSubnetOfAnyConnectedInterface)
+{
+  CNetworkInterfaces interfaces;
+  interfaces.SetInterfaces(MakeInterfaces({{true, "192.0.2.1", "192.0.2.254"},
+                                           {true, "198.51.100.1", ""},
+                                           {false, "203.0.113.1", ""}}));
+
+  EXPECT_TRUE(interfaces.HasInterfaceForIP(ntohl(inet_addr("192.0.2.77"))));
+  EXPECT_TRUE(interfaces.HasInterfaceForIP(ntohl(inet_addr("198.51.100.77"))));
+  EXPECT_FALSE(interfaces.HasInterfaceForIP(ntohl(inet_addr("203.0.113.77"))));
+  EXPECT_TRUE(interfaces.HasIPAddress("203.0.113.1"));
+  EXPECT_FALSE(interfaces.HasIPAddress("203.0.113.2"));
+}
+
+TEST(TestNetworkInterfaces, DefaultInterfaceWins)
+{
+  CNetworkInterfaces interfaces;
+  interfaces.SetInterfaces(MakeInterfaces({{true, "192.0.2.1", "192.0.2.254"}}));
+  interfaces.SetDefaultInterface(std::make_unique<CFakeInterface>(true, "198.51.100.1", ""));
+
+  EXPECT_EQ(interfaces.GetCurrentIPAddress(), "198.51.100.1");
+
+  interfaces.SetDefaultInterface(nullptr);
+
+  EXPECT_EQ(interfaces.GetCurrentIPAddress(), "192.0.2.1");
+}
+
+TEST(TestNetworkInterfaces, BlockedLookupDoesNotHoldUpOthers)
+{
+  std::promise<void> entered;
+  std::promise<void> release;
+  std::atomic<bool> destroyed{false};
+
+  CNetworkInterfaces interfaces;
+  CNetworkInterfaces::InterfaceList list;
+  list.push_back(
+      std::make_unique<CBlockingInterface>(entered, release.get_future().share(), destroyed));
+  interfaces.SetInterfaces(std::move(list));
+
+  auto hostName = std::async(std::launch::async, [&] { return interfaces.GetHostName(); });
+  entered.get_future().wait();
+
+  auto requery = std::async(std::launch::async,
+                            [&]
+                            {
+                              interfaces.SetInterfaces(
+                                  MakeInterfaces({{true, "198.51.100.1", "198.51.100.254"}}));
+                              return interfaces.GetCurrentIPAddress();
+                            });
+  const bool requeried = requery.wait_for(5s) == std::future_status::ready;
+  EXPECT_FALSE(destroyed);
+
+  release.set_value();
+  ASSERT_TRUE(requeried);
+  EXPECT_EQ(requery.get(), "198.51.100.1");
+  EXPECT_EQ(hostName.get(), "blocked-host");
+  EXPECT_TRUE(destroyed);
 }
 
 TEST(TestNetworkUtils, GetIpStr)
@@ -153,23 +239,14 @@ TEST(TestNetworkUtils, GetMaskByPrefixLength)
 
 namespace
 {
-class CLocalInterface : public CNetworkInterface
-{
-public:
-  bool IsEnabled() const override { return true; }
-  bool IsConnected() const override { return true; }
-  std::string GetMacAddress() const override { return {}; }
-  void GetMacAddressRaw(char[6]) const override {}
-  bool GetHostMacAddress(unsigned long, std::string&) const override { return false; }
-  std::string GetCurrentIPAddress() const override { return "192.0.2.1"; }
-  std::string GetCurrentNetmask() const override { return "255.255.255.0"; }
-  std::string GetCurrentDefaultGateway() const override { return "192.0.2.254"; }
-};
-
 class CLocalNetwork : public CNetworkBase
 {
 public:
-  std::vector<CNetworkInterface*>& GetInterfaceList() override { return m_interfaces; }
+  CLocalNetwork()
+  {
+    GetInterfaces().SetInterfaces(MakeInterfaces({{true, "192.0.2.1", "192.0.2.254"}}));
+  }
+
   bool GetHostName(std::string& hostname) override
   {
     hostname = "kodi-box";
@@ -177,10 +254,6 @@ public:
   }
   bool IcmpPing(unsigned long, std::chrono::milliseconds) override { return false; }
   std::vector<std::string> GetNameServers() override { return {}; }
-
-private:
-  CLocalInterface m_interface;
-  std::vector<CNetworkInterface*> m_interfaces{&m_interface};
 };
 } // namespace
 

@@ -451,11 +451,7 @@ NPT_Result CUPnPRenderer::GetMetadata(const CFileItem& announced, NPT_String& me
 
     thumb = IMAGE_FILES::URLFromFile(thumb);
 
-    NPT_String ip;
-    if (CServiceBroker::GetNetwork().GetFirstConnectedInterface())
-    {
-      ip = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetCurrentIPAddress().c_str();
-    }
+    const NPT_String ip = CServiceBroker::GetNetwork().GetCurrentIPAddress().c_str();
     // build url, use the internal device http server to serv the image
     NPT_HttpUrlQuery query;
     query.AddField("path", thumb.c_str());

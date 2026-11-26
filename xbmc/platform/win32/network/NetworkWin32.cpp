@@ -33,8 +33,11 @@ constexpr auto MAC_LENGTH = 6; // fixed MAC length used in CNetworkInterface
 
 using namespace KODI;
 
-CNetworkInterfaceWin32::CNetworkInterfaceWin32(const IP_ADAPTER_ADDRESSES& adapter)
-  : m_adapter(adapter)
+CNetworkInterfaceWin32::CNetworkInterfaceWin32(
+    const IP_ADAPTER_ADDRESSES& adapter,
+    std::shared_ptr<const std::vector<uint8_t>> adapterAddresses)
+  : m_adapter(adapter),
+    m_adapterAddresses(std::move(adapterAddresses))
 {
 }
 
@@ -114,55 +117,46 @@ CNetworkWin32::CNetworkWin32()
 
 CNetworkWin32::~CNetworkWin32(void)
 {
-  CleanInterfaceList();
   m_netrefreshTimer.Stop();
 }
 
-void CNetworkWin32::CleanInterfaceList()
-{
-  std::vector<CNetworkInterface*>::iterator it = m_interfaces.begin();
-  while(it != m_interfaces.end())
-  {
-    CNetworkInterface* nInt = *it;
-    delete nInt;
-    it = m_interfaces.erase(it);
-  }
-}
-
-std::vector<CNetworkInterface*>& CNetworkWin32::GetInterfaceList(void)
+void CNetworkWin32::UpdateInterfaces()
 {
   std::unique_lock lock(m_critSection);
   if(m_netrefreshTimer.GetElapsedSeconds() >= 5.0f)
     queryInterfaceList();
-
-  return m_interfaces;
 }
 
 void CNetworkWin32::queryInterfaceList()
 {
-  CleanInterfaceList();
   m_netrefreshTimer.StartZero();
 
   const ULONG flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS;
   ULONG ulOutBufLen;
 
   if (GetAdaptersAddresses(AF_INET, flags, nullptr, nullptr, &ulOutBufLen) != ERROR_BUFFER_OVERFLOW)
+  {
+    GetInterfaces().SetInterfaces({});
     return;
+  }
 
-  m_adapterAddresses.resize(ulOutBufLen);
-  auto adapterAddresses = reinterpret_cast<PIP_ADAPTER_ADDRESSES>(m_adapterAddresses.data());
+  auto buffer = std::make_shared<std::vector<uint8_t>>(ulOutBufLen);
+  auto adapterAddresses = reinterpret_cast<PIP_ADAPTER_ADDRESSES>(buffer->data());
 
+  CNetworkInterfaces::InterfaceList interfaces;
   if (GetAdaptersAddresses(AF_INET, flags, nullptr, adapterAddresses, &ulOutBufLen) == NO_ERROR)
   {
     for (PIP_ADAPTER_ADDRESSES adapter = adapterAddresses; adapter; adapter = adapter->Next)
     {
       if (adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK || adapter->OperStatus != IF_OPER_STATUS::IfOperStatusUp)
         continue;
-      m_interfaces.push_back(new CNetworkInterfaceWin32(*adapter));
+      interfaces.push_back(std::make_unique<CNetworkInterfaceWin32>(*adapter, buffer));
     }
   }
   else
     CLog::LogF(LOGDEBUG, "GetAdaptersAddresses() failed ...");
+
+  GetInterfaces().SetInterfaces(std::move(interfaces));
 }
 
 std::vector<std::string> CNetworkWin32::GetNameServers(void)

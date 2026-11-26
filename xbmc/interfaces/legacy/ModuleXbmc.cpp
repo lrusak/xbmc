@@ -211,13 +211,8 @@ namespace XBMCAddon
     String getIPAddress()
     {
       XBMC_TRACE;
-      char cTitleIP[32];
-      snprintf(cTitleIP, sizeof(cTitleIP), "127.0.0.1");
-      CNetworkInterface* iface = CServiceBroker::GetNetwork().GetFirstConnectedInterface();
-      if (iface)
-        return iface->GetCurrentIPAddress();
-
-      return cTitleIP;
+      const std::string ip = CServiceBroker::GetNetwork().GetCurrentIPAddress();
+      return ip.empty() ? "127.0.0.1" : ip;
     }
 
     long getDVDState()

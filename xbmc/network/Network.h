@@ -10,10 +10,11 @@
 
 #include "settings/lib/ISettingCallback.h"
 
-#include <algorithm>
 #include <chrono>
+#include <memory>
 #include <mutex>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "PlatformDefs.h"
@@ -21,19 +22,81 @@
 class CNetworkInterface
 {
 public:
-   virtual ~CNetworkInterface() = default;
+  virtual ~CNetworkInterface() = default;
 
-   virtual bool IsEnabled(void) const = 0;
-   virtual bool IsConnected(void) const = 0;
+  virtual bool IsEnabled(void) const = 0;
+  virtual bool IsConnected(void) const = 0;
 
-   virtual std::string GetMacAddress(void) const = 0;
-   virtual void GetMacAddressRaw(char rawMac[6]) const = 0;
+  virtual std::string GetMacAddress(void) const = 0;
+  virtual void GetMacAddressRaw(char rawMac[6]) const = 0;
 
-   virtual bool GetHostMacAddress(unsigned long host, std::string& mac) const = 0;
+  virtual bool GetHostMacAddress(unsigned long host, std::string& mac) const = 0;
 
-   virtual std::string GetCurrentIPAddress() const = 0;
-   virtual std::string GetCurrentNetmask() const = 0;
-   virtual std::string GetCurrentDefaultGateway(void) const = 0;
+  virtual std::string GetCurrentIPAddress() const = 0;
+  virtual std::string GetCurrentNetmask() const = 0;
+  virtual std::string GetCurrentDefaultGateway(void) const = 0;
+
+  virtual std::string GetHostName() const { return {}; }
+  virtual std::vector<std::string> GetNameServers() const { return {}; }
+};
+
+/*!
+ * \brief The interfaces of a network, which owns them.
+ *
+ * The list is replaced as a whole, so it can be requeried while other threads read it, and an
+ * interface stays valid while a lookup still uses it. No pointer to an interface leaves this class.
+ */
+class CNetworkInterfaces
+{
+public:
+  using InterfaceList = std::vector<std::unique_ptr<CNetworkInterface>>;
+
+  /*!
+   * \brief Replaces the interfaces, the preferred ones first.
+   */
+  void SetInterfaces(InterfaceList interfaces);
+
+  /*!
+   * \brief Sets the interface used for the values below whenever it is set, or clears it.
+   */
+  void SetDefaultInterface(std::unique_ptr<CNetworkInterface> interface);
+
+  bool IsAvailable() const;
+  bool IsConnected() const;
+
+  //! The values of the default interface if set, else of the first connected interface,
+  //! preferring one with a default gateway.
+  //!@{
+  std::string GetCurrentIPAddress() const;
+  std::string GetMacAddress() const;
+  bool GetMacAddressRaw(char rawMac[6]) const;
+  std::string GetNetmask() const;
+  std::string GetDefaultGateway() const;
+  std::string GetHostName() const;
+  std::vector<std::string> GetNameServers() const;
+  //!@}
+
+  //! \brief Whether an interface has the given address.
+  bool HasIPAddress(std::string_view address) const;
+
+  //! \brief Whether a connected interface is on the same subnet as the address.
+  bool HasInterfaceForIP(unsigned long address) const;
+
+  bool GetHostMacAddress(unsigned long host, std::string& mac) const;
+
+private:
+  struct State
+  {
+    std::shared_ptr<const InterfaceList> interfaces{std::make_shared<const InterfaceList>()};
+    std::shared_ptr<const CNetworkInterface> defaultInterface;
+  };
+
+  //! Lookups query the interfaces outside the lock, as some queries block on the network.
+  State GetState() const;
+  static const CNetworkInterface* GetFirstConnectedInterface(const State& state);
+
+  mutable std::mutex m_mutex;
+  State m_state;
 };
 
 class CSettings;
@@ -59,15 +122,15 @@ public:
   // Return our hostname
   virtual bool GetHostName(std::string& hostname);
 
-  // Return the list of interfaces
-  virtual std::vector<CNetworkInterface*>& GetInterfaceList(void) = 0;
+  // Values of the first connected interface, empty if there is none
+  std::string GetCurrentIPAddress();
+  std::string GetMacAddress();
+  bool GetMacAddressRaw(char rawMac[6]);
+  std::string GetNetmask();
+  std::string GetDefaultGateway();
 
-  // Hold this guard throughout access to GetInterfaceList(). Platforms can override
-  // it to synchronize those reads with interface-list refreshes.
-  [[nodiscard]] virtual std::unique_lock<std::mutex> LockInterfaceList() { return {}; }
-
-  // Return the first interface which is active
-  virtual CNetworkInterface* GetFirstConnectedInterface(void);
+  // Return true if a connected interface knows the MAC address of the host
+  bool GetHostMacAddress(unsigned long host, std::string& mac);
 
   // Return true if there is a interface for the same network as address
   bool HasInterfaceForIP(unsigned long address);
@@ -100,4 +163,17 @@ public:
   void WaitForNet();
 
   std::unique_ptr<CNetworkServices> m_services;
+
+protected:
+  /*!
+   * \brief Runs before the interfaces are looked up.
+   *
+   * Platforms that are not told when interfaces change requery them here.
+   */
+  virtual void UpdateInterfaces() {}
+
+  CNetworkInterfaces& GetInterfaces() { return m_interfaces; }
+
+private:
+  CNetworkInterfaces m_interfaces;
 };

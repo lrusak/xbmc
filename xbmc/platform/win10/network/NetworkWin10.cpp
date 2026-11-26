@@ -67,8 +67,11 @@ constexpr int MAC_LENGTH = 6; // fixed MAC length used in CNetworkInterface
 using namespace winrt::Windows::Networking::Connectivity;
 using namespace KODI;
 
-CNetworkInterfaceWin10::CNetworkInterfaceWin10(const PIP_ADAPTER_ADDRESSES address)
-  : m_adapterAddr(address)
+CNetworkInterfaceWin10::CNetworkInterfaceWin10(
+    const PIP_ADAPTER_ADDRESSES address,
+    std::shared_ptr<const std::vector<uint8_t>> adapterAddresses)
+  : m_adapterAddr(address),
+    m_adapterAddresses(std::move(adapterAddresses))
 {
 }
 
@@ -166,48 +169,10 @@ std::string CNetworkInterfaceWin10::GetCurrentDefaultGateway(void) const
 CNetworkWin10::CNetworkWin10() : CNetworkBase()
 {
   queryInterfaceList();
-  NetworkInformation::NetworkStatusChanged(
-      [this](auto&&)
-      {
-        std::unique_lock lock(m_critSection);
-        queryInterfaceList();
-      });
+  NetworkInformation::NetworkStatusChanged([this](auto&&) { queryInterfaceList(); });
 }
 
-CNetworkWin10::~CNetworkWin10(void)
-{
-  CleanInterfaceList();
-}
-
-void CNetworkWin10::CleanInterfaceList()
-{
-  std::vector<CNetworkInterface*>::iterator it = m_interfaces.begin();
-  while(it != m_interfaces.end())
-  {
-    CNetworkInterface* nInt = *it;
-    delete nInt;
-    it = m_interfaces.erase(it);
-  }
-}
-
-std::vector<CNetworkInterface*>& CNetworkWin10::GetInterfaceList(void)
-{
-  std::unique_lock lock(m_critSection);
-  return m_interfaces;
-}
-
-CNetworkInterface* CNetworkWin10::GetFirstConnectedInterface()
-{
-  std::unique_lock lock(m_critSection);
-  for (CNetworkInterface* intf : m_interfaces)
-  {
-    if (intf->IsEnabled() && intf->IsConnected() && !intf->GetCurrentDefaultGateway().empty())
-      return intf;
-  }
-
-  // fallback to default
-  return CNetworkBase::GetFirstConnectedInterface();
-}
+CNetworkWin10::~CNetworkWin10(void) = default;
 
 std::unique_ptr<CNetworkBase> CNetworkBase::GetNetwork()
 {
@@ -216,7 +181,6 @@ std::unique_ptr<CNetworkBase> CNetworkBase::GetNetwork()
 
 void CNetworkWin10::queryInterfaceList()
 {
-  CleanInterfaceList();
 
   struct ci_less
   {
@@ -256,11 +220,15 @@ void CNetworkWin10::queryInterfaceList()
   ULONG ulOutBufLen;
 
   if (GetAdaptersAddresses(AF_INET, flags, nullptr, nullptr, &ulOutBufLen) != ERROR_BUFFER_OVERFLOW)
+  {
+    GetInterfaces().SetInterfaces({});
     return;
+  }
 
-  m_adapterAddresses.resize(ulOutBufLen);
-  auto adapterAddresses = reinterpret_cast<PIP_ADAPTER_ADDRESSES>(m_adapterAddresses.data());
+  auto buffer = std::make_shared<std::vector<uint8_t>>(ulOutBufLen);
+  auto adapterAddresses = reinterpret_cast<PIP_ADAPTER_ADDRESSES>(buffer->data());
 
+  CNetworkInterfaces::InterfaceList interfaces;
   if (GetAdaptersAddresses(AF_INET, flags, nullptr, adapterAddresses, &ulOutBufLen) == NO_ERROR)
   {
     for (PIP_ADAPTER_ADDRESSES adapter = adapterAddresses; adapter; adapter = adapter->Next)
@@ -268,9 +236,11 @@ void CNetworkWin10::queryInterfaceList()
       if (adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK)
         continue;
 
-      m_interfaces.push_back(new CNetworkInterfaceWin10(adapter));
+      interfaces.push_back(std::make_unique<CNetworkInterfaceWin10>(adapter, buffer));
     }
   }
+
+  GetInterfaces().SetInterfaces(std::move(interfaces));
 }
 
 std::vector<std::string> CNetworkWin10::GetNameServers(void)

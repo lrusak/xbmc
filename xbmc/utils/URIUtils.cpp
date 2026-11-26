@@ -1265,7 +1265,7 @@ bool URIUtils::IsHostOnLAN(const std::string& host, LanCheckMode lanCheckMode)
         return true;
     }
     // check if we are on the local subnet
-    if (!CServiceBroker::GetNetwork().GetFirstConnectedInterface())
+    if (!CServiceBroker::GetNetwork().IsConnected())
       return false;
 
     if (CServiceBroker::GetNetwork().HasInterfaceForIP(address))

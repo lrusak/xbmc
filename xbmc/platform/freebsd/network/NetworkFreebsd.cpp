@@ -181,7 +181,7 @@ void CNetworkFreebsd::GetMacAddress(const std::string& interfaceName, char rawMa
 void CNetworkFreebsd::queryInterfaceList()
 {
   char macAddrRaw[6];
-  m_interfaces.clear();
+  CNetworkInterfaces::InterfaceList interfaces;
 
   // Query the list of interfaces.
   struct ifaddrs* list;
@@ -200,10 +200,13 @@ void CNetworkFreebsd::queryInterfaceList()
     if (macAddrRaw[0] || macAddrRaw[1] || macAddrRaw[2] || macAddrRaw[3] || macAddrRaw[4] ||
         macAddrRaw[5])
       // Add the interface.
-      m_interfaces.push_back(new CNetworkInterfaceFreebsd(this, cur->ifa_name, macAddrRaw));
+      interfaces.push_back(
+          std::make_unique<CNetworkInterfaceFreebsd>(this, cur->ifa_name, macAddrRaw));
   }
 
   freeifaddrs(list);
+
+  GetInterfaces().SetInterfaces(std::move(interfaces));
 }
 
 std::vector<std::string> CNetworkFreebsd::GetNameServers()

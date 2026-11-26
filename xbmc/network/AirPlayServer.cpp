@@ -1170,8 +1170,7 @@ int CAirPlayServer::CTCPClient::ProcessRequest( std::string& responseHeader,
   else if (uri == "/server-info")
   {
     CLog::Log(LOGDEBUG, "AIRPLAY: got request {}", uri);
-    responseBody = StringUtils::Format(
-        SERVER_INFO, CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress());
+    responseBody = StringUtils::Format(SERVER_INFO, CServiceBroker::GetNetwork().GetMacAddress());
     responseHeader = "Content-Type: text/x-apple-plist+xml\r\n";
   }
 

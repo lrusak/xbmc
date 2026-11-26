@@ -113,38 +113,15 @@ CNetworkPosix::~CNetworkPosix()
 {
   if (m_sock != -1)
     close(CNetworkPosix::m_sock);
-
-  std::vector<CNetworkInterface*>::iterator it = m_interfaces.begin();
-  while (it != m_interfaces.end())
-  {
-    CNetworkInterface* nInt = *it;
-    delete nInt;
-    it = m_interfaces.erase(it);
-  }
 }
 
-std::vector<CNetworkInterface*>& CNetworkPosix::GetInterfaceList()
+// Requery the interfaces while none is connected, so that an interface that only comes up after
+// start is found.
+void CNetworkPosix::UpdateInterfaces()
 {
-  return m_interfaces;
-}
-
-//! @bug
-//! Overwrite the GetFirstConnectedInterface and requery
-//! the interface list if no connected device is found
-//! this fixes a bug when no network is available after first start of xbmc
-//! and the interface comes up during runtime
-CNetworkInterface* CNetworkPosix::GetFirstConnectedInterface()
-{
-  CNetworkInterface* pNetIf = CNetworkBase::GetFirstConnectedInterface();
-
-  // no connected Interfaces found? - requeryInterfaceList
-  if (!pNetIf)
+  if (!GetInterfaces().IsConnected())
   {
     CLog::Log(LOGDEBUG, "{} no connected interface found - requery list", __FUNCTION__);
     queryInterfaceList();
-    //retry finding a connected if
-    pNetIf = CNetworkBase::GetFirstConnectedInterface();
   }
-
-  return pNetIf;
 }

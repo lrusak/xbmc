@@ -10,7 +10,6 @@
 
 #include "network/Network.h"
 
-#include <mutex>
 #include <string>
 #include <vector>
 
@@ -47,11 +46,6 @@ public:
   CNetworkIOS();
   ~CNetworkIOS() override;
 
-  // Return the list of interfaces
-  std::vector<CNetworkInterface*>& GetInterfaceList() override;
-  [[nodiscard]] std::unique_lock<std::mutex> LockInterfaceList() override;
-  CNetworkInterface* GetFirstConnectedInterface() override;
-
   // Ping remote host
   bool IcmpPing(unsigned long host,
                 const std::chrono::milliseconds timeout = std::chrono::milliseconds(2000)) override;
@@ -61,12 +55,12 @@ public:
 
   friend class CNetworkInterfaceIOS;
 
+protected:
+  void UpdateInterfaces() override;
+
 private:
   int GetSocket() { return m_sock; }
-  // After construction, call only while holding m_interfaceMutex.
   void queryInterfaceList();
 
-  std::mutex m_interfaceMutex;
-  std::vector<CNetworkInterfaceIOS*> m_interfaces;
   int m_sock;
 };

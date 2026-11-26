@@ -42,7 +42,7 @@ public:
   std::string GetCurrentNetmask() const override;
   std::string GetCurrentDefaultGateway() const override;
 
-  std::vector<std::string> GetNameServers() const;
+  std::vector<std::string> GetNameServers() const override;
   std::string GetTVName() const;
 
 private:
@@ -62,12 +62,11 @@ public:
   ~CNetworkWasm() override;
 
   bool GetHostName(std::string& hostname) override;
-  std::vector<CNetworkInterface*>& GetInterfaceList() override;
   bool IcmpPing(unsigned long host,
                 std::chrono::milliseconds timeout = std::chrono::milliseconds(2000)) override;
   std::vector<std::string> GetNameServers() override;
 
 private:
-  CNetworkInterfaceWasm m_iface;
-  std::vector<CNetworkInterface*> m_interfaces;
+  //! The only interface, which the interface list keeps for the life of the network.
+  CNetworkInterfaceWasm* m_iface;
 };

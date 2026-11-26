@@ -601,12 +601,11 @@ bool CAirTunesServer::StartServer(int port, bool nonlocal, bool usePassword, con
 {
   bool success = false;
   std::string pw = password;
-  CNetworkInterface *net = CServiceBroker::GetNetwork().GetFirstConnectedInterface();
   StopServer(true);
 
-  if (net)
+  if (CServiceBroker::GetNetwork().IsConnected())
   {
-    m_macAddress = net->GetMacAddress();
+    m_macAddress = CServiceBroker::GetNetwork().GetMacAddress();
     StringUtils::Replace(m_macAddress, ":","");
     while (m_macAddress.size() < 12)
     {
@@ -737,7 +736,7 @@ bool CAirTunesServer::Initialize(const std::string &password)
 
   if (m_pRaop)
   {
-    char macAdr[6];
+    char macAdr[6]{};
     unsigned short port = (unsigned short)m_port;
 
     raop_set_log_level(m_pRaop, RAOP_LOG_WARNING);
@@ -748,12 +747,7 @@ bool CAirTunesServer::Initialize(const std::string &password)
 
     raop_set_log_callback(m_pRaop, shairplay_log, NULL);
 
-    CNetworkInterface* net = CServiceBroker::GetNetwork().GetFirstConnectedInterface();
-
-    if (net)
-    {
-      net->GetMacAddressRaw(macAdr);
-    }
+    CServiceBroker::GetNetwork().GetMacAddressRaw(macAdr);
 
     ret = raop_start(m_pRaop, &port, macAdr, 6, password.c_str()) >= 0;
   }

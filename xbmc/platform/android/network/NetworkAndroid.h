@@ -9,7 +9,6 @@
 #pragma once
 
 #include "network/Network.h"
-#include "threads/CriticalSection.h"
 
 #include "platform/android/activity/JNIXBMCConnectivityManagerNetworkCallback.h"
 
@@ -23,7 +22,6 @@ public:
   CNetworkInterfaceAndroid(const CJNINetwork& network,
                            const CJNILinkProperties& lp,
                            const CJNINetworkInterface& intf);
-  std::vector<std::string> GetNameServers();
 
   // CNetworkInterface interface
 public:
@@ -36,7 +34,8 @@ public:
   std::string GetCurrentNetmask() const override;
   std::string GetCurrentDefaultGateway() const override;
 
-  std::string GetHostName();
+  std::string GetHostName() const override;
+  std::vector<std::string> GetNameServers() const override;
 
 protected:
   std::string m_name;
@@ -54,9 +53,6 @@ public:
 
   // CNetwork interface
 public:
-  bool GetHostName(std::string& hostname) override;
-  std::vector<CNetworkInterface*>& GetInterfaceList() override;
-  CNetworkInterface* GetFirstConnectedInterface() override;
   std::vector<std::string> GetNameServers() override;
 
   // Ping remote host
@@ -66,11 +62,6 @@ public:
 
 protected:
   void RetrieveInterfaces();
-  std::vector<CNetworkInterface*> m_interfaces;
-  std::vector<CNetworkInterface*> m_oldInterfaces;
-  CCriticalSection m_refreshMutex;
-
-  std::unique_ptr<CNetworkInterface> m_defaultInterface;
 
 public:
   void onAvailable(const CJNINetwork network) override;

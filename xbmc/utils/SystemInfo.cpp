@@ -314,54 +314,33 @@ CSysData::INTERNET_STATE CSysInfoJob::GetInternetState()
 
 std::string CSysInfoJob::GetMACAddress()
 {
-  CNetworkInterface* iface = CServiceBroker::GetNetwork().GetFirstConnectedInterface();
-  std::string mac;
-  if (iface)
-  {
-    mac = iface->GetMacAddress();
-    if (mac.empty())
-      mac =
-          CServiceBroker::GetResourcesComponent().GetLocalizeStrings().Get(10005); // Not available
-  }
+  CNetworkBase& network = CServiceBroker::GetNetwork();
+  std::string mac = network.GetMacAddress();
+  if (mac.empty() && network.IsConnected())
+    mac = CServiceBroker::GetResourcesComponent().GetLocalizeStrings().Get(10005); // Not available
   return mac;
 }
 
 std::string CSysInfoJob::GetIPAddress()
 {
-  CNetworkInterface* iface = CServiceBroker::GetNetwork().GetFirstConnectedInterface();
-  if (iface)
-  {
-    return iface->GetCurrentIPAddress();
-  }
-  return {};
+  return CServiceBroker::GetNetwork().GetCurrentIPAddress();
 }
 
 std::string CSysInfoJob::GetNetMask()
 {
-  CNetworkInterface* iface = CServiceBroker::GetNetwork().GetFirstConnectedInterface();
-  if (iface)
-  {
-    return iface->GetCurrentNetmask();
-  }
-  return {};
+  return CServiceBroker::GetNetwork().GetNetmask();
 }
 
 std::string CSysInfoJob::GetGatewayAddress()
 {
-  CNetworkInterface* iface = CServiceBroker::GetNetwork().GetFirstConnectedInterface();
-  if (iface)
-  {
-    return iface->GetCurrentDefaultGateway();
-  }
-  return {};
+  return CServiceBroker::GetNetwork().GetDefaultGateway();
 }
 
 std::string CSysInfoJob::GetNetworkLinkState()
 {
   std::string linkStatus = CServiceBroker::GetResourcesComponent().GetLocalizeStrings().Get(151);
   linkStatus += " ";
-  CNetworkInterface* iface = CServiceBroker::GetNetwork().GetFirstConnectedInterface();
-  if (iface && iface->IsConnected())
+  if (CServiceBroker::GetNetwork().IsConnected())
   {
     linkStatus += CServiceBroker::GetResourcesComponent().GetLocalizeStrings().Get(15207);
   }

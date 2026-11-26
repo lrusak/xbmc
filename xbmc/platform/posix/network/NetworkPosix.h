@@ -45,14 +45,12 @@ class CNetworkPosix : public CNetworkBase
 public:
   virtual ~CNetworkPosix() override;
 
-  std::vector<CNetworkInterface*>& GetInterfaceList() override;
-  CNetworkInterface* GetFirstConnectedInterface() override;
-
   int GetSocket() { return m_sock; }
 
 protected:
   CNetworkPosix();
-  std::vector<CNetworkInterface*> m_interfaces;
+
+  void UpdateInterfaces() override;
 
 private:
   virtual void GetMacAddress(const std::string& interfaceName, char macAddrRaw[6]) = 0;

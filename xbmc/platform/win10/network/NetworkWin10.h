@@ -9,8 +9,8 @@
 #pragma once
 
 #include "network/Network.h"
-#include "threads/CriticalSection.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -22,7 +22,8 @@ class CNetworkWin10;
 class CNetworkInterfaceWin10 : public CNetworkInterface
 {
 public:
-  CNetworkInterfaceWin10(const PIP_ADAPTER_ADDRESSES adapter);
+  CNetworkInterfaceWin10(const PIP_ADAPTER_ADDRESSES adapter,
+                         std::shared_ptr<const std::vector<uint8_t>> adapterAddresses);
   ~CNetworkInterfaceWin10(void);
 
   virtual bool IsEnabled(void) const;
@@ -39,6 +40,8 @@ public:
 
 private:
   PIP_ADAPTER_ADDRESSES m_adapterAddr;
+  //! Holds the addresses that m_adapterAddr points to.
+  std::shared_ptr<const std::vector<uint8_t>> m_adapterAddresses;
 };
 
 
@@ -48,8 +51,6 @@ public:
     CNetworkWin10();
     virtual ~CNetworkWin10(void);
 
-    std::vector<CNetworkInterface*>& GetInterfaceList(void) override;
-    CNetworkInterface* GetFirstConnectedInterface() override;
     std::vector<std::string> GetNameServers(void) override;
 
     bool IcmpPing(
@@ -61,11 +62,7 @@ public:
 private:
     int GetSocket() { return m_sock; }
     void queryInterfaceList();
-    void CleanInterfaceList();
 
-    std::vector<CNetworkInterface*> m_interfaces;
     int m_sock;
-    CCriticalSection m_critSection;
-    std::vector<uint8_t> m_adapterAddresses;
 };
 

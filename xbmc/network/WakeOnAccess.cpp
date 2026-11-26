@@ -218,16 +218,7 @@ bool CMACDiscoveryJob::DoWork()
     return false;
   }
 
-  auto& network = CServiceBroker::GetNetwork();
-  [[maybe_unused]] auto interfaceListLock = network.LockInterfaceList();
-  const std::vector<CNetworkInterface*>& ifaces = network.GetInterfaceList();
-  for (const auto& it : ifaces)
-  {
-    if (it->GetHostMacAddress(ipAddress, m_macAddress))
-      return true;
-  }
-
-  return false;
+  return CServiceBroker::GetNetwork().GetHostMacAddress(ipAddress, m_macAddress);
 }
 
 //**

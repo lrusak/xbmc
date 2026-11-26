@@ -27,6 +27,8 @@
 #include "utils/StringUtils.h"
 #include "utils/XTimeUtils.h"
 
+#include <algorithm>
+
 CNetworkBase::CNetworkBase() :
   m_services(new CNetworkServices())
 {
@@ -38,8 +40,148 @@ CNetworkBase::~CNetworkBase()
   CServiceBroker::GetAppMessenger()->PostMsg(TMSG_NETWORKMESSAGE, SERVICES_DOWN, 0);
 }
 
+void CNetworkInterfaces::SetInterfaces(InterfaceList interfaces)
+{
+  auto list = std::make_shared<const InterfaceList>(std::move(interfaces));
+  std::unique_lock lock(m_mutex);
+  m_state.interfaces.swap(list);
+}
+
+void CNetworkInterfaces::SetDefaultInterface(std::unique_ptr<CNetworkInterface> interface)
+{
+  std::shared_ptr<const CNetworkInterface> defaultInterface = std::move(interface);
+  std::unique_lock lock(m_mutex);
+  m_state.defaultInterface.swap(defaultInterface);
+}
+
+CNetworkInterfaces::State CNetworkInterfaces::GetState() const
+{
+  std::unique_lock lock(m_mutex);
+  return m_state;
+}
+
+const CNetworkInterface* CNetworkInterfaces::GetFirstConnectedInterface(const State& state)
+{
+  if (state.defaultInterface)
+    return state.defaultInterface.get();
+
+  const CNetworkInterface* fallbackInterface = nullptr;
+  for (const auto& iface : *state.interfaces)
+  {
+    if (iface->IsConnected())
+    {
+      if (!iface->GetCurrentDefaultGateway().empty())
+        return iface.get();
+      else if (fallbackInterface == nullptr)
+        fallbackInterface = iface.get();
+    }
+  }
+
+  return fallbackInterface;
+}
+
+bool CNetworkInterfaces::IsAvailable() const
+{
+  std::unique_lock lock(m_mutex);
+  return !m_state.interfaces->empty();
+}
+
+bool CNetworkInterfaces::IsConnected() const
+{
+  return GetFirstConnectedInterface(GetState()) != nullptr;
+}
+
+std::string CNetworkInterfaces::GetCurrentIPAddress() const
+{
+  const State state = GetState();
+  const CNetworkInterface* iface = GetFirstConnectedInterface(state);
+  return iface ? iface->GetCurrentIPAddress() : std::string{};
+}
+
+std::string CNetworkInterfaces::GetMacAddress() const
+{
+  const State state = GetState();
+  const CNetworkInterface* iface = GetFirstConnectedInterface(state);
+  return iface ? iface->GetMacAddress() : std::string{};
+}
+
+bool CNetworkInterfaces::GetMacAddressRaw(char rawMac[6]) const
+{
+  const State state = GetState();
+  const CNetworkInterface* iface = GetFirstConnectedInterface(state);
+  if (!iface)
+    return false;
+
+  iface->GetMacAddressRaw(rawMac);
+  return true;
+}
+
+std::string CNetworkInterfaces::GetNetmask() const
+{
+  const State state = GetState();
+  const CNetworkInterface* iface = GetFirstConnectedInterface(state);
+  return iface ? iface->GetCurrentNetmask() : std::string{};
+}
+
+std::string CNetworkInterfaces::GetDefaultGateway() const
+{
+  const State state = GetState();
+  const CNetworkInterface* iface = GetFirstConnectedInterface(state);
+  return iface ? iface->GetCurrentDefaultGateway() : std::string{};
+}
+
+std::string CNetworkInterfaces::GetHostName() const
+{
+  const State state = GetState();
+  const CNetworkInterface* iface = GetFirstConnectedInterface(state);
+  return iface ? iface->GetHostName() : std::string{};
+}
+
+std::vector<std::string> CNetworkInterfaces::GetNameServers() const
+{
+  const State state = GetState();
+  const CNetworkInterface* iface = GetFirstConnectedInterface(state);
+  return iface ? iface->GetNameServers() : std::vector<std::string>{};
+}
+
+bool CNetworkInterfaces::HasIPAddress(std::string_view address) const
+{
+  const State state = GetState();
+  return std::ranges::any_of(*state.interfaces, [address](const auto& iface)
+                             { return iface->GetCurrentIPAddress() == address; });
+}
+
+bool CNetworkInterfaces::HasInterfaceForIP(unsigned long address) const
+{
+  const State state = GetState();
+  return std::ranges::any_of(*state.interfaces,
+                             [address](const auto& iface)
+                             {
+                               if (!iface->IsConnected())
+                                 return false;
+
+                               const unsigned long subnet =
+                                   ntohl(inet_addr(iface->GetCurrentNetmask().c_str()));
+                               const unsigned long local =
+                                   ntohl(inet_addr(iface->GetCurrentIPAddress().c_str()));
+                               return (address & subnet) == (local & subnet);
+                             });
+}
+
+bool CNetworkInterfaces::GetHostMacAddress(unsigned long host, std::string& mac) const
+{
+  const State state = GetState();
+  return std::ranges::any_of(*state.interfaces, [host, &mac](const auto& iface)
+                             { return iface->GetHostMacAddress(host, mac); });
+}
+
 bool CNetworkBase::GetHostName(std::string& hostname)
 {
+  UpdateInterfaces();
+  hostname = GetInterfaces().GetHostName();
+  if (!hostname.empty())
+    return true;
+
   char hostName[128];
   if (gethostname(hostName, sizeof(hostName)))
     return false;
@@ -69,72 +211,62 @@ bool CNetworkBase::IsLocalHost(const std::string& hostname)
       && StringUtils::EqualsNoCase(hostname, myhostname))
     return true;
 
-  [[maybe_unused]] auto interfaceListLock = LockInterfaceList();
-  std::vector<CNetworkInterface*>& ifaces = GetInterfaceList();
-  std::vector<CNetworkInterface*>::const_iterator iter = ifaces.begin();
-  while (iter != ifaces.end())
-  {
-    CNetworkInterface* iface = *iter;
-    if (iface && iface->GetCurrentIPAddress() == hostname)
-      return true;
-
-     ++iter;
-  }
-
-  return false;
+  UpdateInterfaces();
+  return GetInterfaces().HasIPAddress(hostname);
 }
 
-CNetworkInterface* CNetworkBase::GetFirstConnectedInterface()
+std::string CNetworkBase::GetCurrentIPAddress()
 {
-  [[maybe_unused]] auto interfaceListLock = LockInterfaceList();
-  CNetworkInterface* fallbackInterface = nullptr;
-  for (CNetworkInterface* iface : GetInterfaceList())
-  {
-    if (iface && iface->IsConnected())
-    {
-      if (!iface->GetCurrentDefaultGateway().empty())
-        return iface;
-      else if (fallbackInterface == nullptr)
-        fallbackInterface = iface;
-    }
-  }
+  UpdateInterfaces();
+  return GetInterfaces().GetCurrentIPAddress();
+}
 
-  return fallbackInterface;
+std::string CNetworkBase::GetMacAddress()
+{
+  UpdateInterfaces();
+  return GetInterfaces().GetMacAddress();
+}
+
+bool CNetworkBase::GetMacAddressRaw(char rawMac[6])
+{
+  UpdateInterfaces();
+  return GetInterfaces().GetMacAddressRaw(rawMac);
+}
+
+std::string CNetworkBase::GetNetmask()
+{
+  UpdateInterfaces();
+  return GetInterfaces().GetNetmask();
+}
+
+std::string CNetworkBase::GetDefaultGateway()
+{
+  UpdateInterfaces();
+  return GetInterfaces().GetDefaultGateway();
+}
+
+bool CNetworkBase::GetHostMacAddress(unsigned long host, std::string& mac)
+{
+  UpdateInterfaces();
+  return GetInterfaces().GetHostMacAddress(host, mac);
 }
 
 bool CNetworkBase::HasInterfaceForIP(unsigned long address)
 {
-  [[maybe_unused]] auto interfaceListLock = LockInterfaceList();
-  unsigned long subnet;
-  unsigned long local;
-  std::vector<CNetworkInterface*>& ifaces = GetInterfaceList();
-  std::vector<CNetworkInterface*>::const_iterator iter = ifaces.begin();
-  while (iter != ifaces.end())
-  {
-    CNetworkInterface* iface = *iter;
-    if (iface && iface->IsConnected())
-    {
-      subnet = ntohl(inet_addr(iface->GetCurrentNetmask().c_str()));
-      local = ntohl(inet_addr(iface->GetCurrentIPAddress().c_str()));
-      if ((address & subnet) == (local & subnet))
-        return true;
-    }
-    ++iter;
-  }
-
-   return false;
+  UpdateInterfaces();
+  return GetInterfaces().HasInterfaceForIP(address);
 }
 
 bool CNetworkBase::IsAvailable(void)
 {
-  [[maybe_unused]] auto interfaceListLock = LockInterfaceList();
-  const std::vector<CNetworkInterface*>& ifaces = GetInterfaceList();
-  return (!ifaces.empty());
+  UpdateInterfaces();
+  return GetInterfaces().IsAvailable();
 }
 
 bool CNetworkBase::IsConnected()
 {
-   return GetFirstConnectedInterface() != NULL;
+  UpdateInterfaces();
+  return GetInterfaces().IsConnected();
 }
 
 void CNetworkBase::NetworkMessage(EMESSAGE message, int param)

@@ -33,7 +33,7 @@ CNetworkInterfaceAndroid::CNetworkInterfaceAndroid(const CJNINetwork& network,
   m_name = m_intf.getName();
 }
 
-std::vector<std::string> CNetworkInterfaceAndroid::GetNameServers()
+std::vector<std::string> CNetworkInterfaceAndroid::GetNameServers() const
 {
   std::vector<std::string> ret;
 
@@ -204,7 +204,7 @@ std::string CNetworkInterfaceAndroid::GetCurrentDefaultGateway() const
   return "";
 }
 
-std::string CNetworkInterfaceAndroid::GetHostName()
+std::string CNetworkInterfaceAndroid::GetHostName() const
 {
   CJNIList<CJNILinkAddress> lla = m_lp.getLinkAddresses();
   if (lla.size() == 0)
@@ -242,57 +242,13 @@ CNetworkAndroid::CNetworkAndroid() : CNetworkBase(), CJNIXBMCConnectivityManager
 
 CNetworkAndroid::~CNetworkAndroid()
 {
-  for (auto intf : m_interfaces)
-    delete intf;
-  for (auto intf : m_oldInterfaces)
-    delete intf;
-
   CJNIConnectivityManager connman{CJNIContext::getSystemService(CJNIContext::CONNECTIVITY_SERVICE)};
   connman.unregisterNetworkCallback(this->get_raw());
 }
 
-bool CNetworkAndroid::GetHostName(std::string& hostname)
-{
-  CNetworkInterfaceAndroid* intf = dynamic_cast<CNetworkInterfaceAndroid*>(GetFirstConnectedInterface());
-  if (intf)
-  {
-    hostname = intf->GetHostName();
-    return true;
-  }
-  return false;
-}
-
-std::vector<CNetworkInterface*>& CNetworkAndroid::GetInterfaceList()
-{
-  std::unique_lock lock(m_refreshMutex);
-  return m_interfaces;
-}
-
-CNetworkInterface* CNetworkAndroid::GetFirstConnectedInterface()
-{
-  std::unique_lock lock(m_refreshMutex);
-
-  if (m_defaultInterface)
-    return m_defaultInterface.get();
-  else
-  {
-    for (CNetworkInterface* intf : m_interfaces)
-    {
-      if (intf->IsEnabled() && intf->IsConnected() && !intf->GetCurrentDefaultGateway().empty())
-        return intf;
-    }
-  }
-
-  return nullptr;
-}
-
 std::vector<std::string> CNetworkAndroid::GetNameServers()
 {
-  CNetworkInterfaceAndroid* intf = static_cast<CNetworkInterfaceAndroid*>(GetFirstConnectedInterface());
-  if (intf)
-    return intf->GetNameServers();
-
-  return std::vector<std::string>();
+  return GetInterfaces().GetNameServers();
 }
 
 bool CNetworkAndroid::IcmpPing(unsigned long remote_ip, const std::chrono::milliseconds timeout)
@@ -323,13 +279,7 @@ bool CNetworkAndroid::IcmpPing(unsigned long remote_ip, const std::chrono::milli
 
 void CNetworkAndroid::RetrieveInterfaces()
 {
-  std::unique_lock lock(m_refreshMutex);
-
-  // Cannot delete interfaces here, as there still might have references to it
-  for (auto intf : m_oldInterfaces)
-    delete intf;
-  m_oldInterfaces = m_interfaces;
-  m_interfaces.clear();
+  CNetworkInterfaces::InterfaceList interfaces;
 
   CJNIConnectivityManager connman(CJNIContext::getSystemService(CJNIContext::CONNECTIVITY_SERVICE));
   std::vector<CJNINetwork> networks = connman.getAllNetworks();
@@ -348,7 +298,7 @@ void CNetworkAndroid::RetrieveInterfaces()
         continue;
       }
       if (intf)
-        m_interfaces.push_back(new CNetworkInterfaceAndroid(n, lp, intf));
+        interfaces.push_back(std::make_unique<CNetworkInterfaceAndroid>(n, lp, intf));
       else
         CLog::Log(LOGERROR, "CNetworkAndroid::RetrieveInterfaces Cannot get interface by name: {}",
                   lp.getInterfaceName());
@@ -358,6 +308,8 @@ void CNetworkAndroid::RetrieveInterfaces()
                 "CNetworkAndroid::RetrieveInterfaces Cannot get link properties for network: {}",
                 n.toString());
   }
+
+  GetInterfaces().SetInterfaces(std::move(interfaces));
 }
 
 void CNetworkAndroid::onAvailable(const CJNINetwork n)
@@ -378,7 +330,7 @@ void CNetworkAndroid::onAvailable(const CJNINetwork n)
       return;
     }
     if (intf)
-      m_defaultInterface = std::make_unique<CNetworkInterfaceAndroid>(n, lp, intf);
+      GetInterfaces().SetDefaultInterface(std::make_unique<CNetworkInterfaceAndroid>(n, lp, intf));
   }
 }
 
@@ -386,5 +338,6 @@ void CNetworkAndroid::onLost(const CJNINetwork n)
 {
   CLog::Log(LOGDEBUG, "CNetworkAndroid::onLost No default network (the last was: {})",
             n.toString());
-  m_defaultInterface = nullptr;
+
+  GetInterfaces().SetDefaultInterface(nullptr);
 }
