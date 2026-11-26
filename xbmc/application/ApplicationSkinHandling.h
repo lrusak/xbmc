@@ -24,6 +24,7 @@ class IWindowManagerCallback;
 class CApplicationSkinHandling : public IApplicationComponent, public ISettingCallback
 {
   friend class CApplication;
+  friend class CApplicationRendering;
 
 public:
   CApplicationSkinHandling(IMsgTargetCallback* msgCb,

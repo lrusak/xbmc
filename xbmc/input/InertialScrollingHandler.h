@@ -19,6 +19,7 @@ class CAction;
 class CInertialScrollingHandler
 {
   friend class CApplication;
+  friend class CApplicationRendering;
 
 public:
   CInertialScrollingHandler();

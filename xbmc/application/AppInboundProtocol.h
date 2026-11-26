@@ -18,6 +18,7 @@ class CApplication;
 class CAppInboundProtocol
 {
   friend class CApplication;
+  friend class CApplicationRendering;
 
 public:
   CAppInboundProtocol(CApplication& app);

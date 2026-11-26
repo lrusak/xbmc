@@ -44,6 +44,7 @@
 #include "application/ApplicationPlay.h"
 #include "application/ApplicationPlayer.h"
 #include "application/ApplicationPowerHandling.h"
+#include "application/ApplicationRendering.h"
 #include "application/ApplicationSkinHandling.h"
 #include "application/ApplicationStackHelper.h"
 #include "application/ApplicationVolumeHandling.h"
@@ -217,14 +218,13 @@ using KODI::MESSAGING::HELPERS::DialogResponse;
 
 using namespace std::chrono_literals;
 
-
 CApplication::CApplication(void)
   :
 #ifdef HAS_OPTICAL_DRIVE
     m_Autorun(new CAutorun()),
 #endif
+    m_rendering(std::make_unique<CApplicationRendering>(*this)),
     m_pInertialScrollingHandler(new CInertialScrollingHandler()),
-    m_WaitingExternalCalls(0),
     m_itemCurrentFile(std::make_shared<CFileItem>()),
     m_playerEvent(true, true)
 {
@@ -239,7 +239,8 @@ CApplication::CApplication(void)
   RegisterComponent(std::make_shared<CApplicationContentGeometry>());
   RegisterComponent(std::make_shared<CApplicationPlayer>());
   RegisterComponent(std::make_shared<CApplicationPowerHandling>());
-  RegisterComponent(std::make_shared<CApplicationSkinHandling>(this, this, m_bInitializing));
+  RegisterComponent(
+      std::make_shared<CApplicationSkinHandling>(this, m_rendering.get(), m_bInitializing));
   RegisterComponent(std::make_shared<CApplicationVolumeHandling>());
   RegisterComponent(std::make_shared<CApplicationStackHelper>());
 }
@@ -404,155 +405,17 @@ bool CApplication::Create()
 
   CUtil::InitRandomSeed();
 
-  m_lastRenderTime = std::chrono::steady_clock::now();
   return true;
 }
 
 bool CApplication::CreateGUI()
 {
-  m_frameMoveGuard.lock();
-
-  const auto appPower = GetComponent<CApplicationPowerHandling>();
-  appPower->SetRenderGUI(true);
-
-  auto windowSystems = KODI::WINDOWING::CWindowSystemFactory::GetWindowSystems();
-
-  const std::string& windowing = CServiceBroker::GetAppParams()->GetWindowing();
-
-  if (!windowing.empty())
-    windowSystems = {windowing};
-
-  for (auto& windowSystem : windowSystems)
-  {
-    CLog::Log(LOGDEBUG, "CApplication::{} - trying to init {} windowing system", __FUNCTION__,
-              windowSystem);
-    m_pWinSystem = KODI::WINDOWING::CWindowSystemFactory::CreateWindowSystem(windowSystem);
-
-    if (!m_pWinSystem)
-      continue;
-
-    if (!windowing.empty() && windowing != windowSystem)
-      continue;
-
-    CServiceBroker::RegisterWinSystem(m_pWinSystem.get());
-
-    if (!m_pWinSystem->InitWindowSystem())
-    {
-      CLog::Log(LOGDEBUG, "CApplication::{} - unable to init {} windowing system", __FUNCTION__,
-                windowSystem);
-      m_pWinSystem->DestroyWindowSystem();
-      m_pWinSystem.reset();
-      CServiceBroker::UnregisterWinSystem();
-      continue;
-    }
-    else
-    {
-      CLog::Log(LOGINFO, "CApplication::{} - using the {} windowing system", __FUNCTION__,
-                windowSystem);
-      break;
-    }
-  }
-
-  if (!m_pWinSystem)
-  {
-    CLog::Log(LOGFATAL, "CApplication::{} - unable to init windowing system", __FUNCTION__);
-    CServiceBroker::UnregisterWinSystem();
-    return false;
-  }
-
-  // Retrieve the matching resolution based on GUI settings
-  bool sav_res = false;
-  CDisplaySettings::GetInstance().SetCurrentResolution(CDisplaySettings::GetInstance().GetDisplayResolution());
-  CLog::Log(LOGINFO, "Checking resolution {}",
-            CDisplaySettings::GetInstance().GetCurrentResolution());
-  if (!CServiceBroker::GetWinSystem()->GetGfxContext().IsValidResolution(CDisplaySettings::GetInstance().GetCurrentResolution()))
-  {
-    CLog::Log(LOGINFO, "Setting safe mode {}", RES_DESKTOP);
-    // defer saving resolution after window was created
-    CDisplaySettings::GetInstance().SetCurrentResolution(RES_DESKTOP);
-    sav_res = true;
-  }
-
-  // update the window resolution
-  const std::shared_ptr<CSettings> settings = CServiceBroker::GetSettingsComponent()->GetSettings();
-  CServiceBroker::GetWinSystem()->SetWindowResolution(settings->GetInt(CSettings::SETTING_WINDOW_WIDTH), settings->GetInt(CSettings::SETTING_WINDOW_HEIGHT));
-
-  ApplyRasterSettings();
-
-  if (CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_startFullScreen && CDisplaySettings::GetInstance().GetCurrentResolution() == RES_WINDOW)
-  {
-    // defer saving resolution after window was created
-    CDisplaySettings::GetInstance().SetCurrentResolution(RES_DESKTOP);
-    sav_res = true;
-  }
-
-  if (!CServiceBroker::GetWinSystem()->GetGfxContext().IsValidResolution(CDisplaySettings::GetInstance().GetCurrentResolution()))
-  {
-    // Oh uh - doesn't look good for starting in their wanted screenmode
-    CLog::Log(LOGERROR, "The screen resolution requested is not valid, resetting to a valid mode");
-    CDisplaySettings::GetInstance().SetCurrentResolution(RES_DESKTOP);
-    sav_res = true;
-  }
-  if (!InitWindow())
-  {
-    return false;
-  }
-
-  // Set default screen saver mode
-  auto screensaverModeSetting = std::static_pointer_cast<CSettingString>(settings->GetSetting(CSettings::SETTING_SCREENSAVER_MODE));
-  // Can only set this after windowing has been initialized since it depends on it
-  if (CServiceBroker::GetWinSystem()->GetOSScreenSaver())
-  {
-    // If OS has a screen saver, use it by default
-    screensaverModeSetting->SetDefault("");
-  }
-  else
-  {
-    // If OS has no screen saver, use Kodi one by default
-    screensaverModeSetting->SetDefault("screensaver.xbmc.builtin.dim");
-  }
-
-  if (sav_res)
-    CDisplaySettings::GetInstance().SetCurrentResolution(RES_DESKTOP, true);
-
-  m_pGUI = std::make_unique<CGUIComponent>();
-  m_pGUI->Init();
-
-  // Splash requires gui component!!
-  CServiceBroker::GetRenderSystem()->ShowSplash("");
-
-  // The key mappings may already have been loaded by a peripheral
-  CLog::Log(LOGINFO, "load keymapping");
-  if (!CServiceBroker::GetInputManager().LoadKeymaps())
-    return false;
-
-  RESOLUTION_INFO info = CServiceBroker::GetWinSystem()->GetGfxContext().GetResInfo();
-  CLog::Log(LOGINFO, "GUI format {}x{}, Display {}", info.iWidth, info.iHeight, info.strMode);
-
-  return true;
+  return m_rendering->CreateGUI();
 }
 
 bool CApplication::InitWindow(RESOLUTION res)
 {
-  if (res == RES_INVALID)
-    res = CDisplaySettings::GetInstance().GetCurrentResolution();
-
-  bool bFullScreen = res != RES_WINDOW;
-  if (!CServiceBroker::GetWinSystem()->CreateNewWindow(CSysInfo::GetAppName(),
-                                                      bFullScreen, CDisplaySettings::GetInstance().GetResolutionInfo(res)))
-  {
-    CLog::Log(LOGFATAL, "CApplication::Create: Unable to create window");
-    return false;
-  }
-
-  if (!CServiceBroker::GetRenderSystem()->InitRenderSystem())
-  {
-    CLog::Log(LOGFATAL, "CApplication::Create: Unable to init rendering system");
-    return false;
-  }
-  // set GUI res and force the clear of the screen
-  CServiceBroker::GetWinSystem()->GetGfxContext().SetVideoResolution(res, false);
-  return true;
+  return m_rendering->InitWindow(res);
 }
 
 bool CApplication::Initialize()
@@ -625,9 +488,9 @@ bool CApplication::Initialize()
   {
     if (databaseManager.IsConnecting() || databaseManager.IsUpgrading())
     {
-      CServiceBroker::GetRenderSystem()->ShowSplash(
-          std::string(iDots, ' ') + (databaseManager.IsConnecting() ? connecting : updating) +
-          std::string(iDots, '.'));
+      m_rendering->ShowSplash(std::string(iDots, ' ') +
+                              (databaseManager.IsConnecting() ? connecting : updating) +
+                              std::string(iDots, '.'));
     }
 
     if (iDots == 3)
@@ -635,7 +498,7 @@ bool CApplication::Initialize()
     else
       ++iDots;
   }
-  CServiceBroker::GetRenderSystem()->ShowSplash("");
+  m_rendering->ShowSplash("");
 
   if (!allDatabasesInitialized)
   {
@@ -648,8 +511,7 @@ bool CApplication::Initialize()
     unsigned int secondsLeftUntilExit{10};
     while (secondsLeftUntilExit)
     {
-      CServiceBroker::GetRenderSystem()->ShowSplash(
-          StringUtils::Format(dbInitFailedExiting, secondsLeftUntilExit));
+      m_rendering->ShowSplash(StringUtils::Format(dbInitFailedExiting, secondsLeftUntilExit));
       KODI::TIME::Sleep(1s);
       secondsLeftUntilExit--;
     }
@@ -672,15 +534,14 @@ bool CApplication::Initialize()
   while (!event->Wait(1000ms))
   {
     if (g_fontManager.IsUpdating())
-      CServiceBroker::GetRenderSystem()->ShowSplash(std::string(iDots, ' ') + localizedStr +
-                                                    std::string(iDots, '.'));
+      m_rendering->ShowSplash(std::string(iDots, ' ') + localizedStr + std::string(iDots, '.'));
 
     if (iDots == 3)
       iDots = 1;
     else
       ++iDots;
   }
-  CServiceBroker::GetRenderSystem()->ShowSplash("");
+  m_rendering->ShowSplash("");
 
   // GUI depends on seek handler
   GetComponent<CApplicationPlayer>()->GetSeekHandler().Configure();
@@ -694,7 +555,8 @@ bool CApplication::Initialize()
   {
     const auto settings = CServiceBroker::GetSettingsComponent()->GetSettings();
 
-    CServiceBroker::GetGUI()->GetWindowManager().CreateWindows();
+    m_rendering->RunOnGUIThread([]()
+                                { CServiceBroker::GetGUI()->GetWindowManager().CreateWindows(); });
 
     skinHandling->m_confirmSkinChange = false;
 
@@ -720,8 +582,7 @@ bool CApplication::Initialize()
         iDots = 1;
         while (!event->Wait(1000ms))
         {
-          CServiceBroker::GetRenderSystem()->ShowSplash(std::string(iDots, ' ') + localizedStr +
-                                                        std::string(iDots, '.'));
+          m_rendering->ShowSplash(std::string(iDots, ' ') + localizedStr + std::string(iDots, '.'));
           if (iDots == 3)
             iDots = 1;
           else
@@ -738,7 +599,7 @@ bool CApplication::Initialize()
     }
 
     // Start splashscreen and load skin
-    CServiceBroker::GetRenderSystem()->ShowSplash("");
+    m_rendering->ShowSplash("");
     skinHandling->m_confirmSkinChange = true;
 
     auto setting = settings->GetSetting(CSettings::SETTING_LOOKANDFEEL_SKIN);
@@ -751,17 +612,27 @@ bool CApplication::Initialize()
     CServiceBroker::RegisterTextureCache(std::make_shared<CTextureCache>());
 
     std::string skinId = settings->GetString(CSettings::SETTING_LOOKANDFEEL_SKIN);
-    if (!skinHandling->LoadSkin(skinId))
-    {
-      CLog::Log(LOGERROR, "Failed to load skin '{}'", skinId);
-      std::string defaultSkin =
-          std::static_pointer_cast<const CSettingString>(setting)->GetDefault();
-      if (!skinHandling->LoadSkin(defaultSkin))
-      {
-        CLog::Log(LOGFATAL, "Default skin '{}' could not be loaded! Terminating..", defaultSkin);
-        return false;
-      }
-    }
+    bool skinLoaded{false};
+    m_rendering->RunOnGUIThread(
+        [&]()
+        {
+          if (skinHandling->LoadSkin(skinId))
+          {
+            skinLoaded = true;
+            return;
+          }
+
+          CLog::Log(LOGERROR, "Failed to load skin '{}'", skinId);
+          std::string defaultSkin =
+              std::static_pointer_cast<const CSettingString>(setting)->GetDefault();
+          if (skinHandling->LoadSkin(defaultSkin))
+            skinLoaded = true;
+          else
+            CLog::Log(LOGFATAL, "Default skin '{}' could not be loaded! Terminating..",
+                      defaultSkin);
+        });
+    if (!skinLoaded)
+      return false;
 
     // initialize splash window after splash screen disappears
     // because we need a real window in the background which gets
@@ -857,149 +728,6 @@ bool CApplication::OnSettingsSaving() const
   // a lot of screens try to save settings on deinit and deinit is
   // called for every screen when the application is stopping
   return !m_bStop;
-}
-
-namespace
-{
-// capture tap: serve pending requests from the finished frame before it is
-// presented.
-void ServiceCaptureTaps(CApplicationPlayer& player)
-{
-  using namespace KODI::RENDERING::CAPTURE;
-
-  const auto captureService = CServiceBroker::GetCaptureService();
-  if (!captureService)
-    return;
-
-  const auto requests = captureService->TakeActive(CaptureContent::COMPOSITE);
-  if (requests.empty())
-    return;
-  const auto& request = requests.front(); // at most one consumer per frame
-
-  auto* winSystem = CServiceBroker::GetWinSystem();
-  auto surface = CScreenShot::CreateSurface();
-  if (!winSystem || !surface)
-  {
-    captureService->Fail(request);
-    return;
-  }
-
-  const ScreenshotContext ctx{*winSystem};
-  if (!surface->Read(ctx))
-  {
-    captureService->Fail(request);
-    return;
-  }
-
-  CaptureResult result;
-  result.pixels =
-      std::make_shared<CHeapCapturePixels>(std::unique_ptr<uint8_t[]>(surface->TakeBuffer()));
-  result.width = static_cast<unsigned int>(surface->GetWidth());
-  result.height = static_cast<unsigned int>(surface->GetHeight());
-  result.stride = surface->GetStride();
-  result.format = surface->GetFormat();
-  result.color = GetOutputColorMetadata(*winSystem);
-  result.content = CaptureContent::COMPOSITE; // this tap is the composite half
-
-  if (!player.CompositeVideoCapture(result))
-  {
-    captureService->Fail(request);
-    return;
-  }
-
-  captureService->Complete(request, result);
-}
-
-} // namespace
-
-void CApplication::Render()
-{
-  // do not render if we are stopped or in background
-  if (m_bStop)
-    return;
-
-  const auto appPlayer = GetComponent<CApplicationPlayer>();
-  const auto appPower = GetComponent<CApplicationPowerHandling>();
-
-  bool hasRendered = false;
-
-  // Whether externalplayer is playing and we're unfocused
-  bool extPlayerActive = appPlayer->IsExternalPlaying() && !m_AppFocused;
-
-  if (!extPlayerActive && CServiceBroker::GetWinSystem()->GetGfxContext().IsFullScreenVideo() &&
-      !appPlayer->IsPausedPlayback())
-  {
-    appPower->ResetScreenSaver();
-  }
-
-  if (!CServiceBroker::GetRenderSystem()->BeginRender())
-    return;
-
-  // render gui layer
-  const bool guiWillRender = appPower->GetRenderGUI() && !m_skipGuiRender;
-  bool compositing = CServiceBroker::GetWinSystem()->BeginGuiComposite(guiWillRender);
-
-  if (guiWillRender)
-  {
-    if (CServiceBroker::GetWinSystem()->GetGfxContext().GetStereoMode() != RenderStereoMode::OFF)
-    {
-      CServiceBroker::GetWinSystem()->GetGfxContext().SetStereoView(RenderStereoView::LEFT);
-      hasRendered |= CServiceBroker::GetGUI()->GetWindowManager().Render();
-
-      if (CServiceBroker::GetWinSystem()->GetGfxContext().GetStereoMode() != RenderStereoMode::MONO)
-      {
-        CServiceBroker::GetWinSystem()->GetGfxContext().SetStereoView(RenderStereoView::RIGHT);
-        hasRendered |= CServiceBroker::GetGUI()->GetWindowManager().Render();
-      }
-      CServiceBroker::GetWinSystem()->GetGfxContext().SetStereoView(RenderStereoView::OFF);
-    }
-    else
-    {
-      hasRendered |= CServiceBroker::GetGUI()->GetWindowManager().Render();
-    }
-    // execute post rendering actions (finalize window closing)
-    CServiceBroker::GetGUI()->GetWindowManager().AfterRender();
-
-    m_lastRenderTime = std::chrono::steady_clock::now();
-  }
-
-  if (compositing)
-    CServiceBroker::GetWinSystem()->EndGuiComposite();
-
-  // render video layer
-  CServiceBroker::GetGUI()->GetWindowManager().RenderEx();
-
-  if (compositing)
-    CServiceBroker::GetWinSystem()->CompositeGui();
-
-  // serve pending requests from the finished frame, then fail any left
-  // unserved. Both need a frame that really drew: on a skipped frame nothing
-  // could be served, so FrameComplete would kill live requests.
-  if (hasRendered)
-  {
-    ServiceCaptureTaps(*appPlayer);
-    if (const auto captureService = CServiceBroker::GetCaptureService())
-      captureService->FrameComplete();
-  }
-
-  CServiceBroker::GetRenderSystem()->EndRender();
-
-  // reset our info cache - we do this at the end of Render so that it is
-  // fresh for the next process(), or after a windowclose animation (where process()
-  // isn't called)
-  CGUIInfoManager& infoMgr = CServiceBroker::GetGUI()->GetInfoManager();
-  infoMgr.ResetCache();
-  infoMgr.GetInfoProviders().GetGUIControlsInfoProvider().ResetContainerMovingCache();
-
-  if (hasRendered)
-  {
-    infoMgr.GetInfoProviders().GetSystemInfoProvider().UpdateFPS();
-  }
-
-  CServiceBroker::GetWinSystem()->GetGfxContext().Flip(hasRendered,
-                                                       appPlayer->IsRenderingVideoLayer());
-
-  CTimeUtils::UpdateFrameTime(hasRendered);
 }
 
 bool CApplication::OnAction(const CAction &action)
@@ -1331,162 +1059,20 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
 
 void CApplication::LockFrameMoveGuard()
 {
-  ++m_WaitingExternalCalls;
-  m_frameMoveGuard.lock();
-  ++m_ProcessedExternalCalls;
-  CServiceBroker::GetWinSystem()->GetGfxContext().lock();
+  m_rendering->LockFrameMoveGuard();
 }
 
 void CApplication::UnlockFrameMoveGuard()
 {
-  --m_WaitingExternalCalls;
-  CServiceBroker::GetWinSystem()->GetGfxContext().unlock();
-  m_frameMoveGuard.unlock();
-}
-
-void CApplication::UpdateDrawnPicture()
-{
-  CGraphicContext& context = CServiceBroker::GetWinSystem()->GetGfxContext();
-  const auto geometry = GetComponent<CApplicationContentGeometry>();
-
-  const bool playing = context.IsFullScreenVideo();
-  if (!playing && !m_drawnPictureLive)
-    return;
-
-  m_drawnPictureLive = playing;
-
-  VIDEO::GEOMETRY::DrawnGeometry drawn;
-  CRect source;
-  CRect video;
-  CRect view;
-  if (playing && GetComponent<CApplicationPlayer>()->GetRects(source, video, view))
-  {
-    drawn.picture =
-        VIDEO::GEOMETRY::PictureOnScreen(geometry->GetRenderInputs().geometry, source, video);
-    drawn.raster = context.GetRasterRect();
-  }
-
-  geometry->SetDrawn(drawn);
-
-  const bool confineToPicture =
-      geometry->OsdPlacementInForce() == VIDEO::GEOMETRY::OsdPlacement::Picture;
-  if (context.SetGuiContentRect(confineToPicture ? drawn.picture : CRect{}))
-    CServiceBroker::GetGUI()->GetWindowManager().MarkDirty();
-}
-
-void CApplication::FrameMove(bool processEvents, bool processGUI)
-{
-  const auto appPlayer = GetComponent<CApplicationPlayer>();
-  bool renderGUI = GetComponent<CApplicationPowerHandling>()->GetRenderGUI();
-  if (processEvents)
-  {
-    // currently we calculate the repeat time (ie time from last similar keypress) just global as fps
-    float frameTime = m_frameTime.GetElapsedSeconds();
-    m_frameTime.StartZero();
-    // never set a frametime less than 2 fps to avoid problems when debugging and on breaks
-    if (frameTime > 0.5f)
-      frameTime = 0.5f;
-
-    if (processGUI && renderGUI)
-    {
-      std::unique_lock lock(CServiceBroker::GetWinSystem()->GetGfxContext());
-      // check if there are notifications to display
-      CGUIDialogKaiToast *toast = CServiceBroker::GetGUI()->GetWindowManager().GetWindow<CGUIDialogKaiToast>(WINDOW_DIALOG_KAI_TOAST);
-      if (toast && toast->DoWork())
-      {
-        // also reopens the dialog if it is still running its close animation
-        toast->Open();
-      }
-    }
-
-    m_pMsgHandling->HandleEvents();
-    CServiceBroker::GetInputManager().Process(CServiceBroker::GetGUI()->GetWindowManager().GetActiveWindowOrDialog(), frameTime);
-
-    if (processGUI && renderGUI)
-    {
-      m_pInertialScrollingHandler->ProcessInertialScroll(frameTime);
-      appPlayer->GetSeekHandler().FrameMove();
-    }
-
-    // Open the door for external calls e.g python exactly here.
-    // Window size can be between 2 and 10ms and depends on number of continuous requests
-    // Stop() has already released the guard; don't take it back on the way out
-    if (m_WaitingExternalCalls && !m_bStop)
-    {
-      CSingleExit ex(CServiceBroker::GetWinSystem()->GetGfxContext());
-      m_frameMoveGuard.unlock();
-
-      // Calculate a window size between 2 and 10ms, 4 continuous requests let the window grow by 1ms
-      // When not playing video we allow it to increase to 80ms
-      unsigned int max_sleep = 10;
-      if (!appPlayer->IsPlayingVideo() || appPlayer->IsPausedPlayback())
-        max_sleep = 80;
-      unsigned int sleepTime = std::max(static_cast<unsigned int>(2), std::min(m_ProcessedExternalCalls >> 2, max_sleep));
-      KODI::TIME::Sleep(std::chrono::milliseconds(sleepTime));
-      m_frameMoveGuard.lock();
-      m_ProcessedExternalDecay = 5;
-    }
-    if (m_ProcessedExternalDecay && --m_ProcessedExternalDecay == 0)
-      m_ProcessedExternalCalls = 0;
-  }
-
-  if (processGUI && renderGUI)
-  {
-    m_skipGuiRender = false;
-
-    // a new request, or a latched one-shot still awaiting service, marks the
-    // window manager dirty so an otherwise-idle GUI really renders a frame to tap
-    if (const auto captureService = CServiceBroker::GetCaptureService();
-        captureService && captureService->LatchFrame())
-      CServiceBroker::GetGUI()->GetWindowManager().MarkDirty();
-
-    /*! @todo look into the possibility to use this for GBM
-    int fps = 0;
-
-    // This code reduces rendering fps of the GUI layer when playing videos in fullscreen mode
-    // it makes only sense on architectures with multiple layers
-    if (CServiceBroker::GetWinSystem()->GetGfxContext().IsFullScreenVideo() && !m_appPlayer.IsPausedPlayback() && m_appPlayer.IsRenderingVideoLayer())
-      fps = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_VIDEOPLAYER_LIMITGUIUPDATE);
-
-    auto now = std::chrono::steady_clock::now();
-
-    auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastRenderTime).count();
-    if (fps > 0 && frameTime * fps < 1000)
-      m_skipGuiRender = true;
-    */
-
-    if (CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_guiSmartRedraw && m_guiRefreshTimer.IsTimePast())
-    {
-      CServiceBroker::GetGUI()->GetWindowManager().SendMessage(GUI_MSG_REFRESH_TIMER, 0, 0);
-      m_guiRefreshTimer.Set(500ms);
-    }
-
-    UpdateDrawnPicture();
-
-    if (!m_bStop)
-      CServiceBroker::GetGUI()->GetWindowManager().Process(CTimeUtils::GetFrameTime());
-
-    // Dirty-driven skip: on paths with a persistent framebuffer (D2P plane or
-    // HDR GUI compositing FBO), skip Render when no controls dirtied themselves
-    // this frame. The persistence keeps the previous OSD on screen for free.
-    if (!m_skipGuiRender && appPlayer->IsRenderingVideoLayer() &&
-        !CServiceBroker::GetGUI()->GetWindowManager().HasDirtyRegions())
-      m_skipGuiRender = true;
-    CServiceBroker::GetGUI()->GetWindowManager().FrameMove();
-  }
-
-  appPlayer->FrameMove();
-
-  // this will go away when render systems gets its own thread
-  CServiceBroker::GetWinSystem()->DriveRenderLoop();
+  m_rendering->UnlockFrameMoveGuard();
 }
 
 
 void CApplication::ResetCurrentItem()
 {
   m_itemCurrentFile = std::make_unique<CFileItem>();
-  if (m_pGUI)
-    m_pGUI->GetInfoManager().ResetCurrentItem();
+  if (CGUIComponent* gui = CServiceBroker::GetGUI())
+    gui->GetInfoManager().ResetCurrentItem();
 }
 
 int CApplication::Run()
@@ -1501,6 +1087,8 @@ int CApplication::Run()
     CServiceBroker::GetAppMessenger()->PostMsg(TMSG_PLAYLISTPLAYER_PLAY, -1);
   }
 
+  m_rendering->StartRendering();
+
 #ifdef TARGET_WASM
   // emscripten_set_main_loop() unwinds the stack instead of returning; WasmRunIteration()
   // handles shutdown once the browser calls it back with m_bStop set.
@@ -1508,7 +1096,15 @@ int CApplication::Run()
   return m_ExitCode; // unreachable
 #else
   while (!m_bStop)
-    RunIteration();
+  {
+    if (m_rendering->IsThreaded())
+    {
+      Process();
+      KODI::TIME::Sleep(10ms);
+    }
+    else
+      m_rendering->RunIteration();
+  }
 
   Cleanup();
 
@@ -1517,39 +1113,12 @@ int CApplication::Run()
 #endif
 }
 
-void CApplication::RunIteration()
-{
-  // Animate and render a frame
-
-  const auto lastFrameTime = std::chrono::steady_clock::now();
-  Process();
-
-  bool renderGUI = GetComponent<CApplicationPowerHandling>()->GetRenderGUI();
-  if (!m_bStop)
-  {
-    FrameMove(true, renderGUI);
-  }
-
-  if (renderGUI && !m_bStop)
-  {
-    Render();
-  }
-  else if (!renderGUI)
-  {
-    constexpr std::chrono::milliseconds noRenderFrameTime{15}; // Simulates ~66fps
-    const auto frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now() - lastFrameTime);
-    if (frameTime < noRenderFrameTime)
-      KODI::TIME::Sleep(noRenderFrameTime - frameTime);
-  }
-}
-
 #ifdef TARGET_WASM
 void CApplication::WasmRunIteration()
 {
   if (!m_bStop)
   {
-    RunIteration();
+    m_rendering->RunIteration();
     return;
   }
 
@@ -1582,7 +1151,8 @@ bool CApplication::Cleanup()
     CServiceBroker::UnregisterSpeechRecognition();
 
     CLog::Log(LOGINFO, "unload skin");
-    GetComponent<CApplicationSkinHandling>()->UnloadSkin();
+    m_rendering->RunOnGUIThread([this]()
+                                { GetComponent<CApplicationSkinHandling>()->UnloadSkin(); });
 
     CServiceBroker::UnregisterTextureCache();
 
@@ -1597,16 +1167,20 @@ bool CApplication::Cleanup()
     appPower->m_globalScreensaverInhibitor.Release();
     appPower->m_screensaverInhibitor.Release();
 
-    CRenderSystemBase *renderSystem = CServiceBroker::GetRenderSystem();
-    if (renderSystem)
-      renderSystem->DestroyRenderSystem();
+    m_rendering->RunOnGUIThread(
+        []()
+        {
+          CRenderSystemBase* renderSystem = CServiceBroker::GetRenderSystem();
+          if (renderSystem)
+            renderSystem->DestroyRenderSystem();
 
-    CWinSystemBase *winSystem = CServiceBroker::GetWinSystem();
-    if (winSystem)
-      winSystem->DestroyWindow();
+          CWinSystemBase* winSystem = CServiceBroker::GetWinSystem();
+          if (winSystem)
+            winSystem->DestroyWindow();
 
-    if (m_pGUI)
-      m_pGUI->GetWindowManager().DestroyWindows();
+          if (CGUIComponent* gui = CServiceBroker::GetGUI())
+            gui->GetWindowManager().DestroyWindows();
+        });
 
     CLog::Log(LOGINFO, "unload sections");
 
@@ -1641,19 +1215,7 @@ bool CApplication::Cleanup()
     while(1); // execution ends
 #endif
 
-    if (m_pGUI)
-    {
-      m_pGUI->Deinit();
-      m_pGUI.reset();
-    }
-
-    if (winSystem)
-    {
-      winSystem->DestroyWindowSystem();
-      CServiceBroker::UnregisterWinSystem();
-      winSystem = nullptr;
-      m_pWinSystem.reset();
-    }
+    m_rendering->DestroyGUI();
 
     // Cleanup was called more than once on exit during my tests
     if (m_ServiceManager)
@@ -1735,7 +1297,7 @@ bool CApplication::Stop(int exitCode)
 
   try
   {
-    m_frameMoveGuard.unlock();
+    m_rendering->ReleaseFrameMoveGuard();
 
     CServiceBroker::GetAnnouncementManager()->Announce(
         ANNOUNCEMENT::SystemEvent{ANNOUNCEMENT::EVENT::SYSTEM::Quit{exitCode}});
@@ -2136,7 +1698,7 @@ void CApplication::StopPlaying()
       {
         // let script threads into the GUI while we close, or they can deadlock us
         CSingleExit exitGfx(CServiceBroker::GetWinSystem()->GetGfxContext());
-        CSingleExit exitFrameMove(m_frameMoveGuard);
+        CSingleExit exitFrameMove(m_rendering->GetFrameMoveGuard());
         appPlayer->ClosePlayer();
       }
 
@@ -2296,34 +1858,9 @@ void CApplication::ConfigureAndEnableAddons()
 
 void CApplication::Process()
 {
-  // dispatch the messages generated by python or other threads to the current window
-  CServiceBroker::GetGUI()->GetWindowManager().DispatchThreadMessages();
-
-  // process messages which have to be send to the gui
-  // (this can only be done after CServiceBroker::GetGUI()->GetWindowManager().Render())
-  CServiceBroker::GetAppMessenger()->ProcessWindowMessages();
-
-  // handle any active scripts
-
-  {
-    // Allow processing of script threads to let them shut down properly.
-    // Stop() has already released the guard; don't take it back on the way out
-    const bool releaseGuard = !m_bStop;
-    CSingleExit ex(CServiceBroker::GetWinSystem()->GetGfxContext());
-    if (releaseGuard)
-      m_frameMoveGuard.unlock();
-    CScriptInvocationManager::GetInstance().Process();
-    if (releaseGuard)
-      m_frameMoveGuard.lock();
-  }
-
   // process messages, even if a movie is playing
   CServiceBroker::GetAppMessenger()->ProcessMessages();
   if (m_bStop) return; //we're done, everything has been unloaded
-
-  // the main loop reaches this with no GUI message handler suspended on the stack, which
-  // is what a deferred skin reload is waiting for
-  GetComponent<CApplicationSkinHandling>()->ProcessPendingSkinReload();
 
   // do any processing that isn't needed on each run
   if( m_slowTimer.GetElapsedMilliseconds() > 500 )
@@ -2336,9 +1873,6 @@ void CApplication::Process()
 // We get called every 500ms
 void CApplication::ProcessSlow()
 {
-  // process skin resources (skin timers)
-  GetComponent<CApplicationSkinHandling>()->ProcessSkin();
-
   CServiceBroker::GetPowerManager().ProcessEvents();
 
   // Temporarily pause pausable jobs when viewing video/picture
@@ -2354,10 +1888,6 @@ void CApplication::ProcessSlow()
     CServiceBroker::GetJobManager()->UnPauseJobs();
   }
 
-  // Check if we need to activate the screensaver / DPMS.
-  const auto appPower = GetComponent<CApplicationPowerHandling>();
-  appPower->CheckScreenSaverAndDPMS();
-
   // Check if we need to shutdown (if enabled).
 #if defined(TARGET_DARWIN)
   if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNTIME) &&
@@ -2366,7 +1896,7 @@ void CApplication::ProcessSlow()
   if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_POWERMANAGEMENT_SHUTDOWNTIME))
 #endif
   {
-    appPower->CheckShutdown();
+    GetComponent<CApplicationPowerHandling>()->CheckShutdown();
   }
 
 #if defined(TARGET_POSIX)
@@ -2393,10 +1923,6 @@ void CApplication::ProcessSlow()
   // check for any idle curl connections
   g_curlInterface.CheckIdle();
 
-  CServiceBroker::GetGUI()->GetLargeTextureManager().CleanupUnusedImages();
-
-  CServiceBroker::GetGUI()->GetTextureManager().FreeUnusedTextures(5000);
-
 #ifdef HAS_OPTICAL_DRIVE
   // checks whats in the DVD drive and tries to autostart the content (xbox games, dvd, cdda, avi files...)
   if (!appPlayer->IsPlayingVideo())
@@ -2421,12 +1947,6 @@ void CApplication::ProcessSlow()
     vfsAddon->ClearOutIdle();
 
   CServiceBroker::GetMediaManager().ProcessEvents();
-
-  // if we don't render the gui there's no reason to start the screensaver.
-  // that way the screensaver won't kick in if we maximize the XBMC window
-  // after the screensaver start time.
-  if (!appPower->GetRenderGUI())
-    appPower->ResetScreenSaverTimer();
 }
 
 void CApplication::DelayedPlayerRestart()

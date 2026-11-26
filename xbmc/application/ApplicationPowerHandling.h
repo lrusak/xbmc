@@ -35,6 +35,7 @@ class CSetting;
 class CApplicationPowerHandling : public IApplicationComponent, public ISettingCallback
 {
   friend class CApplication;
+  friend class CApplicationRendering;
   friend class CApplicationMessageHandling;
 
 public:

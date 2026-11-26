@@ -14,6 +14,7 @@
 #include "cores/VideoPlayer/VideoRenderers/BaseRenderer.h"
 #include "cores/VideoPlayer/VideoRenderers/OverlayRenderer.h"
 #include "cores/VideoSettings.h"
+#include "messaging/ApplicationMessenger.h"
 #include "threads/CriticalSection.h"
 #include "threads/Event.h"
 #include "threads/SystemClock.h"
@@ -253,6 +254,10 @@ protected:
   XbmcThreads::ConditionVariable m_presentevent;
   CEvent m_flushEvent;
   CEvent m_initEvent;
+  KODI::MESSAGING::ThreadMessageCallback m_preInitCallback{
+      [](void* renderManager) { static_cast<CRenderManager*>(renderManager)->PreInit(); }, this};
+  KODI::MESSAGING::ThreadMessageCallback m_unInitCallback{
+      [](void* renderManager) { static_cast<CRenderManager*>(renderManager)->UnInit(); }, this};
   CDVDClock &m_dvdClock;
   IRenderMsg *m_playerPort;
 

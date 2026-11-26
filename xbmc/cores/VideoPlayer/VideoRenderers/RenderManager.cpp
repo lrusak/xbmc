@@ -415,14 +415,16 @@ void CRenderManager::PreInit()
       return;
   }
 
+  // the renderer is created on the GUI thread, which owns the graphics context
   if (!CServiceBroker::GetAppMessenger()->IsGUIThread())
   {
     m_initEvent.Reset();
-    CServiceBroker::GetAppMessenger()->PostMsg(TMSG_RENDERER_PREINIT);
+    CServiceBroker::GetAppMessenger()->PostMsg(TMSG_GUI_CALLBACK, -1, -1, &m_preInitCallback);
     if (!m_initEvent.Wait(2000ms))
     {
       CLog::Log(LOGERROR, "{} - timed out waiting for renderer to preinit", __FUNCTION__);
     }
+    return;
   }
 
   std::unique_lock lock(m_statelock);
@@ -447,11 +449,12 @@ void CRenderManager::UnInit()
   if (!CServiceBroker::GetAppMessenger()->IsGUIThread())
   {
     m_initEvent.Reset();
-    CServiceBroker::GetAppMessenger()->PostMsg(TMSG_RENDERER_UNINIT);
+    CServiceBroker::GetAppMessenger()->PostMsg(TMSG_GUI_CALLBACK, -1, -1, &m_unInitCallback);
     if (!m_initEvent.Wait(2000ms))
     {
       CLog::Log(LOGERROR, "{} - timed out waiting for renderer to uninit", __FUNCTION__);
     }
+    return;
   }
 
   std::unique_lock lock(m_statelock);
