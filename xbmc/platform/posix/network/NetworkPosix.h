@@ -11,9 +11,20 @@
 #include "network/Network.h"
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 class CNetworkPosix;
+struct ifreq;
+
+namespace KODI::NETWORK
+{
+/*!
+ * \brief Sets the interface name of an ioctl request.
+ * \return false if the name doesn't fit
+ */
+bool SetInterfaceName(ifreq& request, std::string_view name);
+} // namespace KODI::NETWORK
 
 class CNetworkInterfacePosix : public CNetworkInterface
 {

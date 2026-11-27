@@ -265,9 +265,8 @@ void CNetworkLinux::GetMacAddress(const std::string& interfaceName, char rawMac[
 {
   memset(rawMac, 0, 6);
 
-  struct ifreq ifr;
-  strcpy(ifr.ifr_name, interfaceName.c_str());
-  if (ioctl(GetSocket(), SIOCGIFHWADDR, &ifr) >= 0)
+  ifreq ifr{};
+  if (NETWORK::SetInterfaceName(ifr, interfaceName) && ioctl(GetSocket(), SIOCGIFHWADDR, &ifr) >= 0)
   {
     memcpy(rawMac, ifr.ifr_hwaddr.sa_data, 6);
   }

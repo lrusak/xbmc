@@ -22,6 +22,14 @@
 #include <gtest/gtest.h>
 #include <netinet/in.h>
 
+#if (defined(TARGET_LINUX) && !defined(TARGET_ANDROID)) || defined(TARGET_FREEBSD) || \
+    defined(TARGET_DARWIN_OSX)
+#define HAVE_NETWORK_POSIX
+#include "platform/posix/network/NetworkPosix.h"
+
+#include <net/if.h>
+#endif
+
 using namespace KODI;
 using namespace std::chrono_literals;
 
@@ -227,6 +235,18 @@ TEST(TestNetworkUtils, GetIpStr)
   EXPECT_EQ(NETWORK::GetIpStr(&unknown), "");
   EXPECT_EQ(NETWORK::GetIpStr(nullptr), "");
 }
+
+#ifdef HAVE_NETWORK_POSIX
+TEST(TestNetworkUtils, SetInterfaceName)
+{
+  ifreq request{};
+  const std::string longest(sizeof(request.ifr_name) - 1, 'x');
+  ASSERT_TRUE(NETWORK::SetInterfaceName(request, longest));
+  EXPECT_EQ(std::string(request.ifr_name), longest);
+
+  EXPECT_FALSE(NETWORK::SetInterfaceName(request, longest + "x"));
+}
+#endif
 
 TEST(TestNetworkUtils, GetIpStrInAddr)
 {

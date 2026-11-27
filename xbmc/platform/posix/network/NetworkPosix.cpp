@@ -12,6 +12,7 @@
 #include "utils/StringUtils.h"
 #include "utils/log.h"
 
+#include <cstring>
 #include <utility>
 
 #include <arpa/inet.h>
@@ -21,6 +22,16 @@
 #include <sys/socket.h>
 
 using namespace KODI;
+
+bool NETWORK::SetInterfaceName(ifreq& request, std::string_view name)
+{
+  if (name.size() >= sizeof(request.ifr_name))
+    return false;
+
+  std::memcpy(request.ifr_name, name.data(), name.size());
+  request.ifr_name[name.size()] = '\0';
+  return true;
+}
 
 CNetworkInterfacePosix::CNetworkInterfacePosix(CNetworkPosix* network,
                                                std::string interfaceName,
@@ -40,9 +51,9 @@ CNetworkInterfacePosix::CNetworkInterfacePosix(CNetworkPosix* network,
 
 bool CNetworkInterfacePosix::IsEnabled() const
 {
-  struct ifreq ifr;
-  strcpy(ifr.ifr_name, m_interfaceName.c_str());
-  if (ioctl(m_network->GetSocket(), SIOCGIFFLAGS, &ifr) < 0)
+  ifreq ifr{};
+  if (!NETWORK::SetInterfaceName(ifr, m_interfaceName) ||
+      ioctl(m_network->GetSocket(), SIOCGIFFLAGS, &ifr) < 0)
     return false;
 
   return ((ifr.ifr_flags & IFF_UP) == IFF_UP);
@@ -50,11 +61,10 @@ bool CNetworkInterfacePosix::IsEnabled() const
 
 bool CNetworkInterfacePosix::IsConnected() const
 {
-  struct ifreq ifr;
+  ifreq ifr{};
   int zero = 0;
-  memset(&ifr, 0, sizeof(struct ifreq));
-  strcpy(ifr.ifr_name, m_interfaceName.c_str());
-  if (ioctl(m_network->GetSocket(), SIOCGIFFLAGS, &ifr) < 0)
+  if (!NETWORK::SetInterfaceName(ifr, m_interfaceName) ||
+      ioctl(m_network->GetSocket(), SIOCGIFFLAGS, &ifr) < 0)
     return false;
 
   // ignore loopback
@@ -71,10 +81,10 @@ std::string CNetworkInterfacePosix::GetCurrentIPAddress() const
 {
   std::string result;
 
-  struct ifreq ifr;
-  strcpy(ifr.ifr_name, m_interfaceName.c_str());
+  ifreq ifr{};
   ifr.ifr_addr.sa_family = AF_INET;
-  if (ioctl(m_network->GetSocket(), SIOCGIFADDR, &ifr) >= 0)
+  if (NETWORK::SetInterfaceName(ifr, m_interfaceName) &&
+      ioctl(m_network->GetSocket(), SIOCGIFADDR, &ifr) >= 0)
   {
     result = NETWORK::GetIpStr(reinterpret_cast<const sockaddr_in*>(&ifr.ifr_addr)->sin_addr);
   }
@@ -86,10 +96,10 @@ std::string CNetworkInterfacePosix::GetCurrentNetmask() const
 {
   std::string result;
 
-  struct ifreq ifr;
-  strcpy(ifr.ifr_name, m_interfaceName.c_str());
+  ifreq ifr{};
   ifr.ifr_addr.sa_family = AF_INET;
-  if (ioctl(m_network->GetSocket(), SIOCGIFNETMASK, &ifr) >= 0)
+  if (NETWORK::SetInterfaceName(ifr, m_interfaceName) &&
+      ioctl(m_network->GetSocket(), SIOCGIFNETMASK, &ifr) >= 0)
   {
     result = NETWORK::GetIpStr(reinterpret_cast<const sockaddr_in*>(&ifr.ifr_addr)->sin_addr);
   }

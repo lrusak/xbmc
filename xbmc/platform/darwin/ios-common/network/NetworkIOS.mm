@@ -47,8 +47,11 @@ std::string CNetworkInterfaceIOS::GetInterfaceName() const
 
 bool CNetworkInterfaceIOS::IsEnabled() const
 {
-  struct ifreq ifr;
-  strcpy(ifr.ifr_name, m_interfaceName.c_str());
+  ifreq ifr{};
+  if (m_interfaceName.size() >= sizeof(ifr.ifr_name))
+    return false;
+
+  strlcpy(ifr.ifr_name, m_interfaceName.c_str(), sizeof(ifr.ifr_name));
   if (ioctl(m_network->GetSocket(), SIOCGIFFLAGS, &ifr) < 0)
     return false;
 
