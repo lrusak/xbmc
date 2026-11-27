@@ -8,6 +8,7 @@
 
 #include "NetworkMacOS.h"
 
+#include "network/NetworkUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/log.h"
 
@@ -25,6 +26,8 @@
 #include <netinet/if_ether.h>
 #include <sys/sockio.h>
 #include <unistd.h>
+
+using namespace KODI;
 
 CNetworkInterfaceMacOS::CNetworkInterfaceMacOS(CNetworkPosix* network,
                                                const std::string& interfaceName,
@@ -290,7 +293,7 @@ bool CNetworkMacOS::IcmpPing(unsigned long remote_ip, const std::chrono::millise
 
   snprintf(cmd_line, sizeof(cmd_line), "ping -c 1 -t %d %s",
            static_cast<int>(std::chrono::ceil<std::chrono::seconds>(timeout).count()),
-           inet_ntoa(host_ip));
+           NETWORK::GetIpStr(host_ip).c_str());
 
   int status = -1;
   status = system(cmd_line);

@@ -8,6 +8,7 @@
 
 #include "NetworkLinux.h"
 
+#include "network/NetworkUtils.h"
 #include "utils/FileHandle.h"
 #include "utils/StringUtils.h"
 #include "utils/log.h"
@@ -31,6 +32,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+using namespace KODI;
 using namespace KODI::UTILS::POSIX;
 
 namespace
@@ -200,7 +202,7 @@ std::string CNetworkInterfaceLinux::GetCurrentDefaultGateway() const
         struct in_addr in;
         in.s_addr = (gatewayAddr[0] << 24) | (gatewayAddr[1] << 16) | (gatewayAddr[2] << 8) |
                     (gatewayAddr[3]);
-        result = inet_ntoa(in);
+        result = NETWORK::GetIpStr(in);
         break;
       }
     }
@@ -327,8 +329,7 @@ std::vector<std::string> CNetworkLinux::GetNameServers()
 
   for (int i = 0; i < _res.nscount; i++)
   {
-    std::string ns = inet_ntoa(_res.nsaddr_list[i].sin_addr);
-    result.push_back(ns);
+    result.push_back(NETWORK::GetIpStr(_res.nsaddr_list[i].sin_addr));
   }
   return result;
 }
@@ -432,8 +433,9 @@ bool CNetworkLinux::IcmpPing(unsigned long remote_ip, const std::chrono::millise
     const auto duration =
         std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(end - start);
 
-    CLog::Log(LOGDEBUG, "PING {}: icmp_seq={} ttl={} time={:0.3f} ms", inet_ntoa(addr.sin_addr),
-              packet.header.un.echo.sequence, TTL, duration.count());
+    CLog::Log(LOGDEBUG, "PING {}: icmp_seq={} ttl={} time={:0.3f} ms",
+              NETWORK::GetIpStr(addr.sin_addr), packet.header.un.echo.sequence, TTL,
+              duration.count());
     return true;
   }
 }

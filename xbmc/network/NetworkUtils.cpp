@@ -223,6 +223,15 @@ std::string NETWORK::GetIpStr(const struct sockaddr* sa)
   return buffer;
 }
 
+std::string NETWORK::GetIpStr(const in_addr& address)
+{
+  char buffer[INET_ADDRSTRLEN];
+  if (!inet_ntop(AF_INET, &address, buffer, sizeof(buffer)))
+    return "";
+
+  return buffer;
+}
+
 std::string NETWORK::GetMaskByPrefixLength(uint8_t prefixLength)
 {
   if (prefixLength > 32)

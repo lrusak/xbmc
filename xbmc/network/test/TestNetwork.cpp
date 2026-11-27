@@ -228,6 +228,16 @@ TEST(TestNetworkUtils, GetIpStr)
   EXPECT_EQ(NETWORK::GetIpStr(nullptr), "");
 }
 
+TEST(TestNetworkUtils, GetIpStrInAddr)
+{
+  in_addr address{};
+  ASSERT_EQ(inet_pton(AF_INET, "198.51.100.254", &address), 1);
+  EXPECT_EQ(NETWORK::GetIpStr(address), "198.51.100.254");
+
+  address.s_addr = htonl(INADDR_ANY);
+  EXPECT_EQ(NETWORK::GetIpStr(address), "0.0.0.0");
+}
+
 TEST(TestNetworkUtils, GetMaskByPrefixLength)
 {
   EXPECT_EQ(NETWORK::GetMaskByPrefixLength(0), "0.0.0.0");

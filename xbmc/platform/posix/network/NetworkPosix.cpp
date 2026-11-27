@@ -8,6 +8,7 @@
 
 #include "NetworkPosix.h"
 
+#include "network/NetworkUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/log.h"
 
@@ -18,6 +19,8 @@
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+
+using namespace KODI;
 
 CNetworkInterfacePosix::CNetworkInterfacePosix(CNetworkPosix* network,
                                                std::string interfaceName,
@@ -73,7 +76,7 @@ std::string CNetworkInterfacePosix::GetCurrentIPAddress() const
   ifr.ifr_addr.sa_family = AF_INET;
   if (ioctl(m_network->GetSocket(), SIOCGIFADDR, &ifr) >= 0)
   {
-    result = inet_ntoa((*((struct sockaddr_in*)&ifr.ifr_addr)).sin_addr);
+    result = NETWORK::GetIpStr(reinterpret_cast<const sockaddr_in*>(&ifr.ifr_addr)->sin_addr);
   }
 
   return result;
@@ -88,7 +91,7 @@ std::string CNetworkInterfacePosix::GetCurrentNetmask() const
   ifr.ifr_addr.sa_family = AF_INET;
   if (ioctl(m_network->GetSocket(), SIOCGIFNETMASK, &ifr) >= 0)
   {
-    result = inet_ntoa((*((struct sockaddr_in*)&ifr.ifr_addr)).sin_addr);
+    result = NETWORK::GetIpStr(reinterpret_cast<const sockaddr_in*>(&ifr.ifr_addr)->sin_addr);
   }
 
   return result;

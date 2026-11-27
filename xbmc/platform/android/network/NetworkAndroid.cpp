@@ -8,6 +8,7 @@
 
 #include "NetworkAndroid.h"
 
+#include "network/NetworkUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/log.h"
 
@@ -24,6 +25,8 @@
 #include <net/if_arp.h>
 #include <netinet/in.h>
 #include <sys/wait.h>
+
+using namespace KODI;
 
 CNetworkInterfaceAndroid::CNetworkInterfaceAndroid(const CJNINetwork& network,
                                                    const CJNILinkProperties& lp,
@@ -260,7 +263,7 @@ bool CNetworkAndroid::IcmpPing(unsigned long remote_ip, const std::chrono::milli
 
   snprintf(cmd_line, sizeof(cmd_line), "ping -c 1 -w %d %s",
            static_cast<int>(std::chrono::ceil<std::chrono::seconds>(timeout).count()),
-           inet_ntoa(host_ip));
+           NETWORK::GetIpStr(host_ip).c_str());
 
   int status = system (cmd_line);
 

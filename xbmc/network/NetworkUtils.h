@@ -13,6 +13,7 @@
 
 #include "PlatformDefs.h"
 
+struct in_addr;
 struct sockaddr;
 
 namespace KODI::NETWORK
@@ -48,6 +49,9 @@ std::vector<SOCKET> CreateTCPServerSocket(const int port,
           On error (or no IPv6/v4 valid input) empty string is returned.
   */
 std::string GetIpStr(const sockaddr* sa);
+
+//! \brief Formats an IPv4 address as x.x.x.x. Unlike inet_ntoa, it is safe to call from any thread.
+std::string GetIpStr(const in_addr& address);
 
 /*!
   \brief  convert prefix length of IPv4 address to IP mask representation

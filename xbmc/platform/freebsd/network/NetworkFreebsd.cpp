@@ -8,6 +8,7 @@
 
 #include "NetworkFreebsd.h"
 
+#include "network/NetworkUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/log.h"
 
@@ -25,6 +26,8 @@
 #include <resolv.h>
 #include <sys/sockio.h>
 #include <sys/wait.h>
+
+using namespace KODI;
 
 CNetworkInterfaceFreebsd::CNetworkInterfaceFreebsd(CNetworkPosix* network,
                                                    std::string interfaceName,
@@ -217,8 +220,7 @@ std::vector<std::string> CNetworkFreebsd::GetNameServers()
 
   for (int i = 0; i < _res.nscount; i++)
   {
-    std::string ns = inet_ntoa(_res.nsaddr_list[i].sin_addr);
-    result.push_back(ns);
+    result.push_back(NETWORK::GetIpStr(_res.nsaddr_list[i].sin_addr));
   }
 
   return result;
@@ -233,7 +235,7 @@ bool CNetworkFreebsd::IcmpPing(unsigned long remote_ip, const std::chrono::milli
 
   snprintf(cmd_line, sizeof(cmd_line), "ping -c 1 -t %d %s",
            static_cast<int>(std::chrono::ceil<std::chrono::seconds>(timeout).count()),
-           inet_ntoa(host_ip));
+           NETWORK::GetIpStr(host_ip).c_str());
 
   int status = -1;
   status = system(cmd_line);
