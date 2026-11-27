@@ -236,6 +236,24 @@ TEST(TestNetworkUtils, GetIpStr)
   EXPECT_EQ(NETWORK::GetIpStr(nullptr), "");
 }
 
+TEST(TestNetworkUtils, ParseMacAddress)
+{
+  using Mac = std::array<uint8_t, 6>;
+  EXPECT_EQ(NETWORK::ParseMacAddress("00:1a:2B:3c:4D:ff"),
+            (Mac{0x00, 0x1a, 0x2b, 0x3c, 0x4d, 0xff}));
+  EXPECT_EQ(NETWORK::ParseMacAddress("00-1a-2b-3c-4d-5e"),
+            (Mac{0x00, 0x1a, 0x2b, 0x3c, 0x4d, 0x5e}));
+
+  EXPECT_EQ(NETWORK::ParseMacAddress(""), std::nullopt);
+  EXPECT_EQ(NETWORK::ParseMacAddress("00:1a:2b:3c:4d"), std::nullopt);
+  EXPECT_EQ(NETWORK::ParseMacAddress("00:1a:2b:3c:4d:5e:"), std::nullopt);
+  EXPECT_EQ(NETWORK::ParseMacAddress("001a2b3c4d5e"), std::nullopt);
+  EXPECT_EQ(NETWORK::ParseMacAddress("00:1a:2b:3c:4d:5g"), std::nullopt);
+  EXPECT_EQ(NETWORK::ParseMacAddress("00:1a 2b:3c:4d:5e"), std::nullopt);
+  EXPECT_EQ(NETWORK::ParseMacAddress("0:01a:2b:3c:4d:5e"), std::nullopt);
+  EXPECT_EQ(NETWORK::ParseMacAddress("-1:1a:2b:3c:4d:5e"), std::nullopt);
+}
+
 #ifdef HAVE_NETWORK_POSIX
 TEST(TestNetworkUtils, SetInterfaceName)
 {

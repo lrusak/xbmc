@@ -8,7 +8,11 @@
 
 #pragma once
 
+#include <array>
+#include <cstdint>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "PlatformDefs.h"
@@ -18,12 +22,17 @@ struct sockaddr;
 
 namespace KODI::NETWORK
 {
+/*!
+ * \brief Parses a MAC address written as six hex octets separated by ':' or '-'.
+ */
+std::optional<std::array<uint8_t, 6>> ParseMacAddress(std::string_view mac);
+
 /**
  * @brief Return true if magic packet was sent
  *
  * @param MAC address
  */
-bool WakeOnLan(const char* mac);
+bool WakeOnLan(std::string_view mac);
 
 /**
  * @brief Creates, binds and listens tcp sockets on the desired port

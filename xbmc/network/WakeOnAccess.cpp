@@ -528,7 +528,7 @@ bool CWakeOnAccess::WakeUpHost(const WakeUpEntry& server)
     return true;
   }
 
-  if (!NETWORK::WakeOnLan(server.mac.c_str()))
+  if (!NETWORK::WakeOnLan(server.mac))
   {
     CLog::Log(LOGERROR,"WakeOnAccess failed to send. (Is it blocked by firewall?)");
 

@@ -146,7 +146,7 @@ static int ToggleDPMS(const std::vector<std::string>& params)
  */
 static int WakeOnLAN(const std::vector<std::string>& params)
 {
-  NETWORK::WakeOnLan(params[0].c_str());
+  NETWORK::WakeOnLan(params[0]);
 
   return 0;
 }

@@ -9,133 +9,103 @@
 #include "NetworkUtils.h"
 
 #include "network/SocketOptions.h"
+#include "utils/ScopeGuard.h"
 #include "utils/log.h"
 
+#include <algorithm>
+#include <charconv>
 #include <cstdint>
 #include <cstring>
 
 #include <arpa/inet.h>
 #include <netdb.h>
+#ifndef TARGET_WINDOWS
+#include <unistd.h>
+#endif
 
 namespace
 {
-
-/* slightly modified in_ether taken from the etherboot project (http://sourceforge.net/projects/etherboot) */
-bool in_ether(const char* bufp, unsigned char* addr)
+#if defined(TARGET_WINDOWS)
+using CSocketGuard = KODI::UTILS::CScopeGuard<SOCKET, INVALID_SOCKET, decltype(closesocket)>;
+CSocketGuard GuardSocket(SOCKET sock)
 {
-  if (strlen(bufp) != 17)
-    return false;
-
-  char c;
-  const char* orig;
-  unsigned char* ptr = addr;
-  unsigned val;
-
-  int i = 0;
-  orig = bufp;
-
-  while ((*bufp != '\0') && (i < 6))
-  {
-    val = 0;
-    c = *bufp++;
-
-    if (isdigit(c))
-      val = c - '0';
-    else if (c >= 'a' && c <= 'f')
-      val = c - 'a' + 10;
-    else if (c >= 'A' && c <= 'F')
-      val = c - 'A' + 10;
-    else
-      return false;
-
-    val <<= 4;
-    c = *bufp;
-    if (isdigit(c))
-      val |= c - '0';
-    else if (c >= 'a' && c <= 'f')
-      val |= c - 'a' + 10;
-    else if (c >= 'A' && c <= 'F')
-      val |= c - 'A' + 10;
-    else if (c == ':' || c == '-' || c == 0)
-      val >>= 4;
-    else
-      return false;
-
-    if (c != 0)
-      bufp++;
-
-    *ptr++ = (unsigned char)(val & 0377);
-    i++;
-
-    if (*bufp == ':' || *bufp == '-')
-      bufp++;
-  }
-
-  if (bufp - orig != 17)
-    return false;
-
-  return true;
+  return CSocketGuard(closesocket, sock);
 }
-
+#else
+using CSocketGuard = KODI::UTILS::CScopeGuard<int, -1, decltype(close)>;
+CSocketGuard GuardSocket(int sock)
+{
+  return CSocketGuard(close, sock);
+}
+#endif
 } // namespace
 
 using namespace KODI;
 
-bool NETWORK::WakeOnLan(const char* mac)
+std::optional<std::array<uint8_t, 6>> NETWORK::ParseMacAddress(std::string_view mac)
 {
-  int i, j, packet;
-  unsigned char ethaddr[8];
-  unsigned char buf[128];
-  unsigned char* ptr;
+  // Six hex octets, each followed by ':' or '-' except the last
+  std::array<uint8_t, 6> address;
+  if (mac.size() != address.size() * 3 - 1)
+    return std::nullopt;
 
-  // Fetch the hardware address
-  if (!in_ether(mac, ethaddr))
+  for (std::size_t i = 0; i < address.size(); ++i)
   {
-    CLog::Log(LOGERROR, "{} - Invalid hardware address specified ({})", __FUNCTION__, mac);
+    const char* octet = mac.data() + i * 3;
+    const auto [end, error] = std::from_chars(octet, octet + 2, address[i], 16);
+    if (error != std::errc{} || end != octet + 2)
+      return std::nullopt;
+
+    if (i + 1 < address.size() && *end != ':' && *end != '-')
+      return std::nullopt;
+  }
+
+  return address;
+}
+
+bool NETWORK::WakeOnLan(std::string_view mac)
+{
+  const auto address = ParseMacAddress(mac);
+  if (!address)
+  {
+    CLog::LogF(LOGERROR, "Invalid hardware address specified ({})", mac);
     return false;
   }
 
-  // Setup the socket
-  if ((packet = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+  const CSocketGuard packet = GuardSocket(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP));
+  if (!packet)
   {
-    CLog::Log(LOGERROR, "{} - Unable to create socket ({})", __FUNCTION__, strerror(errno));
+    CLog::LogF(LOGERROR, "Unable to create socket ({})", strerror(errno));
     return false;
   }
 
-  // Set socket options
-  struct sockaddr_in saddr;
+  sockaddr_in saddr{};
   saddr.sin_family = AF_INET;
   saddr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
   saddr.sin_port = htons(9);
 
-  unsigned int value = 1;
-  if (setsockopt(packet, SOL_SOCKET, SO_BROADCAST, (char*)&value, sizeof(unsigned int)) ==
-      SOCKET_ERROR)
+  const int broadcast = 1;
+  if (setsockopt(packet, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char*>(&broadcast),
+                 sizeof(broadcast)) == SOCKET_ERROR)
   {
-    CLog::Log(LOGERROR, "{} - Unable to set socket options ({})", __FUNCTION__, strerror(errno));
-    closesocket(packet);
+    CLog::LogF(LOGERROR, "Unable to set socket options ({})", strerror(errno));
     return false;
   }
 
-  // Build the magic packet (6 x 0xff + 16 x MAC address)
-  ptr = buf;
-  for (i = 0; i < 6; i++)
-    *ptr++ = 0xff;
+  // The magic packet is 6 x 0xff followed by the MAC address 16 times
+  std::array<uint8_t, 6 + 16 * 6> magicPacket;
+  std::fill_n(magicPacket.begin(), 6, 0xff);
+  for (auto it = magicPacket.begin() + 6; it != magicPacket.end(); it += address->size())
+    std::ranges::copy(*address, it);
 
-  for (j = 0; j < 16; j++)
-    for (i = 0; i < 6; i++)
-      *ptr++ = ethaddr[i];
-
-  // Send the magic packet
-  if (sendto(packet, (char*)buf, 102, 0, (struct sockaddr*)&saddr, sizeof(saddr)) < 0)
+  if (sendto(packet, reinterpret_cast<const char*>(magicPacket.data()), magicPacket.size(), 0,
+             reinterpret_cast<const sockaddr*>(&saddr), sizeof(saddr)) < 0)
   {
-    CLog::Log(LOGERROR, "{} - Unable to send magic packet ({})", __FUNCTION__, strerror(errno));
-    closesocket(packet);
+    CLog::LogF(LOGERROR, "Unable to send magic packet ({})", strerror(errno));
     return false;
   }
 
-  closesocket(packet);
-  CLog::Log(LOGINFO, "{} - Magic packet send to '{}'", __FUNCTION__, mac);
+  CLog::LogF(LOGINFO, "Magic packet sent to '{}'", mac);
   return true;
 }
 
