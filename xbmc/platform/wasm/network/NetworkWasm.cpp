@@ -114,17 +114,9 @@ std::string CNetworkInterfaceWasm::GetMacAddress() const
   return macAddress.empty() ? "00:00:00:00:00:00" : macAddress;
 }
 
-void CNetworkInterfaceWasm::GetMacAddressRaw(char rawMac[6]) const
+KODI::NETWORK::MacAddress CNetworkInterfaceWasm::GetMacAddressRaw() const
 {
-  std::memset(rawMac, 0, 6);
-
-  unsigned int bytes[6];
-  if (std::sscanf(GetMacAddress().c_str(), "%x:%x:%x:%x:%x:%x", &bytes[0], &bytes[1], &bytes[2],
-                  &bytes[3], &bytes[4], &bytes[5]) != 6)
-    return;
-
-  for (int i = 0; i < 6; ++i)
-    rawMac[i] = static_cast<char>(bytes[i]);
+  return KODI::NETWORK::ParseMacAddress(GetMacAddress()).value_or(KODI::NETWORK::MacAddress{});
 }
 
 std::string CNetworkInterfaceWasm::GetCurrentIPAddress() const

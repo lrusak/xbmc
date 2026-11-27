@@ -73,7 +73,7 @@ public:
   bool IsEnabled() const override { return true; }
   bool IsConnected() const override { return m_connected; }
   std::string GetMacAddress() const override { return "mac-" + m_ip; }
-  void GetMacAddressRaw(char[6]) const override {}
+  NETWORK::MacAddress GetMacAddressRaw() const override { return {}; }
   bool GetHostMacAddress(unsigned long, std::string&) const override { return false; }
   std::string GetCurrentIPAddress() const override { return m_ip; }
   std::string GetCurrentNetmask() const override { return "255.255.255.0"; }
@@ -155,8 +155,7 @@ TEST(TestNetworkInterfaces, NothingConnected)
   EXPECT_TRUE(interfaces.IsAvailable());
   EXPECT_FALSE(interfaces.IsConnected());
   EXPECT_EQ(interfaces.GetCurrentIPAddress(), "");
-  char mac[6]{};
-  EXPECT_FALSE(interfaces.GetMacAddressRaw(mac));
+  EXPECT_EQ(interfaces.GetMacAddressRaw(), std::nullopt);
 }
 
 TEST(TestNetworkInterfaces, MatchesSubnetOfAnyConnectedInterface)
@@ -238,7 +237,7 @@ TEST(TestNetworkUtils, GetIpStr)
 
 TEST(TestNetworkUtils, ParseMacAddress)
 {
-  using Mac = std::array<uint8_t, 6>;
+  using Mac = NETWORK::MacAddress;
   EXPECT_EQ(NETWORK::ParseMacAddress("00:1a:2B:3c:4D:ff"),
             (Mac{0x00, 0x1a, 0x2b, 0x3c, 0x4d, 0xff}));
   EXPECT_EQ(NETWORK::ParseMacAddress("00-1a-2b-3c-4d-5e"),
@@ -267,6 +266,12 @@ TEST(TestNetworkUtils, CreateTCPServerSocket)
     EXPECT_EQ(getsockname(sock, reinterpret_cast<sockaddr*>(&address), &length), 0);
     closesocket(sock);
   }
+}
+
+TEST(TestNetworkUtils, FormatMacAddress)
+{
+  EXPECT_EQ(NETWORK::FormatMacAddress({0x00, 0x1a, 0x2b, 0x3c, 0x4d, 0xff}), "00:1A:2B:3C:4D:FF");
+  EXPECT_EQ(NETWORK::FormatMacAddress({}), "00:00:00:00:00:00");
 }
 
 #ifdef HAVE_NETWORK_POSIX

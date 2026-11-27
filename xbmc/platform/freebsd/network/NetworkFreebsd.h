@@ -18,7 +18,7 @@ class CNetworkInterfaceFreebsd : public CNetworkInterfacePosix
 public:
   CNetworkInterfaceFreebsd(CNetworkPosix* network,
                            std::string interfaceName,
-                           char interfaceMacAddrRaw[6]);
+                           const KODI::NETWORK::MacAddress& interfaceMacAddrRaw);
   ~CNetworkInterfaceFreebsd() override = default;
 
   std::string GetCurrentDefaultGateway() const override;
@@ -36,6 +36,6 @@ public:
   std::vector<std::string> GetNameServers() override;
 
 private:
-  void GetMacAddress(const std::string& interfaceName, char macAddrRaw[6]) override;
+  KODI::NETWORK::MacAddress GetMacAddress(const std::string& interfaceName) override;
   void queryInterfaceList() override;
 };

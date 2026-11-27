@@ -91,10 +91,10 @@ std::string CNetworkInterfaceIOS::GetMacAddress() const
   return "";
 }
 
-void CNetworkInterfaceIOS::GetMacAddressRaw(char rawMac[6]) const
+KODI::NETWORK::MacAddress CNetworkInterfaceIOS::GetMacAddressRaw() const
 {
   //! @todo Unable to retrieve MAC address of an interface/ARP table from ios11 onwards.
-  memset(&rawMac[0], 0, 6);
+  return {};
 }
 
 std::string CNetworkInterfaceIOS::GetCurrentIPAddress() const

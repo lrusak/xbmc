@@ -736,7 +736,6 @@ bool CAirTunesServer::Initialize(const std::string &password)
 
   if (m_pRaop)
   {
-    char macAdr[6]{};
     unsigned short port = (unsigned short)m_port;
 
     raop_set_log_level(m_pRaop, RAOP_LOG_WARNING);
@@ -747,9 +746,11 @@ bool CAirTunesServer::Initialize(const std::string &password)
 
     raop_set_log_callback(m_pRaop, shairplay_log, NULL);
 
-    CServiceBroker::GetNetwork().GetMacAddressRaw(macAdr);
+    const auto macAdr =
+        CServiceBroker::GetNetwork().GetMacAddressRaw().value_or(KODI::NETWORK::MacAddress{});
 
-    ret = raop_start(m_pRaop, &port, macAdr, 6, password.c_str()) >= 0;
+    ret = raop_start(m_pRaop, &port, reinterpret_cast<const char*>(macAdr.data()),
+                     static_cast<int>(macAdr.size()), password.c_str()) >= 0;
   }
   return ret;
 }

@@ -12,6 +12,7 @@
 #include "utils/StringUtils.h"
 #include "utils/log.h"
 
+#include <algorithm>
 #include <chrono>
 #include <mutex>
 
@@ -72,34 +73,31 @@ bool CNetworkInterfaceAndroid::IsConnected() const
 
 std::string CNetworkInterfaceAndroid::GetMacAddress() const
 {
-  auto interfaceMacAddrRaw = m_intf.getHardwareAddress();
-  if (xbmc_jnienv()->ExceptionCheck())
-  {
-    xbmc_jnienv()->ExceptionClear();
-    CLog::Log(LOGERROR, "CNetworkInterfaceAndroid::GetMacAddress Exception getting HW address");
-    return "";
-  }
-  if (interfaceMacAddrRaw.size() >= 6)
-  {
-    return (StringUtils::Format("{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
-                                (uint8_t)interfaceMacAddrRaw[0], (uint8_t)interfaceMacAddrRaw[1],
-                                (uint8_t)interfaceMacAddrRaw[2], (uint8_t)interfaceMacAddrRaw[3],
-                                (uint8_t)interfaceMacAddrRaw[4], (uint8_t)interfaceMacAddrRaw[5]));
-  }
-  return "";
+  const auto mac = GetHardwareAddress();
+  return mac ? NETWORK::FormatMacAddress(*mac) : "";
 }
 
-void CNetworkInterfaceAndroid::GetMacAddressRaw(char rawMac[6]) const
+NETWORK::MacAddress CNetworkInterfaceAndroid::GetMacAddressRaw() const
 {
-  auto interfaceMacAddrRaw = m_intf.getHardwareAddress();
+  return GetHardwareAddress().value_or(NETWORK::MacAddress{});
+}
+
+std::optional<NETWORK::MacAddress> CNetworkInterfaceAndroid::GetHardwareAddress() const
+{
+  const auto address = m_intf.getHardwareAddress();
   if (xbmc_jnienv()->ExceptionCheck())
   {
     xbmc_jnienv()->ExceptionClear();
-    CLog::Log(LOGERROR, "CNetworkInterfaceAndroid::GetMacAddress Exception getting HW address");
-    return;
+    CLog::LogF(LOGERROR, "Exception getting HW address");
+    return std::nullopt;
   }
-  if (interfaceMacAddrRaw.size() >= 6)
-    memcpy(rawMac, interfaceMacAddrRaw.data(), 6);
+
+  NETWORK::MacAddress mac;
+  if (address.size() < mac.size())
+    return std::nullopt;
+
+  std::copy_n(address.begin(), mac.size(), mac.begin());
+  return mac;
 }
 
 bool CNetworkInterfaceAndroid::GetHostMacAddress(unsigned long host_ip, std::string& mac) const

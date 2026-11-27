@@ -31,7 +31,7 @@ using namespace KODI;
 
 CNetworkInterfaceMacOS::CNetworkInterfaceMacOS(CNetworkPosix* network,
                                                const std::string& interfaceName,
-                                               char interfaceMacAddrRaw[6])
+                                               const NETWORK::MacAddress& interfaceMacAddrRaw)
   : CNetworkInterfacePosix(network, interfaceName, interfaceMacAddrRaw)
 {
 }
@@ -174,9 +174,9 @@ CNetworkMacOS::CNetworkMacOS() : CNetworkPosix()
   queryInterfaceList();
 }
 
-void CNetworkMacOS::GetMacAddress(const std::string& interfaceName, char rawMac[6])
+NETWORK::MacAddress CNetworkMacOS::GetMacAddress(const std::string& interfaceName)
 {
-  memset(rawMac, 0, 6);
+  NETWORK::MacAddress mac{};
 
 #if !defined(IFT_ETHER)
 #define IFT_ETHER 0x6 /* Ethernet CSMACD */
@@ -189,7 +189,7 @@ void CNetworkMacOS::GetMacAddress(const std::string& interfaceName, char rawMac[
 
   if (getifaddrs(&list) < 0)
   {
-    return;
+    return mac;
   }
 
   for (interface = list; interface != NULL; interface = interface->ifa_next)
@@ -202,9 +202,9 @@ void CNetworkMacOS::GetMacAddress(const std::string& interfaceName, char rawMac[
         dlAddr = (const struct sockaddr_dl*)interface->ifa_addr;
         base = (const uint8_t*)&dlAddr->sdl_data[dlAddr->sdl_nlen];
 
-        if (dlAddr->sdl_alen > 5)
+        if (dlAddr->sdl_alen >= mac.size())
         {
-          memcpy(rawMac, base, 6);
+          memcpy(mac.data(), base, mac.size());
         }
       }
       break;
@@ -212,11 +212,11 @@ void CNetworkMacOS::GetMacAddress(const std::string& interfaceName, char rawMac[
   }
 
   freeifaddrs(list);
+  return mac;
 }
 
 void CNetworkMacOS::queryInterfaceList()
 {
-  char macAddrRaw[6];
   CNetworkInterfaces::InterfaceList interfaces;
 
   // Query the list of interfaces.
@@ -230,11 +230,10 @@ void CNetworkMacOS::queryInterfaceList()
     if (cur->ifa_addr->sa_family != AF_INET)
       continue;
 
-    GetMacAddress(cur->ifa_name, macAddrRaw);
+    const NETWORK::MacAddress macAddrRaw = GetMacAddress(cur->ifa_name);
 
     // only add interfaces with non-zero mac addresses
-    if (macAddrRaw[0] || macAddrRaw[1] || macAddrRaw[2] || macAddrRaw[3] || macAddrRaw[4] ||
-        macAddrRaw[5])
+    if (macAddrRaw != NETWORK::MacAddress{})
       // Add the interface.
       interfaces.push_back(
           std::make_unique<CNetworkInterfaceMacOS>(this, cur->ifa_name, macAddrRaw));

@@ -12,6 +12,8 @@
 
 #include "platform/android/activity/JNIXBMCConnectivityManagerNetworkCallback.h"
 
+#include <optional>
+
 #include <androidjni/LinkProperties.h>
 #include <androidjni/Network.h>
 #include <androidjni/NetworkInterface.h>
@@ -28,7 +30,7 @@ public:
   bool IsEnabled() const override;
   bool IsConnected() const override;
   std::string GetMacAddress() const override;
-  void GetMacAddressRaw(char rawMac[6]) const override;
+  KODI::NETWORK::MacAddress GetMacAddressRaw() const override;
   bool GetHostMacAddress(unsigned long host_ip, std::string& mac) const override;
   std::string GetCurrentIPAddress() const override;
   std::string GetCurrentNetmask() const override;
@@ -38,6 +40,8 @@ public:
   std::vector<std::string> GetNameServers() const override;
 
 protected:
+  std::optional<KODI::NETWORK::MacAddress> GetHardwareAddress() const;
+
   std::string m_name;
   CJNINetwork m_network;
   CJNILinkProperties m_lp;

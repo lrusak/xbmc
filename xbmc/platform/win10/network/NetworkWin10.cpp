@@ -17,6 +17,7 @@
 #include "platform/win10/AsyncHelpers.h"
 #include "platform/win32/WIN32Util.h"
 
+#include <algorithm>
 #include <errno.h>
 #include <mutex>
 #include <string.h>
@@ -92,17 +93,15 @@ std::string CNetworkInterfaceWin10::GetMacAddress() const
   if (m_adapterAddr->PhysicalAddressLength < MAC_LENGTH)
     return "";
 
-  unsigned char* mAddr = m_adapterAddr->PhysicalAddress;
-  return StringUtils::Format("{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}", mAddr[0], mAddr[1],
-                             mAddr[2], mAddr[3], mAddr[4], mAddr[5]);
+  return NETWORK::FormatMacAddress(GetMacAddressRaw());
 }
 
-void CNetworkInterfaceWin10::GetMacAddressRaw(char rawMac[6]) const
+NETWORK::MacAddress CNetworkInterfaceWin10::GetMacAddressRaw() const
 {
-  size_t len = (m_adapterAddr->PhysicalAddressLength > MAC_LENGTH)
-                   ? MAC_LENGTH
-                   : m_adapterAddr->PhysicalAddressLength;
-  memcpy(rawMac, m_adapterAddr->PhysicalAddress, len);
+  NETWORK::MacAddress mac{};
+  std::copy_n(m_adapterAddr->PhysicalAddress,
+              std::min<std::size_t>(m_adapterAddr->PhysicalAddressLength, mac.size()), mac.begin());
+  return mac;
 }
 
 bool CNetworkInterfaceWin10::GetHostMacAddress(unsigned long host, std::string& mac) const

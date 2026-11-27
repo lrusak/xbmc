@@ -22,10 +22,15 @@ struct sockaddr;
 
 namespace KODI::NETWORK
 {
+using MacAddress = std::array<uint8_t, 6>;
+
 /*!
  * \brief Parses a MAC address written as six hex octets separated by ':' or '-'.
  */
-std::optional<std::array<uint8_t, 6>> ParseMacAddress(std::string_view mac);
+std::optional<MacAddress> ParseMacAddress(std::string_view mac);
+
+//! \brief Formats a MAC address as six upper case hex octets separated by ':'.
+std::string FormatMacAddress(const MacAddress& mac);
 
 /**
  * @brief Return true if magic packet was sent

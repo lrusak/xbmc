@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include "network/NetworkUtils.h"
 #include "settings/lib/ISettingCallback.h"
 
 #include <chrono>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -28,7 +30,8 @@ public:
   virtual bool IsConnected(void) const = 0;
 
   virtual std::string GetMacAddress(void) const = 0;
-  virtual void GetMacAddressRaw(char rawMac[6]) const = 0;
+  //! \brief The MAC address, all zeros if unknown.
+  virtual KODI::NETWORK::MacAddress GetMacAddressRaw() const = 0;
 
   virtual bool GetHostMacAddress(unsigned long host, std::string& mac) const = 0;
 
@@ -69,7 +72,7 @@ public:
   //!@{
   std::string GetCurrentIPAddress() const;
   std::string GetMacAddress() const;
-  bool GetMacAddressRaw(char rawMac[6]) const;
+  std::optional<KODI::NETWORK::MacAddress> GetMacAddressRaw() const;
   std::string GetNetmask() const;
   std::string GetDefaultGateway() const;
   std::string GetHostName() const;
@@ -125,7 +128,7 @@ public:
   // Values of the first connected interface, empty if there is none
   std::string GetCurrentIPAddress();
   std::string GetMacAddress();
-  bool GetMacAddressRaw(char rawMac[6]);
+  std::optional<KODI::NETWORK::MacAddress> GetMacAddressRaw();
   std::string GetNetmask();
   std::string GetDefaultGateway();
 

@@ -35,18 +35,12 @@ bool NETWORK::SetInterfaceName(ifreq& request, std::string_view name)
 
 CNetworkInterfacePosix::CNetworkInterfacePosix(CNetworkPosix* network,
                                                std::string interfaceName,
-                                               char interfaceMacAddrRaw[6])
+                                               const NETWORK::MacAddress& interfaceMacAddrRaw)
   : m_interfaceName(std::move(interfaceName)),
-    m_interfaceMacAdr(StringUtils::Format("{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
-                                          (uint8_t)interfaceMacAddrRaw[0],
-                                          (uint8_t)interfaceMacAddrRaw[1],
-                                          (uint8_t)interfaceMacAddrRaw[2],
-                                          (uint8_t)interfaceMacAddrRaw[3],
-                                          (uint8_t)interfaceMacAddrRaw[4],
-                                          (uint8_t)interfaceMacAddrRaw[5]))
+    m_network(network),
+    m_interfaceMacAdr(NETWORK::FormatMacAddress(interfaceMacAddrRaw)),
+    m_interfaceMacAddrRaw(interfaceMacAddrRaw)
 {
-  m_network = network;
-  memcpy(m_interfaceMacAddrRaw, interfaceMacAddrRaw, sizeof(m_interfaceMacAddrRaw));
 }
 
 bool CNetworkInterfacePosix::IsEnabled() const
@@ -112,9 +106,9 @@ std::string CNetworkInterfacePosix::GetMacAddress() const
   return m_interfaceMacAdr;
 }
 
-void CNetworkInterfacePosix::GetMacAddressRaw(char rawMac[6]) const
+NETWORK::MacAddress CNetworkInterfacePosix::GetMacAddressRaw() const
 {
-  memcpy(rawMac, m_interfaceMacAddrRaw, 6);
+  return m_interfaceMacAddrRaw;
 }
 
 CNetworkPosix::CNetworkPosix() : CNetworkBase()

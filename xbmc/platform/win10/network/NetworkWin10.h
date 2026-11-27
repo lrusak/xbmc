@@ -30,7 +30,7 @@ public:
   virtual bool IsConnected(void) const;
 
   virtual std::string GetMacAddress(void) const;
-  virtual void GetMacAddressRaw(char rawMac[6]) const;
+  KODI::NETWORK::MacAddress GetMacAddressRaw() const override;
 
   virtual bool GetHostMacAddress(unsigned long host, std::string& mac) const;
 

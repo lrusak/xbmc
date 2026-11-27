@@ -105,15 +105,14 @@ std::string CNetworkInterfaces::GetMacAddress() const
   return iface ? iface->GetMacAddress() : std::string{};
 }
 
-bool CNetworkInterfaces::GetMacAddressRaw(char rawMac[6]) const
+std::optional<KODI::NETWORK::MacAddress> CNetworkInterfaces::GetMacAddressRaw() const
 {
   const State state = GetState();
   const CNetworkInterface* iface = GetFirstConnectedInterface(state);
   if (!iface)
-    return false;
+    return std::nullopt;
 
-  iface->GetMacAddressRaw(rawMac);
-  return true;
+  return iface->GetMacAddressRaw();
 }
 
 std::string CNetworkInterfaces::GetNetmask() const
@@ -227,10 +226,10 @@ std::string CNetworkBase::GetMacAddress()
   return GetInterfaces().GetMacAddress();
 }
 
-bool CNetworkBase::GetMacAddressRaw(char rawMac[6])
+std::optional<KODI::NETWORK::MacAddress> CNetworkBase::GetMacAddressRaw()
 {
   UpdateInterfaces();
-  return GetInterfaces().GetMacAddressRaw(rawMac);
+  return GetInterfaces().GetMacAddressRaw();
 }
 
 std::string CNetworkBase::GetNetmask()

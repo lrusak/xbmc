@@ -34,7 +34,7 @@ public:
   bool IsConnected(void) const override;
 
   std::string GetMacAddress(void) const override;
-  void GetMacAddressRaw(char rawMac[6]) const override;
+  KODI::NETWORK::MacAddress GetMacAddressRaw() const override;
 
   bool GetHostMacAddress(unsigned long host, std::string& mac) const override;
   bool GetHostMacAddress(struct sockaddr* host, std::string& mac) const;

@@ -31,7 +31,7 @@ class CNetworkInterfacePosix : public CNetworkInterface
 public:
   CNetworkInterfacePosix(CNetworkPosix* network,
                          std::string interfaceName,
-                         char interfaceMacAddrRaw[6]);
+                         const KODI::NETWORK::MacAddress& interfaceMacAddrRaw);
   virtual ~CNetworkInterfacePosix() override = default;
 
   bool IsEnabled() const override;
@@ -40,7 +40,7 @@ public:
   std::string GetCurrentNetmask() const override;
 
   std::string GetMacAddress() const override;
-  void GetMacAddressRaw(char rawMac[6]) const override;
+  KODI::NETWORK::MacAddress GetMacAddressRaw() const override;
 
 protected:
   std::string m_interfaceName;
@@ -48,7 +48,7 @@ protected:
 
 private:
   std::string m_interfaceMacAdr;
-  char m_interfaceMacAddrRaw[6];
+  KODI::NETWORK::MacAddress m_interfaceMacAddrRaw;
 };
 
 class CNetworkPosix : public CNetworkBase
@@ -64,7 +64,7 @@ protected:
   void UpdateInterfaces() override;
 
 private:
-  virtual void GetMacAddress(const std::string& interfaceName, char macAddrRaw[6]) = 0;
+  virtual KODI::NETWORK::MacAddress GetMacAddress(const std::string& interfaceName) = 0;
   virtual void queryInterfaceList() = 0;
   int m_sock;
 };

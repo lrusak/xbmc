@@ -10,6 +10,7 @@
 
 #include "network/SocketOptions.h"
 #include "utils/ScopeGuard.h"
+#include "utils/StringUtils.h"
 #include "utils/log.h"
 
 #include <algorithm>
@@ -43,10 +44,10 @@ CSocketGuard GuardSocket(int sock)
 
 using namespace KODI;
 
-std::optional<std::array<uint8_t, 6>> NETWORK::ParseMacAddress(std::string_view mac)
+std::optional<NETWORK::MacAddress> NETWORK::ParseMacAddress(std::string_view mac)
 {
   // Six hex octets, each followed by ':' or '-' except the last
-  std::array<uint8_t, 6> address;
+  MacAddress address;
   if (mac.size() != address.size() * 3 - 1)
     return std::nullopt;
 
@@ -62,6 +63,12 @@ std::optional<std::array<uint8_t, 6>> NETWORK::ParseMacAddress(std::string_view 
   }
 
   return address;
+}
+
+std::string NETWORK::FormatMacAddress(const MacAddress& mac)
+{
+  return StringUtils::Format("{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}", mac[0], mac[1], mac[2],
+                             mac[3], mac[4], mac[5]);
 }
 
 bool NETWORK::WakeOnLan(std::string_view mac)

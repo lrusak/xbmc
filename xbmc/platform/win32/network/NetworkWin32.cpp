@@ -14,6 +14,7 @@
 
 #include "platform/win32/WIN32Util.h"
 
+#include <algorithm>
 #include <errno.h>
 #include <mutex>
 
@@ -64,17 +65,15 @@ std::string CNetworkInterfaceWin32::GetMacAddress() const
     return "";
   }
 
-  const unsigned char* mAddr = m_adapter.PhysicalAddress;
-
-  return StringUtils::Format("{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}", mAddr[0], mAddr[1],
-                             mAddr[2], mAddr[3], mAddr[4], mAddr[5]);
+  return NETWORK::FormatMacAddress(GetMacAddressRaw());
 }
 
-void CNetworkInterfaceWin32::GetMacAddressRaw(char rawMac[6]) const
+NETWORK::MacAddress CNetworkInterfaceWin32::GetMacAddressRaw() const
 {
-  size_t len =
-      (m_adapter.PhysicalAddressLength > MAC_LENGTH) ? MAC_LENGTH : m_adapter.PhysicalAddressLength;
-  memcpy(rawMac, m_adapter.PhysicalAddress, len);
+  NETWORK::MacAddress mac{};
+  std::copy_n(m_adapter.PhysicalAddress,
+              std::min<std::size_t>(m_adapter.PhysicalAddressLength, mac.size()), mac.begin());
+  return mac;
 }
 
 std::string CNetworkInterfaceWin32::GetCurrentIPAddress(void) const

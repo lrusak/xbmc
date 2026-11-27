@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <charconv>
 #include <chrono>
+#include <cstring>
 #include <errno.h>
 #include <fstream>
 #include <signal.h>
@@ -141,7 +142,7 @@ struct IcmpPacket
 
 CNetworkInterfaceLinux::CNetworkInterfaceLinux(CNetworkPosix* network,
                                                std::string interfaceName,
-                                               char interfaceMacAddrRaw[6])
+                                               const NETWORK::MacAddress& interfaceMacAddrRaw)
   : CNetworkInterfacePosix(network, std::move(interfaceName), interfaceMacAddrRaw)
 {
 }
@@ -225,15 +226,14 @@ CNetworkLinux::CNetworkLinux() : CNetworkPosix()
   queryInterfaceList();
 }
 
-void CNetworkLinux::GetMacAddress(const std::string& interfaceName, char rawMac[6])
+NETWORK::MacAddress CNetworkLinux::GetMacAddress(const std::string& interfaceName)
 {
-  memset(rawMac, 0, 6);
-
+  NETWORK::MacAddress mac{};
   ifreq ifr{};
   if (NETWORK::SetInterfaceName(ifr, interfaceName) && ioctl(GetSocket(), SIOCGIFHWADDR, &ifr) >= 0)
-  {
-    memcpy(rawMac, ifr.ifr_hwaddr.sa_data, 6);
-  }
+    std::memcpy(mac.data(), ifr.ifr_hwaddr.sa_data, mac.size());
+
+  return mac;
 }
 
 void CNetworkLinux::queryInterfaceList()
@@ -259,11 +259,10 @@ void CNetworkLinux::queryInterfaceList()
 
     const std::string interfaceName = line.substr(start, line.find_first_of(": \t", start) - start);
 
-    char macAddrRaw[6];
-    GetMacAddress(interfaceName, macAddrRaw);
+    const NETWORK::MacAddress macAddrRaw = GetMacAddress(interfaceName);
 
     // only add interfaces with non-zero mac addresses
-    if (std::ranges::any_of(macAddrRaw, [](char byte) { return byte != 0; }))
+    if (macAddrRaw != NETWORK::MacAddress{})
       interfaces.push_back(
           std::make_unique<CNetworkInterfaceLinux>(this, interfaceName, macAddrRaw));
   }
