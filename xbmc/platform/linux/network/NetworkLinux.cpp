@@ -14,9 +14,12 @@
 #include "utils/log.h"
 
 #include <algorithm>
+#include <charconv>
 #include <chrono>
 #include <errno.h>
+#include <fstream>
 #include <signal.h>
+#include <sstream>
 #include <thread>
 #include <utility>
 
@@ -134,25 +137,6 @@ struct IcmpPacket
   }
 };
 
-int ParseHex(char* str, unsigned char* addr)
-{
-  int len = 0;
-
-  while (*str)
-  {
-    int tmp;
-    if (str[1] == 0)
-      return -1;
-    if (sscanf(str, "%02x", (unsigned int*)&tmp) != 1)
-      return -1;
-    addr[len] = tmp;
-    len++;
-    str += 2;
-  }
-
-  return len;
-}
-
 } // namespace
 
 CNetworkInterfaceLinux::CNetworkInterfaceLinux(CNetworkPosix* network,
@@ -164,53 +148,33 @@ CNetworkInterfaceLinux::CNetworkInterfaceLinux(CNetworkPosix* network,
 
 std::string CNetworkInterfaceLinux::GetCurrentDefaultGateway() const
 {
-  std::string result;
+  std::ifstream routes("/proc/net/route");
+  std::string line;
 
-  FILE* fp = fopen("/proc/net/route", "r");
-  if (!fp)
-  {
-    // TBD: Error
-    return result;
-  }
+  // skip the header
+  std::getline(routes, line);
 
-  char* line = NULL;
-  char iface[16];
-  char dst[128];
-  char gateway[128];
-  size_t linel = 0;
-  int n;
-  int linenum = 0;
-  while (getdelim(&line, &linel, '\n', fp) > 0)
+  while (std::getline(routes, line))
   {
-    // skip first two lines
-    if (linenum++ < 1)
+    std::istringstream fields(line);
+    std::string iface;
+    std::string destination;
+    std::string gateway;
+    if (!(fields >> iface >> destination >> gateway))
       continue;
 
-    // search where the word begins
-    n = sscanf(line, "%15s %127s %127s", iface, dst, gateway);
-
-    if (n < 3)
+    if (iface != m_interfaceName || destination != "00000000" || gateway == "00000000")
       continue;
 
-    if (strcmp(iface, m_interfaceName.c_str()) == 0 && strcmp(dst, "00000000") == 0 &&
-        strcmp(gateway, "00000000") != 0)
-    {
-      unsigned char gatewayAddr[4];
-      int len = ParseHex(gateway, gatewayAddr);
-      if (len == 4)
-      {
-        struct in_addr in;
-        in.s_addr = (gatewayAddr[0] << 24) | (gatewayAddr[1] << 16) | (gatewayAddr[2] << 8) |
-                    (gatewayAddr[3]);
-        result = NETWORK::GetIpStr(in);
-        break;
-      }
-    }
+    // The kernel prints the address as a hex number of its network byte order value
+    in_addr address{};
+    const char* const last = gateway.data() + gateway.size();
+    const auto [end, error] = std::from_chars(gateway.data(), last, address.s_addr, 16);
+    if (error == std::errc{} && end == last)
+      return NETWORK::GetIpStr(address);
   }
-  free(line);
-  fclose(fp);
 
-  return result;
+  return {};
 }
 
 bool CNetworkInterfaceLinux::GetHostMacAddress(unsigned long host_ip, std::string& mac) const
@@ -274,48 +238,35 @@ void CNetworkLinux::GetMacAddress(const std::string& interfaceName, char rawMac[
 
 void CNetworkLinux::queryInterfaceList()
 {
-  char macAddrRaw[6];
-  CNetworkInterfaces::InterfaceList interfaces;
-
-  FILE* fp = fopen("/proc/net/dev", "r");
-  if (!fp)
-  {
-    // TBD: Error
+  std::ifstream devices("/proc/net/dev");
+  if (!devices)
     return;
+
+  CNetworkInterfaces::InterfaceList interfaces;
+  std::string line;
+
+  // skip the two header lines
+  for (int i = 0; i < 2 && std::getline(devices, line); ++i)
+  {
   }
 
-  char* line = NULL;
-  size_t linel = 0;
-  int n;
-  char* p;
-  int linenum = 0;
-  while (getdelim(&line, &linel, '\n', fp) > 0)
+  while (std::getline(devices, line))
   {
-    // skip first two lines
-    if (linenum++ < 2)
+    // Each line starts with the interface name followed by ':'
+    const std::size_t start = line.find_first_not_of(" \t");
+    if (start == std::string::npos)
       continue;
 
-    // search where the word begins
-    p = line;
-    while (isspace(*p))
-      ++p;
+    const std::string interfaceName = line.substr(start, line.find_first_of(": \t", start) - start);
 
-    // read word until :
-    n = strcspn(p, ": \t");
-    p[n] = 0;
-
-    // save the result
-    std::string interfaceName = p;
+    char macAddrRaw[6];
     GetMacAddress(interfaceName, macAddrRaw);
 
     // only add interfaces with non-zero mac addresses
-    if (macAddrRaw[0] || macAddrRaw[1] || macAddrRaw[2] || macAddrRaw[3] || macAddrRaw[4] ||
-        macAddrRaw[5])
+    if (std::ranges::any_of(macAddrRaw, [](char byte) { return byte != 0; }))
       interfaces.push_back(
           std::make_unique<CNetworkInterfaceLinux>(this, interfaceName, macAddrRaw));
   }
-  free(line);
-  fclose(fp);
 
   GetInterfaces().SetInterfaces(std::move(interfaces));
 }
