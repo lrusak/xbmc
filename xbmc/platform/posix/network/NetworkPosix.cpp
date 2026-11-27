@@ -62,19 +62,19 @@ bool CNetworkInterfacePosix::IsEnabled() const
 bool CNetworkInterfacePosix::IsConnected() const
 {
   ifreq ifr{};
-  int zero = 0;
   if (!NETWORK::SetInterfaceName(ifr, m_interfaceName) ||
       ioctl(m_network->GetSocket(), SIOCGIFFLAGS, &ifr) < 0)
     return false;
 
   // ignore loopback
-  int iRunning = ((ifr.ifr_flags & IFF_RUNNING) && (!(ifr.ifr_flags & IFF_LOOPBACK)));
+  if (!(ifr.ifr_flags & IFF_RUNNING) || (ifr.ifr_flags & IFF_LOOPBACK))
+    return false;
 
   if (ioctl(m_network->GetSocket(), SIOCGIFADDR, &ifr) < 0)
     return false;
 
   // return only interfaces which has ip address
-  return iRunning && (0 != memcmp(ifr.ifr_addr.sa_data + sizeof(short), &zero, sizeof(int)));
+  return reinterpret_cast<const sockaddr_in*>(&ifr.ifr_addr)->sin_addr.s_addr != INADDR_ANY;
 }
 
 std::string CNetworkInterfacePosix::GetCurrentIPAddress() const
