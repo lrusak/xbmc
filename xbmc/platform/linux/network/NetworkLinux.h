@@ -9,8 +9,11 @@
 #pragma once
 
 #include "platform/posix/network/NetworkPosix.h"
+#include "platform/posix/utils/FileHandle.h"
 
+#include <atomic>
 #include <string>
+#include <thread>
 #include <vector>
 
 class CNetworkInterfaceLinux : public CNetworkInterfacePosix
@@ -29,13 +32,24 @@ class CNetworkLinux : public CNetworkPosix
 {
 public:
   CNetworkLinux();
-  ~CNetworkLinux() override = default;
+  ~CNetworkLinux() override;
 
   bool IcmpPing(unsigned long host,
                 const std::chrono::milliseconds timeout = std::chrono::milliseconds(2000)) override;
   std::vector<std::string> GetNameServers(void) override;
 
+protected:
+  void UpdateInterfaces() override;
+
 private:
   KODI::NETWORK::MacAddress GetMacAddress(const std::string& interfaceName) override;
   void queryInterfaceList() override;
+
+  //! Requeries the interfaces whenever the kernel reports a change to links, addresses or routes.
+  void WatchInterfaces();
+
+  KODI::UTILS::POSIX::CFileHandle m_netlink;
+  KODI::UTILS::POSIX::CFileHandle m_stopWatching;
+  std::atomic_bool m_watching{false};
+  std::thread m_watcher;
 };

@@ -9,11 +9,11 @@
 #include "NetworkLinux.h"
 
 #include "network/NetworkUtils.h"
-#include "utils/FileHandle.h"
 #include "utils/StringUtils.h"
 #include "utils/log.h"
 
 #include <algorithm>
+#include <array>
 #include <charconv>
 #include <chrono>
 #include <cstring>
@@ -26,11 +26,15 @@
 
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <linux/netlink.h>
+#include <linux/rtnetlink.h>
 #include <net/if.h>
 #include <net/if_arp.h>
 #include <netinet/ip_icmp.h>
+#include <poll.h>
 #include <resolv.h>
 #include <sys/epoll.h>
+#include <sys/eventfd.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -224,6 +228,75 @@ std::unique_ptr<CNetworkBase> CNetworkBase::GetNetwork()
 CNetworkLinux::CNetworkLinux() : CNetworkPosix()
 {
   queryInterfaceList();
+
+  m_netlink.attach(socket(AF_NETLINK, SOCK_RAW | SOCK_NONBLOCK | SOCK_CLOEXEC, NETLINK_ROUTE));
+  m_stopWatching.attach(eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC));
+
+  sockaddr_nl address{};
+  address.nl_family = AF_NETLINK;
+  address.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR | RTMGRP_IPV4_ROUTE;
+
+  if (!m_netlink || !m_stopWatching ||
+      bind(m_netlink, reinterpret_cast<const sockaddr*>(&address), sizeof(address)) != 0)
+  {
+    CLog::LogF(LOGWARNING, "Unable to watch for interface changes, polling instead: {}",
+               strerror(errno));
+    return;
+  }
+
+  m_watching = true;
+  m_watcher = std::thread([this] { WatchInterfaces(); });
+}
+
+CNetworkLinux::~CNetworkLinux()
+{
+  if (m_watcher.joinable())
+  {
+    eventfd_write(m_stopWatching, 1);
+    m_watcher.join();
+  }
+}
+
+void CNetworkLinux::UpdateInterfaces()
+{
+  if (!m_watching)
+    CNetworkPosix::UpdateInterfaces();
+}
+
+void CNetworkLinux::WatchInterfaces()
+{
+  std::array<pollfd, 2> fds{};
+  fds[0] = {m_netlink, POLLIN, 0};
+  fds[1] = {m_stopWatching, POLLIN, 0};
+  std::array<char, 8192> buffer;
+
+  while (true)
+  {
+    if (poll(fds.data(), fds.size(), -1) < 0)
+    {
+      if (errno == EINTR)
+        continue;
+
+      CLog::LogF(LOGERROR, "Stopped watching for interface changes, polling instead: {}",
+                 strerror(errno));
+      m_watching = false;
+      return;
+    }
+
+    if (fds[1].revents != 0)
+      return;
+
+    if (fds[0].revents == 0)
+      continue;
+
+    // Read every queued notification first, so that a burst of them causes a single requery.
+    // A dropped notification (ENOBUFS) needs no handling, as the requery covers it.
+    while (recv(m_netlink, buffer.data(), buffer.size(), 0) > 0)
+    {
+    }
+
+    queryInterfaceList();
+  }
 }
 
 NETWORK::MacAddress CNetworkLinux::GetMacAddress(const std::string& interfaceName)
