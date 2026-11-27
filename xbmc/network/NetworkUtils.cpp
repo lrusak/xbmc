@@ -11,6 +11,7 @@
 #include "network/SocketOptions.h"
 #include "utils/log.h"
 
+#include <cstdint>
 #include <cstring>
 
 #include <arpa/inet.h>
@@ -227,9 +228,12 @@ std::string NETWORK::GetMaskByPrefixLength(uint8_t prefixLength)
   if (prefixLength > 32)
     return "";
 
+  // Shifting a 32-bit value by 32 is undefined, so /0 is handled on its own.
+  const uint32_t mask = prefixLength == 0 ? 0 : ~uint32_t{0} << (32 - prefixLength);
+
   struct sockaddr_in sa;
   sa.sin_family = AF_INET;
-  sa.sin_addr.s_addr = htonl(~((1 << (32u - prefixLength)) - 1));
+  sa.sin_addr.s_addr = htonl(mask);
 
   return NETWORK::GetIpStr(reinterpret_cast<struct sockaddr*>(&sa));
 }

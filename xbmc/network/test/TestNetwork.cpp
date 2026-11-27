@@ -230,6 +230,8 @@ TEST(TestNetworkUtils, GetIpStr)
 
 TEST(TestNetworkUtils, GetMaskByPrefixLength)
 {
+  EXPECT_EQ(NETWORK::GetMaskByPrefixLength(0), "0.0.0.0");
+  EXPECT_EQ(NETWORK::GetMaskByPrefixLength(1), "128.0.0.0");
   EXPECT_EQ(NETWORK::GetMaskByPrefixLength(8), "255.0.0.0");
   EXPECT_EQ(NETWORK::GetMaskByPrefixLength(23), "255.255.254.0");
   EXPECT_EQ(NETWORK::GetMaskByPrefixLength(24), "255.255.255.0");
