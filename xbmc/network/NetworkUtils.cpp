@@ -16,6 +16,7 @@
 #include <charconv>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -109,29 +110,30 @@ bool NETWORK::WakeOnLan(std::string_view mac)
   return true;
 }
 
-std::vector<SOCKET> NETWORK::CreateTCPServerSocket(const int port,
-                                                   const bool bindLocal,
-                                                   const int backlog,
-                                                   const char* callerName)
+std::vector<SOCKET> NETWORK::CreateTCPServerSocket(int port,
+                                                   bool bindLocal,
+                                                   int backlog,
+                                                   std::string_view callerName)
 {
   std::vector<SOCKET> sockets;
-  struct addrinfo* results = nullptr;
 
-  std::string sPort = std::to_string(port);
-  struct addrinfo hints = {};
+  addrinfo hints{};
   hints.ai_family = PF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = AI_PASSIVE;
-  hints.ai_protocol = 0;
 
-  int error = getaddrinfo(bindLocal ? "localhost" : nullptr, sPort.c_str(), &hints, &results);
-  if (error != 0)
+  addrinfo* list = nullptr;
+  if (getaddrinfo(bindLocal ? "localhost" : nullptr, std::to_string(port).c_str(), &hints, &list) !=
+      0)
     return sockets;
 
-  for (struct addrinfo* result = results; result != nullptr; result = result->ai_next)
+  const std::unique_ptr<addrinfo, decltype(&freeaddrinfo)> results(list, freeaddrinfo);
+
+  for (const addrinfo* result = results.get(); result != nullptr; result = result->ai_next)
   {
-    SOCKET sock = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-    if (sock == INVALID_SOCKET)
+    CSocketGuard sock =
+        GuardSocket(socket(result->ai_family, result->ai_socktype, result->ai_protocol));
+    if (!sock)
       continue;
 
     SetReusePort(sock);
@@ -139,21 +141,19 @@ std::vector<SOCKET> NETWORK::CreateTCPServerSocket(const int port,
 
     if (bind(sock, result->ai_addr, result->ai_addrlen) != 0)
     {
-      closesocket(sock);
       CLog::Log(LOGDEBUG, "{} Server: Failed to bind {} serversocket", callerName,
                 result->ai_family == AF_INET6 ? "IPv6" : "IPv4");
       continue;
     }
 
-    if (listen(sock, backlog) == 0)
-      sockets.push_back(sock);
-    else
+    if (listen(sock, backlog) != 0)
     {
-      closesocket(sock);
       CLog::Log(LOGERROR, "{} Server: Failed to set listen", callerName);
+      continue;
     }
+
+    sockets.push_back(sock.release());
   }
-  freeaddrinfo(results);
 
   if (sockets.empty())
     CLog::Log(LOGERROR, "{} Server: Failed to create serversocket(s)", callerName);

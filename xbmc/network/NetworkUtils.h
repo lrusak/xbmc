@@ -43,10 +43,10 @@ bool WakeOnLan(std::string_view mac);
  * @param callerName
  * @return std::vector<SOCKET> list of sockets
  */
-std::vector<SOCKET> CreateTCPServerSocket(const int port,
-                                          const bool bindLocal,
-                                          const int backlog,
-                                          const char* callerName);
+std::vector<SOCKET> CreateTCPServerSocket(int port,
+                                          bool bindLocal,
+                                          int backlog,
+                                          std::string_view callerName);
 
 /*!
   \brief  IPv6/IPv4 compatible conversion of host IP address

@@ -254,6 +254,21 @@ TEST(TestNetworkUtils, ParseMacAddress)
   EXPECT_EQ(NETWORK::ParseMacAddress("-1:1a:2b:3c:4d:5e"), std::nullopt);
 }
 
+TEST(TestNetworkUtils, CreateTCPServerSocket)
+{
+  // Port 0 lets the system pick a free port
+  const std::vector<SOCKET> sockets = NETWORK::CreateTCPServerSocket(0, true, 1, "Test");
+  ASSERT_FALSE(sockets.empty());
+
+  for (const SOCKET sock : sockets)
+  {
+    sockaddr_storage address{};
+    socklen_t length = sizeof(address);
+    EXPECT_EQ(getsockname(sock, reinterpret_cast<sockaddr*>(&address), &length), 0);
+    closesocket(sock);
+  }
+}
+
 #ifdef HAVE_NETWORK_POSIX
 TEST(TestNetworkUtils, SetInterfaceName)
 {
